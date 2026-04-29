@@ -28,10 +28,10 @@ export default function ReturnsPage() {
           <a href="/shop" className="new">New Drop</a>
           <a href="/lookbook">Lookbook</a>
           <a href="/about">About</a>
-          <a href="#">Stockists</a>
+          <a href="/contact">Stockists</a>
         </div>
         <div className="nav-actions">
-          <div className="nav-icon">🔍</div>
+          <a href="/qa" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>🔍</a>
           <a href="/login" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>👤</a>
           <a href="/cart" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>
             🛒{cartCount > 0 && <span className="cart-dot">{cartCount}</span>}
@@ -165,10 +165,10 @@ export default function ReturnsPage() {
           <div className="foot-col">
             <h4>Shop</h4>
             <ul>
-              <li><a href="/shop">New Drop</a></li>
-              <li><a href="/shop">Tees</a></li>
-              <li><a href="/shop">Hoodies</a></li>
-              <li><a href="/shop">Headwear</a></li>
+              <li><a href="/shop">All Products</a></li>
+              <li><a href="/shop?cat=tees">Tees</a></li>
+              <li><a href="/shop?cat=hoodies">Hoodies</a></li>
+              <li><a href="/lookbook">Lookbook</a></li>
             </ul>
           </div>
           <div className="foot-col">
@@ -176,22 +176,22 @@ export default function ReturnsPage() {
             <ul>
               <li><a href="/shipping">Shipping</a></li>
               <li><a href="/returns">Returns</a></li>
-              <li><a href="/size-guide">Size Guide</a></li>
+              <li><a href="/qa">FAQ</a></li>
               <li><a href="/contact">Contact</a></li>
             </ul>
           </div>
           <div className="foot-col">
             <h4>Connect</h4>
             <ul>
-              <li>Instagram</li>
-              <li>TikTok</li>
-              <li>Twitter / X</li>
+              <li><a href="https://instagram.com/vibinapparel" target="_blank" rel="noopener">Instagram</a></li>
+              <li><a href="https://tiktok.com/@vibinapparel" target="_blank" rel="noopener">TikTok</a></li>
+              <li><a href="https://twitter.com/vibinapparel" target="_blank" rel="noopener">Twitter / X</a></li>
               <li><a href="/lookbook">Lookbook</a></li>
             </ul>
           </div>
         </div>
         <div className="foot-bottom">
-          <div>© 2026 Vibin Apparel · A subsidiary of HVD Holdings, LLC · Miami, FL</div>
+          <div>© 2026 Vibin Apparel · A subsidiary of HVD Holdings, LLC · Jacksonville, FL</div>
           <div className="foot-payments">
             <span>VISA</span>
             <span>AMEX</span>

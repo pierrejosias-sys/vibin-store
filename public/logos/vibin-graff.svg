@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 140">
+  <rect width="500" height="140" fill="#1a1a1a"/>
+  <rect x="0" y="0" width="3" height="140" fill="#ff4a3d"/>
+  <text x="50" y="95" font-family="Arial Black, sans-serif" font-size="64" font-weight="900" fill="#f6f1e7" letter-spacing="-4">
+    <tspan>VIBIN</tspan>
+  </text>
+  <path d="M235 60 L270 40 L270 90 Z" fill="transparent" stroke="#ff4a3d" stroke-width="0"/>
+  <text x="0" y="130" font-family="Courier New, monospace" font-size="9" fill="#666" letter-spacing="4">★ NEW YORK    ★ LOS ANGELES    ★ FLORIDA    ★ WORLDWIDE</text>
+  <circle cx="280" cy="30" r="4" fill="#ff4a3d"/>
+  <circle cx="350" cy="30" r="4" fill="#ff4a3d"/>
+  <circle cx="420" cy="30" r="4" fill="#ff4a3d"/>
+  <circle cx="490" cy="30" r="4" fill="#ff4a3d"/>
+</svg>

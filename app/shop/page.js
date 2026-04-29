@@ -7,11 +7,11 @@ import { useCart } from '../lib/cart-context'
 import styles from '../styles.css'
 
 const PRODUCTS = [
-  { id: '1', name: 'Foundation Tee', price: 48 },
-  { id: '2', name: 'Move Different Tee', price: 48 },
-  { id: '3', name: 'Vol 01 Hoodie', price: 98 },
-  { id: '4', name: 'VIBIN Cap', price: 32 },
-  { id: '5', name: 'Cargo Pant', price: 88 },
+  { id: '1', name: 'Foundation Tee', price: 48, cat: 'Tee' },
+  { id: '2', name: 'Move Different Tee', price: 48, cat: 'Tee' },
+  { id: '3', name: 'Vol 01 Hoodie', price: 98, cat: 'Hoodie' },
+  { id: '4', name: 'VIBIN Cap', price: 32, cat: 'Accessories' },
+  { id: '5', name: 'Cargo Pant', price: 88, cat: 'Pants' },
 ]
 
 export default function ShopPage() {
@@ -33,7 +33,7 @@ export default function ShopPage() {
   }
 
   const filters = ['all', 'Tee', 'Hoodie', 'Pants', 'Accessories']
-  const filteredProducts = filter === 'all' ? products : products
+  const filteredProducts = filter === 'all' ? products : products.filter(p => p.cat === filter)
 
   return (
     <>
@@ -51,13 +51,15 @@ export default function ShopPage() {
         <div className="nav-links">
           <Link href="/shop">Shop</Link>
           <Link href="/shop">New Drop</Link>
-          <Link href="/">Lookbook</Link>
-          <Link href="/">About</Link>
+          <Link href="/lookbook">Lookbook</Link>
+          <Link href="/about">About</Link>
         </div>
         <div className="nav-actions">
-          <div className="nav-icon">🔍</div>
+          <a href="/qa" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>🔍</a>
           <Link href="/login" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>👤</Link>
-          <Link href="/cart" className="nav-icon">🛒<span className="cart-dot" id="nav-cart">0</span></Link>
+          <Link href="/cart" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>
+            🛒{cartCount > 0 && <span className="cart-dot">{cartCount}</span>}
+          </Link>
         </div>
       </nav>
 
@@ -84,7 +86,7 @@ export default function ShopPage() {
           <div className="shop-empty">No products found</div>
         ) : (
           filteredProducts.map(product => (
-            <Link key={product.id} href={`/product/${product.id}`} className="shop-card">
+            <div key={product.id} className="shop-card" onClick={() => addToCart(product)}>
               <div className="shop-img">
                 {product.name.split(' ').slice(0, 3).map((w, i) => (
                   <span key={i}>{w}{i < Math.min(product.name.split(' ').length, 3) - 1 && <br/>}</span>
@@ -97,14 +99,14 @@ export default function ShopPage() {
                   <span className="shop-price">${product.price}</span>
                 </div>
               </div>
-            </Link>
+            </div>
           ))
         )}
       </div>
 
       <footer>
         <div className="foot-logo">VIBIN</div>
-        <div className="foot-tag">Apparel for those who move different · Miami, FL · Now based in Jacksonville · A subsidiary of HVD Holdings</div>
+        <div className="foot-tag">Apparel for those who move different · Jacksonville, FL · A subsidiary of HVD Holdings</div>
       </footer>
     </>
   )

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 120">
+  <defs>
+    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#222" stroke-width="0.5"/>
+    </pattern>
+    <clipPath id="tag">
+      <rect x="10" y="30" width="120" height="50" rx="3"/>
+    </clipPath>
+  </defs>
+  <rect width="500" height="120" fill="#0a0a0a"/>
+  <rect width="500" height="120" fill="url(#grid)" opacity="0.3"/>
+  <g clip-path="url(#tag)">
+    <rect x="10" y="30" width="120" height="50" fill="#ff4a3d"/>
+    <text x="70" y="68" font-family="Arial Black, sans-serif" font-size="38" font-weight="900" fill="#0a0a0a" text-anchor="middle">V</text>
+  </g>
+  <text x="145" y="65" font-family="Arial Black, sans-serif" font-size="36" font-weight="900" fill="#fff" letter-spacing="2">IBIN</text>
+  <text x="350" y="55" font-family="Courier New, monospace" font-size="10" fill="#666">NEW YORK</text>
+  <text x="350" y="70" font-family="Courier New, monospace" font-size="10" fill="#666">LOS ANGELES</text>
+  <text x="350" y="85" font-family="Courier New, monospace" font-size="10" fill="#ff4a3d">FLORIDA</text>
+  <circle cx="330" cy="85" r="4" fill="#ff4a3d"/>
+</svg>

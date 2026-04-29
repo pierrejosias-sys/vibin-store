@@ -1,0 +1,96 @@
+name: Sitemap Auto-Generator
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  generate-sitemap:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Generate sitemap.xml
+        run: |
+          echo "Generating sitemap.xml..."
+          
+          # Start sitemap
+          echo '<?xml version="1.0" encoding="UTF-8"?>' > sitemap.xml
+          echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' >> sitemap.xml
+          
+          # Find all HTML files and add them to sitemap
+          find . -name "*.html" -type f | while read -r file; do
+            # Get relative path and convert to URL
+            relative_path=${file#./}
+            
+            # Skip certain directories
+            if [[ "$relative_path" == node_modules/* ]] || [[ "$relative_path" == .git/* ]] || [[ "$relative_path" == .next/* ]]; then
+              continue
+            fi
+            
+            # Convert index.html to directory URL
+            url_path="$relative_path"
+            if [[ "$url_path" == *"/index.html" ]]; then
+              url_path="${url_path%/index.html}/"
+            else
+              url_path="/$url_path"
+            fi
+            
+            # Add to sitemap
+            echo "  <url>" >> sitemap.xml
+            echo "    <loc>https://vibinapparel.com${url_path}</loc>" >> sitemap.xml
+            echo "    <changefreq>weekly</changefreq>" >> sitemap.xml
+            echo "    <priority>0.8</priority>" >> sitemap.xml
+            echo "  </url>" >> sitemap.xml
+          done
+          
+          # End sitemap
+          echo '</urlset>' >> sitemap.xml
+          
+          echo "Sitemap generated:"
+          cat sitemap.xml
+      
+      - name: Update robots.txt
+        run: |
+          echo "Updating robots.txt..."
+          
+          if [ -f "robots.txt" ]; then
+            # Check if sitemap line already exists
+            if ! grep -q "Sitemap:" robots.txt; then
+              echo "" >> robots.txt
+              echo "Sitemap: https://vibinapparel.com/sitemap.xml" >> robots.txt
+            fi
+            
+            # Check if User-agent line exists
+            if ! grep -q "User-agent:" robots.txt; then
+              echo "User-agent: *" > robots.txt.new
+              cat robots.txt >> robots.txt.new
+              mv robots.txt.new robots.txt
+            fi
+          else
+            # Create new robots.txt
+            echo "User-agent: *" > robots.txt
+            echo "" >> robots.txt
+            echo "Sitemap: https://vibinapparel.com/sitemap.xml" >> robots.txt
+          fi
+          
+          echo "robots.txt updated:"
+          cat robots.txt
+      
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          git add sitemap.xml robots.txt
+          
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Auto-generate sitemap.xml and update robots.txt"
+            git push
+          fi

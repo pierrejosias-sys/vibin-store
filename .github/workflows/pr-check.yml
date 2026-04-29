@@ -1,0 +1,123 @@
+name: PR Quality Check
+
+on:
+  pull_request:
+    branches: [main, staging]
+
+jobs:
+  quality-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Check for broken internal links
+        run: |
+          echo "Checking for broken internal links (href=\"#\" without matching id)..."
+          broken_links=0
+          
+          # Find all HTML files
+          for file in $(find . -name "*.html" -type f 2>/dev/null || echo ""); do
+            if [ -f "$file" ]; then
+              # Find all href="#" links that are not just "#"
+              links=$(grep -oP 'href="#[^"]*"' "$file" 2>/dev/null | grep -v 'href="#"' || echo "")
+              
+              if [ -n "$links" ]; then
+                # For each link, check if there's a matching id in the file
+                echo "$links" | while read -r link; do
+                  # Extract the anchor name (remove href=" and ")
+                  anchor=$(echo "$link" | sed 's/href="#//;s/"//')
+                  
+                  # Check if there's a matching id in the same file
+                  if ! grep -q "id=\"$anchor\"" "$file"; then
+                    echo "❌ Broken link in $file: $link (no matching id found)"
+                    broken_links=$((broken_links + 1))
+                  fi
+                done
+              fi
+            fi
+          done
+          
+          if [ $broken_links -gt 0 ]; then
+            echo "::error::Found $broken_links broken internal links"
+            exit 1
+          else
+            echo "✅ No broken internal links found"
+          fi
+      
+      - name: Validate HTML structure
+        run: |
+          echo "Validating HTML structure..."
+          missing_tags=0
+          
+          for file in $(find . -name "*.html" -type f 2>/dev/null || echo ""); do
+            if [ -f "$file" ]; then
+              # Check for <title> tag
+              if ! grep -qi '<title>' "$file"; then
+                echo "❌ Missing <title> tag in $file"
+                missing_tags=$((missing_tags + 1))
+              fi
+              
+              # Check for <meta name="description">
+              if ! grep -qi '<meta name="description"' "$file"; then
+                echo "❌ Missing <meta name=\"description\"> in $file"
+                missing_tags=$((missing_tags + 1))
+              fi
+              
+              # Check for <meta name="viewport">
+              if ! grep -qi '<meta name="viewport"' "$file"; then
+                echo "❌ Missing <meta name=\"viewport\"> in $file"
+                missing_tags=$((missing_tags + 1))
+              fi
+              
+              # Check for <h1> tag
+              if ! grep -qi '<h1' "$file"; then
+                echo "❌ Missing <h1> tag in $file"
+                missing_tags=$((missing_tags + 1))
+              fi
+            fi
+          done
+          
+          if [ $missing_tags -gt 0 ]; then
+            echo "::error::Found $missing_tags missing HTML structure elements"
+            exit 1
+          else
+            echo "✅ All HTML files have proper structure"
+          fi
+      
+      - name: Check for hardcoded secrets
+        run: |
+          echo "Scanning for hardcoded secrets..."
+          secret_patterns=('sk_' 'pk_' 'Bearer ' 'API_KEY\s*=' 'api[_-]?key' 'secret[_-]?key' 'password\s*=' 'token\s*=')
+          
+          found_secrets=0
+          
+          # Scan all files except node_modules, .git, and workflow files
+          for pattern in "${secret_patterns[@]}"; do
+            matches=$(grep -r --include="*.js" --include="*.ts" --include="*.html" --include="*.css" \
+              --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=.github \
+              -E "$pattern" . 2>/dev/null || echo "")
+            
+            if [ -n "$matches" ]; then
+              echo "❌ Found potential secret matching pattern '$pattern':"
+              echo "$matches"
+              found_secrets=$((found_secrets + 1))
+            fi
+          done
+          
+          if [ $found_secrets -gt 0 ]; then
+            echo "::error::Found hardcoded secrets! Remove them before merging."
+            exit 1
+          else
+            echo "✅ No hardcoded secrets found"
+          fi
+      
+      - name: Report status
+        if: always()
+        run: |
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "✅ All quality checks passed!"
+          else
+            echo "❌ Quality checks failed!"
+          fi

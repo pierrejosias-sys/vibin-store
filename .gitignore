@@ -1,7 +1,44 @@
-node_modules
-.next
-.vercel
-.output
-*.env
+# Dependencies
+node_modules/
+.npm/
+
+# Build output
+dist/
+build/
+.cache/
+.next/
+.output/
+
+# Environment files — NEVER commit these
+.env
 .env.local
+.env.production
+.env.staging
+*.env
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary files
+tmp/
+temp/
+
+# Vercel
+.vercel
+
+# Netlify
+.netlify
+
+# Supabase
+.supabase/supabase
