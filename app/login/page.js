@@ -148,7 +148,7 @@ export default function LoginPage() {
               )}
             </div>
           </div>
-          <div className="sl-foot">VIBIN · A subsidiary of HVD Holdings, LLC</div>
+          <div className="sl-foot">VIBIN · A subsidiary of HVD Holdings, LLC · Miami, FL</div>
         </div>
 
         <div className="split-right">
@@ -272,15 +272,13 @@ export default function LoginPage() {
               </div>
             )}
 
-            {!ambassadorMode && !showUnsubscribe && (
-              <a href="#" className="amb-strip" onClick={() => setAmbassadorMode(true)}>
+            <a href="/ambassador" className="amb-strip" onClick={() => setAmbassadorMode(true)}>
                 <div className="amb-strip-left">
                   Want to earn for sharing Vibin?
                   <strong>Ambassador Login →</strong>
                 </div>
                 <div className="amb-strip-arrow">→</div>
               </a>
-            )}
 
             {!ambassadorMode && !isRegister && (
               <div style={{ marginTop: '16px', textAlign: 'center' }}>

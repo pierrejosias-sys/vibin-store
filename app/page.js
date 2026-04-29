@@ -285,7 +285,7 @@ export default function HomePage() {
           <div className="foot-brand">
             <div className="foot-logo">VIBIN</div>
             <div className="foot-tagline">
-              A lifestyle streetwear brand from Jacksonville, FL. Built by Josias Pierre. A subsidiary of HVD Holdings. Apparel for those who move different.
+              A lifestyle streetwear brand from Miami, FL. Now based in Jacksonville. A subsidiary of HVD Holdings. Apparel for those who move different.
             </div>
           </div>
           <div className="foot-col">

@@ -113,10 +113,10 @@ export default function ShopPage() {
         )}
       </div>
 
-      <footer>
-        <div className="foot-logo">VIBIN</div>
-        <div className="foot-tag">Apparel for those who move different · Jacksonville, FL · A subsidiary of HVD Holdings</div>
-      </footer>
+        <footer>
+          <div className="foot-logo">VIBIN</div>
+          <div className="foot-tag">Apparel for those who move different · Miami, FL · Now based in Jacksonville · A subsidiary of HVD Holdings</div>
+        </footer>
     </>
   )
 }

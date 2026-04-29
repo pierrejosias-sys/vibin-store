@@ -13,7 +13,9 @@ export default function AmbassadorPage() {
   })
   const [copied, setCopied] = useState(false)
 
-  const shareLink = 'https://vibin.com/?ref=ambassador'
+  const shareLink = 'https://vibin-store.vercel.app/?ref=ambassador'
+
+  const shareLinkQR = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareLink)}`
 
   const copyLink = () => {
     navigator.clipboard.writeText(shareLink)
@@ -67,6 +69,10 @@ export default function AmbassadorPage() {
         <div className="amb-link-box">
           <input type="text" value={shareLink} readOnly />
           <button onClick={copyLink}>{copied ? 'Copied!' : 'Copy'}</button>
+        </div>
+        <div style={{ marginTop: '20px', textAlign: 'center' }}>
+          <img src={shareLinkQR} alt="QR Code" style={{ borderRadius: '8px' }} />
+          <p style={{ fontSize: '12px', color: '#888', marginTop: '10px' }}>Scan to share</p>
         </div>
         <p className="amb-tip">Share on social media, with friends, or embed on your site.</p>
       </div>
