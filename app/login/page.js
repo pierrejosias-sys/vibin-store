@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { supabase } from '../lib/supabase'
 import styles from '../styles.css'
 
 export default function LoginPage() {
@@ -21,61 +20,63 @@ export default function LoginPage() {
   const router = useRouter()
 
   useEffect(() => {
-    checkUser()
-  }, [])
-
-  async function checkUser() {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      setUser(user)
+    const savedUser = localStorage.getItem('vibin_user')
+    if (savedUser) {
+      setUser(JSON.parse(savedUser))
       router.push('/profile')
     }
-  }
+  }, [router])
 
-  async function handleSubmit(e) {
+  function handleSubmit(e) {
     e.preventDefault()
     setLoading(true)
     setMessage('')
 
     if (ambassadorMode) {
-      if (ambCode.length >= 4) {
-        localStorage.setItem('vibin_ambassador', JSON.stringify({ code: ambCode, status: 'active' }))
-        setMessage('Ambassador logged in!')
-        setTimeout(() => router.push('/ambassador'), 1000)
-      } else {
-        setMessage('Invalid ambassador code')
-      }
-      setLoading(false)
+      setTimeout(() => {
+        if (ambCode.length >= 4) {
+          localStorage.setItem('vibin_ambassador', JSON.stringify({ code: ambCode, status: 'active' }))
+          setMessage('Ambassador logged in!')
+          setTimeout(() => router.push('/ambassador'), 1000)
+        } else {
+          setMessage('Invalid ambassador code')
+        }
+        setLoading(false)
+      }, 500)
       return
     }
 
-    if (isRegister) {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { first_name: firstName, last_name: lastName }
+    setTimeout(() => {
+      if (isRegister) {
+        const newUser = {
+          id: 'user_' + Date.now(),
+          email,
+          firstName,
+          lastName,
+          createdAt: new Date().toISOString()
         }
-      })
-      if (error) {
-        setMessage(error.message)
-      } else {
-        setMessage('Account created! Check your email.')
-        setTimeout(() => router.push('/profile'), 2000)
-      }
-    } else {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
-      if (error) {
-        setMessage(error.message)
-      } else {
-        setMessage('Welcome back!')
+        localStorage.setItem('vibin_user', JSON.stringify(newUser))
+        setUser(newUser)
+        setMessage('Account created!')
         setTimeout(() => router.push('/profile'), 1000)
+      } else {
+        if (email && password.length >= 6) {
+          const loggedInUser = {
+            id: 'user_' + Date.now(),
+            email,
+            firstName: email.split('@')[0],
+            lastName: ''
+          }
+          localStorage.setItem('vibin_user', JSON.stringify(loggedInUser))
+          setUser(loggedInUser)
+          setMessage('Welcome back!')
+          setTimeout(() => router.push('/profile'), 1000)
+        } else {
+          setMessage('Invalid email or password (min 6 chars)')
+        }
       }
-    }
-    setLoading(false)
+      setLoading(false)
+    }, 500)
   }
 
   function handleUnsubscribe(e) {
@@ -85,13 +86,13 @@ export default function LoginPage() {
       setMessage('You have been unsubscribed from the newsletter.')
       setShowUnsubscribe(false)
       setLoading(false)
-    }, 1000)
+    }, 500)
   }
 
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: styles }} />
-
+      
       <nav className="dark">
         <Link href="/" className="logo">VIBIN</Link>
         <Link href="/" className="back">← Back to Shop</Link>
@@ -104,7 +105,7 @@ export default function LoginPage() {
             <div className="sl-eye">{ambassadorMode ? 'Ambassador' : 'Member'} Access</div>
             <h1 className="sl-title">Move<br/><em>different.</em></h1>
             <p className="sl-body">
-              {ambassadorMode
+              {ambassadorMode 
                 ? 'Access your ambassador dashboard. Track earnings, share links, and earn commission on every sale.'
                 : 'Join the inside circle. Early access to drops, member-only pieces, and the people who actually move the brand forward.'}
             </p>
@@ -146,7 +147,7 @@ export default function LoginPage() {
               )}
             </div>
           </div>
-          <div className="sl-foot">VIBIN · A subsidiary of HVD Holdings, LLC · Miami, FL</div>
+          <div className="sl-foot">VIBIN · A subsidiary of HVD Holdings, LLC</div>
         </div>
 
         <div className="split-right">
@@ -161,7 +162,7 @@ export default function LoginPage() {
             {ambassadorMode ? (
               <div className="panel on">
                 <div className="form-eye">Ambassador Portal</div>
-                <h2 className="form-title"> Ambassador<br/><em>Login</em></h2>
+                <h2 className="form-title">Ambassador<br/><em>Login</em></h2>
                 <p className="form-sub">Enter your ambassador code to access your dashboard.</p>
 
                 <form onSubmit={handleSubmit}>
@@ -243,9 +244,7 @@ export default function LoginPage() {
 
                 <form onSubmit={handleSubmit}>
                   <div className="field">
-                    <div className="field-label">
-                      <span>Email</span>
-                    </div>
+                    <div className="field-label">Email</div>
                     <input className="field-input" type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
                   </div>
                   <div className="field">

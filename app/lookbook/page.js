@@ -1,8 +1,11 @@
 'use client'
 
+import { useCart } from '../lib/cart-context'
 import styles from '../styles.css'
 
 export default function LookbookPage() {
+  const { cartCount } = useCart()
+
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: styles }} />
@@ -30,7 +33,9 @@ export default function LookbookPage() {
         <div className="nav-actions">
           <div className="nav-icon">🔍</div>
           <a href="/login" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>👤</a>
-          <a href="/cart" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>🛒</a>
+          <a href="/cart" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>
+            🛒{cartCount > 0 && <span className="cart-dot">{cartCount}</span>}
+          </a>
         </div>
       </nav>
 

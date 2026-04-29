@@ -1,7 +1,9 @@
 'use client'
-
+ 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { supabase } from '../lib/supabase'
+import { useCart } from '../lib/cart-context'
 import styles from '../styles.css'
 
 const PRODUCTS = [
@@ -16,6 +18,19 @@ export default function ShopPage() {
   const [products] = useState(PRODUCTS)
   const [loading, setLoading] = useState(false)
   const [filter, setFilter] = useState('all')
+  const { cartCount, updateCart } = useCart()
+
+  function addToCart(product) {
+    const cart = JSON.parse(localStorage.getItem('vibin_cart') || '[]')
+    const existing = cart.find(item => item.id === product.id)
+    if (existing) {
+      existing.qty += 1
+    } else {
+      cart.push({ ...product, size: 'M', qty: 1 })
+    }
+    localStorage.setItem('vibin_cart', JSON.stringify(cart))
+    updateCart()
+  }
 
   const filters = ['all', 'Tee', 'Hoodie', 'Pants', 'Accessories']
   const filteredProducts = filter === 'all' ? products : products

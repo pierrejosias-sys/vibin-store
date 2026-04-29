@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from './lib/supabase'
+import { useCart } from './lib/cart-context'
 import styles from './styles.css'
 
 export default function HomePage() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
-  const [cartCount, setCartCount] = useState(0)
   const [addedId, setAddedId] = useState(null)
+  const { cartCount } = useCart()
 
   useEffect(() => {
     fetchProducts()
@@ -37,8 +38,16 @@ export default function HomePage() {
     setLoading(false)
   }
 
-  function handleQuickAdd(id) {
-    setCartCount(cartCount + 1)
+  function handleQuickAdd(id, name, price, color) {
+    const cart = JSON.parse(localStorage.getItem('vibin_cart') || '[]')
+    const existing = cart.find(item => item.id === id)
+    if (existing) {
+      existing.qty += 1
+    } else {
+      cart.push({ id, name, price, color, size: 'M', qty: 1 })
+    }
+    localStorage.setItem('vibin_cart', JSON.stringify(cart))
+    updateCart()
     setAddedId(id)
     setTimeout(() => setAddedId(null), 1800)
   }

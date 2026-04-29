@@ -1,5 +1,6 @@
 import './styles.css'
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { CartProvider } from './lib/cart-context'
 
 export default function RootLayout({ children }) {
   return (
@@ -12,8 +13,10 @@ export default function RootLayout({ children }) {
         <link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
       </head>
       <body>
-        {children}
-        <SpeedInsights />
+        <CartProvider>
+          {children}
+          <SpeedInsights />
+        </CartProvider>
       </body>
     </html>
   )

@@ -1,13 +1,15 @@
 'use client'
 
+import { useCart } from '../lib/cart-context'
 import styles from '../styles.css'
 
 export default function AboutPage() {
+  const { cartCount } = useCart()
+
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: styles }} />
 
-      {/* PROMO BAR */}
       <div className="promo">
         <div className="promo-track">
           <span>Free shipping on orders over $75</span>
@@ -32,7 +34,9 @@ export default function AboutPage() {
         <div className="nav-actions">
           <div className="nav-icon">🔍</div>
           <a href="/login" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>👤</a>
-          <a href="/cart" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>🛒</a>
+          <a href="/cart" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>
+            🛒{cartCount > 0 && <span className="cart-dot">{cartCount}</span>}
+          </a>
         </div>
       </nav>
 
