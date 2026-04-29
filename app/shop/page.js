@@ -9,42 +9,35 @@ export default function ShopPage() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
-  const [user, setUser] = useState(null)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     fetchProducts()
-    checkUser()
   }, [])
 
   async function fetchProducts() {
-    let query = supabase.from('products').select('*')
-    
-    const { data, error } = await query
-    
-    if (data) {
-      setProducts(data.length > 0 ? data : [
-        { id: 1, name: 'Foundation Tee', price: 48, original_price: 58, category: 'Tee', colors: ['Black', 'Cream', 'Coral'] },
-        { id: 2, name: 'Move Different Tee', price: 48, category: 'Tee', colors: ['Cream'] },
-        { id: 3, name: 'Vol 01 Hoodie', price: 98, category: 'Hoodie', colors: ['Coral'] },
-        { id: 4, name: 'Mark Hoodie', price: 98, category: 'Hoodie', colors: ['Black'] },
-        { id: 5, name: 'Different Crew', price: 78, category: 'Crewneck', colors: ['Violet'] },
-        { id: 6, name: 'Cargo Pant', price: 88, category: 'Pants', colors: ['Black', 'Olive'] },
-        { id: 7, name: 'VIBIN Cap', price: 32, category: 'Accessories', colors: ['Black'] },
-        { id: 8, name: 'Tote Bag', price: 28, category: 'Accessories', colors: ['Cream'] },
-      ])
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false })
+      
+      if (error) throw error
+      
+      if (data && data.length > 0) {
+        setProducts(data)
+      }
+    } catch (err) {
+      console.error('Error fetching products:', err)
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
-  async function checkUser() {
-    const { data: { user } } = await supabase.auth.getUser()
-    setUser(user)
-  }
-
-  const filters = ['all', 'Tee', 'Hoodie', 'Crewneck', 'Pants', 'Accessories']
-  const filteredProducts = filter === 'all' ? products : products.filter(p => p.category === filter)
-
-  const colorMap = { 'Black': '', 'Cream': ' cream', 'Coral': ' coral', 'Violet': ' violet', 'Olive': ' olive' }
+  const filters = ['all', 'Tee', 'Hoodie', 'Pants', 'Accessories']
+  const filteredProducts = filter === 'all' 
+    ? products 
+    : products.filter(p => p.category?.toLowerCase() === filter.toLowerCase())
 
   return (
     <>
@@ -90,21 +83,21 @@ export default function ShopPage() {
 
       <div className="shop-grid">
         {loading ? (
-          <div className="shop-loading">Loading...</div>
+          <div className="shop-loading">Loading products...</div>
         ) : filteredProducts.length === 0 ? (
           <div className="shop-empty">No products found</div>
         ) : (
           filteredProducts.map(product => (
             <Link key={product.id} href={`/product/${product.id}`} className="shop-card">
-              <div className={`shop-img${colorMap[product.colors?.[0]] || ''}`}>
-                {product.name.split(' ').map((w, i) => (
-                  <span key={i}>{w}{i < product.name.split(' ').length - 1 && <br/>}</span>
+              <div className="shop-img">
+                {product.name.split(' ').slice(0, 3).map((w, i) => (
+                  <span key={i}>{w}{i < Math.min(product.name.split(' ').length, 3) - 1 && <br/>}</span>
                 ))}
               </div>
               <div className="shop-info">
                 <div className="shop-name">{product.name}</div>
                 <div className="shop-meta">
-                  <span className="shop-cat">{product.category || 'Apparel'}</span>
+                  <span className="shop-cat">In Stock</span>
                   <span className="shop-price">${product.price}</span>
                 </div>
               </div>
@@ -113,10 +106,10 @@ export default function ShopPage() {
         )}
       </div>
 
-        <footer>
-          <div className="foot-logo">VIBIN</div>
-          <div className="foot-tag">Apparel for those who move different · Miami, FL · Now based in Jacksonville · A subsidiary of HVD Holdings</div>
-        </footer>
+      <footer>
+        <div className="foot-logo">VIBIN</div>
+        <div className="foot-tag">Apparel for those who move different · Miami, FL · Now based in Jacksonville · A subsidiary of HVD Holdings</div>
+      </footer>
     </>
   )
 }
