@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import supabase from '../lib/supabase-public'
 import styles from '../styles.css'
 
 export default function AdminPage() {
@@ -21,11 +22,25 @@ export default function AdminPage() {
     conversionRate: 0
   })
   const [reviews, setReviews] = useState([])
+  const [pendingVerifications, setPendingVerifications] = useState(0)
   const [page, setPage] = useState('dashboard')
 
   useEffect(() => {
     fetchData()
+    fetchPendingVerifications()
   }, [])
+
+  async function fetchPendingVerifications() {
+    try {
+      const { count } = await supabase
+        .from('verification_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending')
+      if (count !== null) setPendingVerifications(count)
+    } catch (e) {
+      console.log('Error fetching pending verifications:', e)
+    }
+  }
 
   async function fetchData() {
     setOrders([
@@ -79,12 +94,31 @@ export default function AdminPage() {
         <div className="admin-sidebar">
           <div className="admin-logo">VIBIN</div>
           <nav className="admin-nav">
-            <a href="#" className={`admin-nav-link ${page === 'dashboard' ? 'on' : ''}`} onClick={() => setPage('dashboard')}>Dashboard</a>
-            <a href="#" className={`admin-nav-link ${page === 'orders' ? 'on' : ''}`} onClick={() => setPage('orders')}>Orders</a>
-            <a href="#" className={`admin-nav-link ${page === 'analytics' ? 'on' : ''}`} onClick={() => setPage('analytics')}>Analytics</a>
-            <a href="#" className={`admin-nav-link ${page === 'reviews' ? 'on' : ''}`} onClick={() => setPage('reviews')}>Reviews</a>
-            <Link href="/" className="admin-nav-link">View Store</Link>
-          </nav>
+             <a href="#" className={`admin-nav-link ${page === 'dashboard' ? 'on' : ''}`} onClick={() => setPage('dashboard')}>Dashboard</a>
+             <a href="#" className={`admin-nav-link ${page === 'orders' ? 'on' : ''}`} onClick={() => setPage('orders')}>Orders</a>
+             <a href="#" className={`admin-nav-link ${page === 'analytics' ? 'on' : ''}`} onClick={() => setPage('analytics')}>Analytics</a>
+             <a href="#" className={`admin-nav-link ${page === 'reviews' ? 'on' : ''}`} onClick={() => setPage('reviews')}>Reviews</a>
+             <Link href="/admin/support" className="admin-nav-link" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+               Support Verification
+               {pendingVerifications > 0 && (
+                 <span style={{ 
+                   background: 'var(--coral)', 
+                   color: 'white', 
+                   borderRadius: '50%', 
+                   width: '20px', 
+                   height: '20px', 
+                   display: 'inline-flex', 
+                   alignItems: 'center', 
+                   justifyContent: 'center',
+                   fontSize: '11px',
+                   fontWeight: 'bold'
+                 }}>
+                   {pendingVerifications}
+                 </span>
+               )}
+             </Link>
+             <Link href="/" className="admin-nav-link">View Store</Link>
+           </nav>
         </div>
 
         <div className="admin-content">
