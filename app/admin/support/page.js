@@ -47,10 +47,15 @@ export default function AdminSupportPage() {
       <style dangerouslySetInnerHTML={{__html: styles}} />
       <nav><Link href="/" className="logo">VIBIN ADMIN</Link></nav>
       <div style={{padding:'40px 60px',maxWidth:'1200px',margin:'0 auto'}}>
-        <h1 style={{fontFamily:'Anton,sans-serif',fontSize:'48px',textTransform:'uppercase'}}>
-          Support <em style={{fontStyle:'italic',color:'var(--coral)'}}>Verification</em>
-        </h1>
-        {requests.length === 0 ? (
+         <h1 style={{fontFamily:'Anton,sans-serif',fontSize:'48px',textTransform:'uppercase'}}>
+           Support <em style={{fontStyle:'italic',color:'var(--coral)'}}>Verification</em>
+         </h1>
+         <img 
+           src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=300&fit=crop" 
+           alt="Admin dashboard"
+           style={{width:'100%',height:'300px',objectFit:'cover',marginBottom:'24px',borderRadius:'4px'}}
+         />
+         {requests.length === 0 ? (
           <div style={{padding:'60px',textAlign:'center',color:'var(--muted)'}}>
             No pending verification requests.
           </div>
