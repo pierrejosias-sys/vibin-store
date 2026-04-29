@@ -1,10 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from '../styles.css'
 
 export default function PrintPage() {
+  useEffect(() => {
+    document.title = 'Print Custom | VIBIN'
+  }, [])
+  
   const [product, setProduct] = useState({
     type: 'tee',
     color: 'black',

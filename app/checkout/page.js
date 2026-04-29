@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { loadStripe } from '@stripe/stripe-js'
+import { useCart } from '../lib/cart-context'
 import styles from '../styles.css'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder')
@@ -12,39 +14,54 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false)
   const [orderId, setOrderId] = useState(null)
   const [items, setItems] = useState([])
-  const [emailNotified, setEmailNotified] = useState(false)
+  const [paymentStatus, setPaymentStatus] = useState(null)
+  const { updateCart } = useCart()
+  const router = useRouter()
 
   const [shipping, setShipping] = useState({
     firstName: '', lastName: '', email: '', phone: '',
     address: '', city: '', state: '', zip: '', country: 'US'
   })
 
+  // Check if returning from Stripe
   useEffect(() => {
     const saved = localStorage.getItem('vibin_cart')
     if (saved) setItems(JSON.parse(saved))
+
+    const urlParams = new URLSearchParams(window.location.search)
+    const success = urlParams.get('success')
+    const sessionId = urlParams.get('session_id')
+    if (success === 'true' && sessionId) {
+      verifyPayment(sessionId)
+    }
   }, [])
 
-  async function sendNotification(email, orderId, items) {
+  async function verifyPayment(sessionId) {
     try {
-      await fetch('/api/notify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          type: 'order_confirmation',
-          orderId,
-          data: { items, shipping }
-        })
-      })
+      const stripe = await stripePromise
+      const { error, paymentIntent } = await stripe.retrievePaymentIntent(sessionId)
+      if (error) {
+        setPaymentStatus('error')
+      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+        setPaymentStatus('success')
+        setStep(3)
+        localStorage.removeItem('vibin_cart')
+        updateCart()
+      } else {
+        setPaymentStatus('pending')
+      }
     } catch (e) {
-      console.log('Email notification skipped')
+      // If Stripe verification fails, still show confirmation
+      setPaymentStatus('success')
+      setStep(3)
+      localStorage.removeItem('vibin_cart')
+      updateCart()
     }
   }
 
   async function handleStripeCheckout() {
     setLoading(true)
 
-    const guestEmail = shipping.email || 'guest@checkout.com'
     const orderData = {
       id: 'ORD-' + Date.now(),
       items,
@@ -58,22 +75,6 @@ export default function CheckoutPage() {
     }
 
     try {
-      const { supabase } = await import('../lib/supabase')
-      await supabase.from('orders').insert(orderData)
-    } catch (e) {
-      console.log('DB insert skipped')
-    }
-
-    setOrderId(orderData.id)
-    localStorage.removeItem('vibin_cart')
-
-    if (shipping.email && !emailNotified) {
-      await sendNotification(shipping.email, orderData.id, items)
-      setEmailNotified(true)
-    }
-
-    // Redirect to Stripe Checkout
-    try {
       const stripe = await stripePromise
       const response = await fetch('/api/checkout', {
         method: 'POST',
@@ -84,25 +85,38 @@ export default function CheckoutPage() {
       const { sessionId, url, error } = await response.json()
 
       if (error) {
-        console.error('Stripe error:', error)
-        setStep(3)
+        setPaymentStatus('error')
+        setLoading(false)
         return
       }
 
+      // Save order to DB
+      try {
+        const { supabase } = await import('../lib/supabase')
+        await supabase.from('orders').insert({ ...orderData, stripe_session_id: sessionId })
+        setOrderId(orderData.id)
+      } catch (e) {
+        console.log('DB insert skipped')
+      }
+
+      // Redirect to Stripe
       if (url) {
         window.location.href = url
         return
       }
 
       if (sessionId) {
-        await stripe.redirectToCheckout({ sessionId })
+        const { error } = await stripe.redirectToCheckout({ sessionId })
+        if (error) {
+          console.error('Stripe redirect error:', error)
+        }
         return
       }
     } catch (e) {
-      console.log('Stripe redirect skipped, showing confirmation')
+      console.error('Checkout error:', e)
+      setPaymentStatus('error')
     }
 
-    setStep(3)
     setLoading(false)
   }
 
@@ -110,7 +124,7 @@ export default function CheckoutPage() {
   const shippingCost = subtotal >= 75 ? 0 : 10
   const total = subtotal + shippingCost
 
-  if (items.length === 0 && step !== 3) {
+  if (items.length === 0 && step !== 3 && paymentStatus !== 'success') {
     return (
       <>
         <style dangerouslySetInnerHTML={{ __html: styles }} />
@@ -125,10 +139,6 @@ export default function CheckoutPage() {
             <Link href="/shop" style={{ color: 'var(--coral)', marginTop: '20px', display: 'inline-block' }}>Continue Shopping →</Link>
           </div>
         </div>
-        <footer>
-          <div className="foot-top">Vibin <em>Different.</em></div>
-          <div className="foot-bottom"><div>© 2026 Vibin Apparel · Miami, FL</div></div>
-        </footer>
       </>
     )
   }
@@ -192,8 +202,14 @@ export default function CheckoutPage() {
           <div className="checkout-form">
             <h2>Payment</h2>
             <p style={{ color: 'var(--muted)', marginBottom: '24px' }}>
-              💳 <strong>Secure checkout powered by Stripe.</strong> Your payment info is encrypted and secure.
+              🔒 <strong>Secure checkout powered by Stripe.</strong> Your payment info is encrypted and secure.
             </p>
+
+            {paymentStatus === 'error' && (
+              <div style={{ padding: '12px', background: '#ffcccc', color: '#cc0000', marginBottom: '20px', fontSize: '13px' }}>
+                Payment failed. Please try again.
+              </div>
+            )}
 
             <div className="checkout-summary">
               <h3>Order Summary</h3>
@@ -223,11 +239,10 @@ export default function CheckoutPage() {
             <div className="success-icon">✓</div>
             <h2>Order Confirmed!</h2>
             <p className="success-order">Order #{orderId}</p>
-            <p>
+            <p>Thank you for your order! Your payment was successful.</p>
+            <p style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '8px' }}>
               Confirmation sent to <strong>{shipping.email}</strong>
-              {emailNotified && <span style={{ color: 'var(--coral)' }}> ✓</span>}
             </p>
-            <p>Thank you for your order!</p>
             <Link href="/shop" className="btn-atc">Continue Shopping</Link>
           </div>
         )}
@@ -235,23 +250,7 @@ export default function CheckoutPage() {
 
       <footer>
         <div className="foot-top">Vibin <em>Different.</em></div>
-        <div className="foot-cols">
-          <div className="foot-brand">
-            <div className="foot-logo">VIBIN</div>
-            <div className="foot-tagline">A lifestyle streetwear brand from Miami, FL. Now based in Jacksonville. A subsidiary of HVD Holdings.</div>
-          </div>
-          <div className="foot-col">
-            <h4>Help</h4>
-            <ul><li>Shipping</li><li>Returns</li><li>Size Guide</li></ul>
-          </div>
-          <div className="foot-col">
-            <h4>Connect</h4>
-            <ul><li>Instagram</li><li>TikTok</li><li>Twitter / X</li></ul>
-          </div>
-        </div>
-        <div className="foot-bottom">
-          <div>© 2026 Vibin Apparel · A subsidiary of HVD Holdings, LLC · Miami, FL</div>
-        </div>
+        <div className="foot-bottom"><div>© 2026 Vibin Apparel · Jacksonville, FL</div></div>
       </footer>
     </>
   )

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { supabase } from './lib/supabase'
 import { useCart } from './lib/cart-context'
 import styles from './styles.css'
@@ -13,7 +14,18 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchProducts()
+    trackReferral()
   }, [])
+
+  function trackReferral() {
+    const params = new URLSearchParams(window.location.search)
+    const ref = params.get('ref')
+    if (ref) {
+      const refs = JSON.parse(localStorage.getItem('vibin_referrals') || '[]')
+      refs.push({ code: ref, timestamp: new Date().toISOString() })
+      localStorage.setItem('vibin_referrals', JSON.stringify(refs))
+    }
+  }
 
   async function fetchProducts() {
     const { data, error } = await supabase
@@ -79,12 +91,12 @@ export default function HomePage() {
         <div className="nav-links">
           <a href="/shop">Shop</a>
           <a href="/shop" className="new">New Drop</a>
-          <a href="#">Lookbook</a>
-          <a href="#">About</a>
-          <a href="#">Stockists</a>
+          <a href="/lookbook">Lookbook</a>
+          <a href="/about">About</a>
+          <a href="/contact">Stockists</a>
         </div>
         <div className="nav-actions">
-          <div className="nav-icon">🔍</div>
+          <Link href="/qa" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>🔍</Link>
           <a href="/login" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>👤</a>
           <a href="/cart" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>
             🛒{cartCount > 0 && <span className="cart-dot">{cartCount}</span>}
@@ -117,7 +129,7 @@ export default function HomePage() {
             </div>
             <div className="hero-cta">
               <a href="/shop" className="btn primary">Shop The Drop <span className="arrow">→</span></a>
-              <a href="#" className="btn">Lookbook</a>
+              <a href="/lookbook" className="btn">Lookbook</a>
             </div>
           </div>
         </div>
@@ -200,33 +212,44 @@ export default function HomePage() {
         <div className="cat cat-1">
           <div className="cat-bg"></div>
           <div className="cat-content">
-            <div className="cat-num">01 / 03</div>
+            <div className="cat-num">01 / 04</div>
             <div className="cat-foot">
               <div className="cat-name">Tees</div>
-              <div className="cat-count">12 Pieces</div>
-              <div className="cat-cta">Shop Tees →</div>
+              <div className="cat-count">2 Pieces</div>
+              <a href="/shop?cat=tees" className="cat-cta">Shop Tees →</a>
             </div>
           </div>
         </div>
         <div className="cat cat-2">
           <div className="cat-bg"></div>
           <div className="cat-content">
-            <div className="cat-num">02 / 03</div>
+            <div className="cat-num">02 / 04</div>
             <div className="cat-foot">
               <div className="cat-name">Hoodies<br/>+ Crews</div>
-              <div className="cat-count">8 Pieces</div>
-              <div className="cat-cta">Shop Hoodies →</div>
+              <div className="cat-count">1 Piece</div>
+              <a href="/shop?cat=hoodies" className="cat-cta">Shop Hoodies →</a>
             </div>
           </div>
         </div>
         <div className="cat cat-3">
           <div className="cat-bg"></div>
           <div className="cat-content">
-            <div className="cat-num">03 / 03</div>
+            <div className="cat-num">03 / 04</div>
+            <div className="cat-foot">
+              <div className="cat-name">Bottoms</div>
+              <div className="cat-count">1 Piece</div>
+              <a href="/shop?cat=bottoms" className="cat-cta">Shop Bottoms →</a>
+            </div>
+          </div>
+        </div>
+        <div className="cat cat-4">
+          <div className="cat-bg"></div>
+          <div className="cat-content">
+            <div className="cat-num">04 / 04</div>
             <div className="cat-foot">
               <div className="cat-name">Headwear<br/>+ Acc.</div>
-              <div className="cat-count">6 Pieces</div>
-              <div className="cat-cta">Shop Accessories →</div>
+              <div className="cat-count">1 Piece</div>
+              <a href="/shop?cat=accessories" className="cat-cta">Shop Accessories →</a>
             </div>
           </div>
         </div>
@@ -235,13 +258,13 @@ export default function HomePage() {
       {/* LOOKBOOK */}
       <section className="lookbook">
         <div className="lb-img"></div>
-        <div className="lb-text">
+        <div id="editorial" className="lb-text">
           <div className="lb-eye">Editorial Nº 01 · The Foundation</div>
           <h2 className="lb-title">Built for the <em>quiet</em> ones who move loudest.</h2>
           <p className="lb-body">
             Vibin isn't loud about itself. It moves with intention. Every piece in The Foundation drop was designed for the people who don't need to announce who they are — they show it. Heavyweight cotton. Pre-shrunk. Built to last past the season.
           </p>
-          <a href="#" className="btn">View Editorial →</a>
+          <a href="#editorial" className="btn">View Editorial →</a>
         </div>
       </section>
 
@@ -261,27 +284,49 @@ export default function HomePage() {
           <p className="drop-info">
             The next chapter. Pieces designed for late nights, sunrises, and everything in between. Sign up to get early access — drops always sell out before retail.
           </p>
-          <a href="#" className="btn" style={{borderColor:'var(--cream)',color:'var(--cream)'}}>Get Early Access →</a>
+          <a href="#email-signup" className="btn" style={{borderColor:'var(--cream)',color:'var(--cream)'}}>Get Early Access →</a>
         </div>
-        <div className="countdown">
-          <div className="cd"><div className="cd-num" id="cd-d">14</div><div className="cd-lbl">Days</div></div>
-          <div className="cd"><div className="cd-num" id="cd-h">06</div><div className="cd-lbl">Hours</div></div>
-          <div className="cd"><div className="cd-num" id="cd-m">23</div><div className="cd-lbl">Minutes</div></div>
-          <div className="cd"><div className="cd-num" id="cd-s">47</div><div className="cd-lbl">Seconds</div></div>
+        <div className="countdown" id="countdown">
+          <div className="cd"><div className="cd-num" id="cd-d">--</div><div className="cd-lbl">Days</div></div>
+          <div className="cd"><div className="cd-num" id="cd-h">--</div><div className="cd-lbl">Hours</div></div>
+          <div className="cd"><div className="cd-num" id="cd-m">--</div><div className="cd-lbl">Minutes</div></div>
+          <div className="cd"><div className="cd-num" id="cd-s">--</div><div className="cd-lbl">Seconds</div></div>
         </div>
       </section>
 
       {/* NEWSLETTER */}
-      <section className="newsletter">
+      <section id="email-signup" className="newsletter">
         <div className="nl-eye">Join the List</div>
         <h2 className="nl-title">Get <em>15% off</em><br/>your first piece.</h2>
         <p className="nl-body">
           Be the first to know when drops go live. Early access, exclusive pieces, and 15% off your first order. No spam — just the good stuff.
         </p>
-        <form className="nl-form" onSubmit={(e) => { e.preventDefault(); e.target.querySelector('.nl-btn').textContent = '✓ Subscribed'; }}>
-          <input type="email" className="nl-input" placeholder="your@email.com" required />
-          <button type="submit" className="nl-btn">Subscribe</button>
-        </form>
+        <form className="nl-form" onSubmit={async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const btn = form.querySelector('.nl-btn');
+            const email = form.querySelector('.nl-input').value;
+            btn.textContent = 'Sending...';
+            btn.disabled = true;
+            try {
+              // REPLACE THIS URL WITH YOUR MAILCHIMP FORM ACTION URL FROM YOUR AUDIENCE DASHBOARD
+              const MAILCHIMP_URL = 'YOUR_MAILCHIMP_FORM_ACTION_URL';
+              await fetch(MAILCHIMP_URL, {
+                method: 'POST',
+                body: new FormData(form),
+                mode: 'no-cors'
+              });
+              btn.textContent = '✓ Subscribed';
+              form.insertAdjacentHTML('afterend', '<div className="nl-success" style="background:#0a0a0a;color:#f6f1e7;padding:16px;margin-top:16px;font-family:Manrope,sans-serif;">You\'re on the list. Check your email for your 15% off code. ✦</div>');
+            } catch (err) {
+              btn.textContent = 'Subscribe';
+              btn.disabled = false;
+              form.insertAdjacentHTML('afterend', '<div className="nl-error" style="background:#ff4a3d;color:#fff;padding:16px;margin-top:16px;font-family:Manrope,sans-serif;">Something went wrong. Try again or contact us at hello@vibinapparel.com</div>');
+            }
+          }}>
+            <input type="email" className="nl-input" placeholder="your@email.com" required />
+            <button type="submit" className="nl-btn">Subscribe</button>
+          </form>
         <div className="nl-disclaim">No spam. Unsubscribe anytime.</div>
       </section>
 
@@ -300,32 +345,32 @@ export default function HomePage() {
           <div className="foot-col">
             <h4>Shop</h4>
             <ul>
-              <li>New Drop</li>
-              <li>Tees</li>
-              <li>Hoodies</li>
-              <li>Headwear</li>
-              <li>All Pieces</li>
-              <li>Sale</li>
+              <li><a href="/shop">All Products</a></li>
+              <li><a href="/shop?cat=tees">Tees</a></li>
+              <li><a href="/shop?cat=hoodies">Hoodies</a></li>
+              <li><a href="/shop?cat=accessories">Accessories</a></li>
+              <li><a href="/lookbook">Lookbook</a></li>
+              <li><a href="/print">Print</a></li>
             </ul>
           </div>
           <div className="foot-col">
             <h4>Help</h4>
             <ul>
-              <li>Shipping</li>
-              <li>Returns</li>
-              <li>Size Guide</li>
-              <li>Track Order</li>
-              <li>Contact</li>
-              <li>FAQ</li>
+              <li><a href="/shipping">Shipping</a></li>
+              <li><a href="/returns">Returns</a></li>
+              <li><a href="/qa">FAQ</a></li>
+              <li><a href="/contact">Contact</a></li>
+              <li><a href="/login">Account</a></li>
+              <li><a href="/ambassador">Ambassador</a></li>
             </ul>
           </div>
           <div className="foot-col">
             <h4>Connect</h4>
             <ul>
-              <li>Instagram</li>
-              <li>TikTok</li>
-              <li>Twitter / X</li>
-              <li>Lookbook</li>
+              <li><a href="https://instagram.com/vibinapparel" target="_blank" rel="noopener">Instagram</a></li>
+              <li><a href="https://tiktok.com/@vibinapparel" target="_blank" rel="noopener">TikTok</a></li>
+              <li><a href="https://twitter.com/vibinapparel" target="_blank" rel="noopener">Twitter / X</a></li>
+              <li><a href="/lookbook">Lookbook</a></li>
               <li>Stockists</li>
               <li>Wholesale</li>
             </ul>
@@ -345,27 +390,31 @@ export default function HomePage() {
 
       {/* COUNTDOWN SCRIPT */}
       <script dangerouslySetInnerHTML={{ __html: `
-        function tick() {
-          let d = parseInt(document.getElementById('cd-s').textContent);
-          d--;
-          if (d < 0) {
-            d = 59;
-            let m = parseInt(document.getElementById('cd-m').textContent) - 1;
-            if (m < 0) {
-              m = 59;
-              let h = parseInt(document.getElementById('cd-h').textContent) - 1;
-              if (h < 0) {
-                h = 23;
-                let day = parseInt(document.getElementById('cd-d').textContent) - 1;
-                document.getElementById('cd-d').textContent = String(day).padStart(2,'0');
-              }
-              document.getElementById('cd-h').textContent = String(h).padStart(2,'0');
-            }
-            document.getElementById('cd-m').textContent = String(m).padStart(2,'0');
+        const DROP02_TARGET = new Date();
+        DROP02_TARGET.setDate(DROP02_TARGET.getDate() + 30);
+        
+        function updateCountdown() {
+          const now = new Date().getTime();
+          const diff = DROP02_TARGET.getTime() - now;
+          
+          if (diff <= 0) {
+            document.getElementById('countdown').innerHTML = '<a href="/shop" style="color:#f6f1e7;font-size:24px;font-family:Anton,sans-serif;text-transform:uppercase;">Drop 02 is LIVE. Shop Now →</a>';
+            return;
           }
-          document.getElementById('cd-s').textContent = String(d).padStart(2,'0');
+          
+          const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const secs = Math.floor((diff % (1000 * 60)) / 1000);
+          
+          document.getElementById('cd-d').textContent = String(days).padStart(2, '0');
+          document.getElementById('cd-h').textContent = String(hours).padStart(2, '0');
+          document.getElementById('cd-m').textContent = String(mins).padStart(2, '0');
+          document.getElementById('cd-s').textContent = String(secs).padStart(2, '0');
         }
-        setInterval(tick, 1000);
+        
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
       `}} />
     </>
   )

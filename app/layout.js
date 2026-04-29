@@ -16,6 +16,19 @@ export default function RootLayout({ children }) {
         <CartProvider>
           {children}
           <SpeedInsights />
+          <script src="/chatbot.js" strategy="lazyOnload" />
+          <script dangerouslySetInnerHTML={{ __html: `
+            window.addEventListener('load', function() {
+              if (!document.getElementById('vibin-chat-bubble')) {
+                const bubble = document.createElement('div');
+                bubble.id = 'vibin-chat-bubble';
+                bubble.innerHTML = '💬';
+                bubble.style.cssText = 'position:fixed;bottom:24px;right:24px;width:60px;height:60px;border-radius:50%;background:#ff4a3d;color:#f6f1e7;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;z-index:1000;border:none;box-shadow:0 4px 12px rgba(255,74,61,0.3);';
+                document.body.appendChild(bubble);
+                bubble.onclick = function() { alert('Support chat coming soon! For now, email returns@vibinstore.com'); };
+              }
+            });
+          ` }} />
         </CartProvider>
       </body>
     </html>

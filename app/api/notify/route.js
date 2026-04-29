@@ -1,33 +1,28 @@
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { email, type, orderId, data } = body
+    const { email, type, data } = body
 
-    const { createClient } = await import('@supabase/supabase-js')
-    const supabase = createClient(
-      'https://grbwnjnngzcsjlubcmtp.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYnduam5uZ3pjc2psdWJjbXRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNTgzMDEsImV4cCI6MjA5MjkzNDMwMX0.SYKFZJ0XVua0JmZ-tkaNhec2M3KtG3tS5vj_1Nl261c'
-    )
+    // For now, just log and return success
+    // In production, use Resend, SendGrid, or similar
+    console.log('Notification:', { email, type, data })
 
-    // Store notification in database
-    const { data: notification, error } = await supabase
-      .from('notifications')
-      .insert({
-        type,
-        email,
-        order_id: orderId,
-        data: JSON.stringify(data),
-        status: 'pending',
-        created_at: new Date().toISOString()
-      })
-      .select()
-      .single()
+    // Example: Send email (uncomment when you have an email service)
+    // await fetch('https://api.resend.com/emails', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     'Authorization': `Bearer ${process.env.RESEND_API_KEY}`
+    //   },
+    //   body: JSON.stringify({
+    //     from: 'Vibin Support <support@vibinstore.com>',
+    //     to: [email],
+    //     subject: `Vibin Support - ${type.replace('_', ' ')}`,
+    //     html: `<p>Your request has been ${type.includes('approved') ? 'approved' : 'received'}.</p><pre>${JSON.stringify(data, null, 2)}</pre>`
+    //   })
+    // })
 
-    if (error) {
-      console.error('Notification error:', error)
-    }
-
-    return Response.json({ success: true, notification })
+    return Response.json({ success: true })
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 })
   }

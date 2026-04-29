@@ -27,12 +27,12 @@ export default function AboutPage() {
         <div className="nav-links">
           <a href="/shop">Shop</a>
           <a href="/shop" className="new">New Drop</a>
-          <a href="#">Lookbook</a>
+<a href="/lookbook">Lookbook</a>
           <a href="/about">About</a>
-          <a href="#">Stockists</a>
+          <a href="/contact">Stockists</a>
         </div>
         <div className="nav-actions">
-          <div className="nav-icon">🔍</div>
+          <a href="/qa" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>🔍</a>
           <a href="/login" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>👤</a>
           <a href="/cart" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>
             🛒{cartCount > 0 && <span className="cart-dot">{cartCount}</span>}
@@ -135,7 +135,28 @@ export default function AboutPage() {
           <p className="nl-body" style={{textAlign:'center'}}>
             Be the first to know when drops go live. Early access, exclusive pieces, and 15% off your first order.
           </p>
-          <form className="nl-form" style={{marginTop:'30px'}} onSubmit={(e) => { e.preventDefault(); e.target.querySelector('.nl-btn').textContent = '✓ Subscribed'; }}>
+          <form className="nl-form" style={{marginTop:'30px'}} onSubmit={async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const btn = form.querySelector('.nl-btn');
+            btn.textContent = 'Sending...';
+            btn.disabled = true;
+            try {
+              // REPLACE THIS URL WITH YOUR MAILCHIMP FORM ACTION URL FROM YOUR AUDIENCE DASHBOARD
+              const MAILCHIMP_URL = 'YOUR_MAILCHIMP_FORM_ACTION_URL';
+              await fetch(MAILCHIMP_URL, {
+                method: 'POST',
+                body: new FormData(form),
+                mode: 'no-cors'
+              });
+              btn.textContent = '✓ Subscribed';
+              form.insertAdjacentHTML('afterend', '<div style="background:#0a0a0a;color:#f6f1e7;padding:16px;margin-top:16px;text-align:center;">You\'re on the list. Check your email for your 15% off code. ✦</div>');
+            } catch (err) {
+              btn.textContent = 'Subscribe';
+              btn.disabled = false;
+              form.insertAdjacentHTML('afterend', '<div style="background:#ff4a3d;color:#fff;padding:16px;margin-top:16px;text-align:center;">Something went wrong. Try again or contact us at hello@vibinapparel.com</div>');
+            }
+          }}>
             <input type="email" className="nl-input" placeholder="your@email.com" required />
             <button type="submit" className="nl-btn">Subscribe</button>
           </form>
@@ -157,34 +178,34 @@ export default function AboutPage() {
           <div className="foot-col">
             <h4>Shop</h4>
             <ul>
-              <li>New Drop</li>
-              <li>Tees</li>
-              <li>Hoodies</li>
-              <li>Headwear</li>
-              <li>All Pieces</li>
-              <li>Sale</li>
+              <li><a href="/shop">All Products</a></li>
+              <li><a href="/shop?cat=tees">Tees</a></li>
+              <li><a href="/shop?cat=hoodies">Hoodies</a></li>
+              <li><a href="/shop?cat=accessories">Accessories</a></li>
+              <li><a href="/lookbook">Lookbook</a></li>
+              <li><a href="/print">Print</a></li>
             </ul>
           </div>
           <div className="foot-col">
             <h4>Help</h4>
             <ul>
-              <li>Shipping</li>
-              <li>Returns</li>
-              <li>Size Guide</li>
-              <li>Track Order</li>
-              <li>Contact</li>
-              <li>FAQ</li>
+              <li><a href="/shipping">Shipping</a></li>
+              <li><a href="/returns">Returns</a></li>
+              <li><a href="/qa">FAQ</a></li>
+              <li><a href="/contact">Contact</a></li>
+              <li><a href="/login">Account</a></li>
+              <li><a href="/ambassador">Ambassador</a></li>
             </ul>
           </div>
           <div className="foot-col">
             <h4>Connect</h4>
             <ul>
-              <li>Instagram</li>
-              <li>TikTok</li>
-              <li>Twitter / X</li>
-              <li>Lookbook</li>
-              <li>Stockists</li>
-              <li>Wholesale</li>
+              <li><a href="https://instagram.com/vibinapparel" target="_blank" rel="noopener">Instagram</a></li>
+              <li><a href="https://tiktok.com/@vibinapparel" target="_blank" rel="noopener">TikTok</a></li>
+              <li><a href="https://twitter.com/vibinapparel" target="_blank" rel="noopener">Twitter / X</a></li>
+              <li><a href="/lookbook">Lookbook</a></li>
+              <li><a href="/contact">Stockists</a></li>
+              <li><a href="/contact">Wholesale</a></li>
             </ul>
           </div>
         </div>

@@ -35,7 +35,8 @@ export default function LoginPage() {
     if (ambassadorMode) {
       setTimeout(() => {
         if (ambCode.length >= 4) {
-          localStorage.setItem('vibin_ambassador', JSON.stringify({ code: ambCode, status: 'active' }))
+          const ambData = { code: ambCode.toUpperCase(), status: 'active', createdAt: new Date().toISOString() }
+          localStorage.setItem('vibin_ambassador', JSON.stringify(ambData))
           setMessage('Ambassador logged in!')
           setTimeout(() => router.push('/ambassador'), 1000)
         } else {
@@ -48,17 +49,22 @@ export default function LoginPage() {
 
     setTimeout(() => {
       if (isRegister) {
+        const refCode = 'VIBIN-' + Math.random().toString(36).substring(2, 8).toUpperCase()
         const newUser = {
           id: 'user_' + Date.now(),
           email,
           firstName,
           lastName,
+          ambassadorCode: refCode,
           createdAt: new Date().toISOString()
         }
         localStorage.setItem('vibin_user', JSON.stringify(newUser))
-        setUser(newUser)
-        setMessage('Account created!')
-        setTimeout(() => router.push('/profile'), 1000)
+        
+        const ambData = { code: refCode, status: 'active', createdAt: new Date().toISOString() }
+        localStorage.setItem('vibin_ambassador', JSON.stringify(ambData))
+        
+        setMessage('Account created! Redirecting...')
+        window.location.href = '/ambassador'
       } else {
         if (email && password.length >= 6) {
           const loggedInUser = {
@@ -68,11 +74,8 @@ export default function LoginPage() {
             lastName: ''
           }
           localStorage.setItem('vibin_user', JSON.stringify(loggedInUser))
-          setUser(loggedInUser)
-          setMessage('Welcome back!')
-          setTimeout(() => router.push('/profile'), 1000)
-        } else {
-          setMessage('Invalid email or password (min 6 chars)')
+          setMessage('Welcome back! Redirecting...')
+          window.location.href = '/profile'
         }
       }
       setLoading(false)

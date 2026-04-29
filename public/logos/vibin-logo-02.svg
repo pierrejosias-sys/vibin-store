@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 80">
+  <defs>
+    <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#000"/>
+      <stop offset="100%" style="stop-color:#222"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="80" fill="#000"/>
+  <text x="10" y="62" font-family="Arial Black, Impact, sans-serif" font-size="52" font-weight="900" fill="#f6f1e7" letter-spacing="-2">
+    <tspan fill="#ff4a3d">V</tspan>IBIN
+  </text>
+  <polygon points="260,20 270,35 255,35" fill="#ff4a3d"/>
+  <line x1="255" y1="20" x2="275" y2="20" stroke="#ff4a3d" stroke-width="3"/>
+</svg>
