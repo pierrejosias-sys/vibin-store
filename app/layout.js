@@ -1,5 +1,6 @@
 import './styles.css'
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from '@vercel/analytics/next'
 import { CartProvider } from './lib/cart-context'
 
 export default function RootLayout({ children }) {
@@ -16,6 +17,7 @@ export default function RootLayout({ children }) {
         <CartProvider>
           {children}
           <SpeedInsights />
+          <Analytics />
           <script src="/chatbot.js" strategy="lazyOnload" />
           <script dangerouslySetInnerHTML={{ __html: `
             window.addEventListener('load', function() {
