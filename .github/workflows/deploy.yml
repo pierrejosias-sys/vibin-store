@@ -17,7 +17,7 @@ jobs:
         run: npm i -g vercel@latest
       
       - name: Deploy to Vercel
-        run: vercel deploy --prod --token ${{ secrets.VERCEL_TOKEN }} --org ${{ secrets.VERCEL_ORG_ID }} --project ${{ secrets.VERCEL_PROJECT_ID }}
+        run: vercel deploy --prod --token ${{ secrets.VERCEL_TOKEN }} -o ${{ secrets.VERCEL_ORG_ID }} -p ${{ secrets.VERCEL_PROJECT_ID }}
       
       - name: Post deployment notification
         if: always()
