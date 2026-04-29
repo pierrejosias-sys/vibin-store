@@ -51,8 +51,8 @@ export default function AdminSupportPage() {
            Support <em style={{fontStyle:'italic',color:'var(--coral)'}}>Verification</em>
          </h1>
          <img 
-           src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=300&fit=crop" 
-           alt="Admin dashboard"
+           src="https://images.unsplash.com/photo-1423666639041-f56000c27a9a?w=1200&h=300&fit=crop" 
+           alt="Customer support"
            style={{width:'100%',height:'300px',objectFit:'cover',marginBottom:'24px',borderRadius:'4px'}}
          />
          {requests.length === 0 ? (
