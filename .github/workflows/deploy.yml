@@ -30,46 +30,14 @@ jobs:
             echo "No build script found, skipping build step"
           fi
       
-      - name: Deploy to hosting platform
-        run: |
-          # CONFIGURE YOUR DEPLOYMENT HERE - Choose one of the options below:
-          
-          # OPTION 1: Netlify Deployment
-          # Uses nwtgck/actions-netlify action
-          # Required secrets: NETLIFY_AUTH_TOKEN, NETLIFY_SITE_ID
-          # Uncomment below to use:
-          # - uses: nwtgck/actions-netlify@v2.1
-          #   with:
-          #     publish-dir: './dist'
-          #     production-branch: main
-          #     github-token: ${{ secrets.GITHUB_TOKEN }}
-          #     deploy-message: "Deploy from GitHub Actions"
-          #     enable-pull-request-comment: false
-          #     overwrites-pull-request-comment: false
-          #   env:
-          #     NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          #     NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-          
-          # OPTION 2: Vercel Deployment
-          # Uses amondnet/vercel-action
-          # Required secrets: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID
-          # Uncomment below to use:
-          # - uses: amondnet/vercel-action@v25
-          #   with:
-          #     vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          #     vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          #     vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          #     vercel-args: '--prod'
-          
-          # OPTION 3: GitHub Pages
-          # Uses peaceiris/actions-gh-pages
-          # Uncomment below to use:
-          # - uses: peaceiris/actions-gh-pages@v3
-          #   with:
-          #     github_token: ${{ secrets.GITHUB_TOKEN }}
-          #     publish_dir: ./dist  # or ./build or ./
-          
-          echo "Deployment step - configure one of the options above"
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Post deployment notification
         if: always()
