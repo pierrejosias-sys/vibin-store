@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { supabase } from '../lib/supabase'
 import styles from '../styles.css'
 
 export default function ProfilePage() {
@@ -15,15 +16,15 @@ export default function ProfilePage() {
     checkUser()
   }, [])
 
-  function checkUser() {
-    const savedUser = localStorage.getItem('vibin_user')
-    
-    if (!savedUser) {
+  async function checkUser() {
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
       router.push('/login')
       return
     }
-    
-    setUser(JSON.parse(savedUser))
+
+    setUser(user)
     setOrders([
       { id: 'ORD-001', date: '2026-04-15', status: 'Delivered', total: 96, items: ['Foundation Tee', 'Vol 01 Hoodie'] },
       { id: 'ORD-002', date: '2026-03-22', status: 'Delivered', total: 48, items: ['Move Different Tee'] },
@@ -32,7 +33,7 @@ export default function ProfilePage() {
   }
 
   async function handleLogout() {
-    localStorage.removeItem('vibin_user')
+    await supabase.auth.signOut()
     router.push('/login')
   }
 
@@ -135,10 +136,26 @@ export default function ProfilePage() {
         <button className="btn-logout" onClick={handleLogout}>Sign Out →</button>
       </div>
 
-      <footer>
-        <div className="foot-logo">VIBIN</div>
-        <div className="foot-tag">Apparel for those who move different · Jacksonville, FL</div>
-      </footer>
+        <footer>
+          <div className="foot-top">Vibin <em>Different.</em></div>
+          <div className="foot-cols">
+            <div className="foot-brand">
+              <div className="foot-logo">VIBIN</div>
+              <div className="foot-tagline">A lifestyle streetwear brand from Miami, FL. Now based in Jacksonville. A subsidiary of HVD Holdings.</div>
+            </div>
+            <div className="foot-col">
+              <h4>Help</h4>
+              <ul><li>Shipping</li><li>Returns</li><li>Size Guide</li><li>Track Order</li></ul>
+            </div>
+            <div className="foot-col">
+              <h4>Connect</h4>
+              <ul><li>Instagram</li><li>TikTok</li><li>Twitter / X</li><li>Lookbook</li></ul>
+            </div>
+          </div>
+          <div className="foot-bottom">
+            <div>© 2026 Vibin Apparel · A subsidiary of HVD Holdings, LLC · Miami, FL</div>
+          </div>
+        </footer>
     </>
   )
 }

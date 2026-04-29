@@ -191,9 +191,26 @@ export default function CheckoutPage() {
         )}
       </div>
 
-      <footer>
-        <div className="foot-logo">VIBIN</div>
-      </footer>
+        <footer>
+          <div className="foot-top">Vibin <em>Different.</em></div>
+          <div className="foot-cols">
+            <div className="foot-brand">
+              <div className="foot-logo">VIBIN</div>
+              <div className="foot-tagline">A lifestyle streetwear brand from Miami, FL. Now based in Jacksonville. A subsidiary of HVD Holdings.</div>
+            </div>
+            <div className="foot-col">
+              <h4>Help</h4>
+              <ul><li>Shipping</li><li>Returns</li><li>Size Guide</li><li>Track Order</li></ul>
+            </div>
+            <div className="foot-col">
+              <h4>Connect</h4>
+              <ul><li>Instagram</li><li>TikTok</li><li>Twitter / X</li><li>Lookbook</li></ul>
+            </div>
+          </div>
+          <div className="foot-bottom">
+            <div>© 2026 Vibin Apparel · A subsidiary of HVD Holdings, LLC · Miami, FL</div>
+          </div>
+        </footer>
     </>
   )
 }

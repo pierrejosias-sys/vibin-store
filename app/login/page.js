@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { supabase } from '../lib/supabase'
 import styles from '../styles.css'
 
 export default function LoginPage() {
@@ -20,64 +21,61 @@ export default function LoginPage() {
   const router = useRouter()
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('vibin_user')
-    if (savedUser) {
-      setUser(JSON.parse(savedUser))
+    checkUser()
+  }, [])
+
+  async function checkUser() {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      setUser(user)
       router.push('/profile')
     }
-  }, [router])
+  }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     setLoading(true)
     setMessage('')
 
     if (ambassadorMode) {
-      setTimeout(() => {
-        if (ambCode.length >= 4) {
-          localStorage.setItem('vibin_ambassador', JSON.stringify({ code: ambCode, status: 'active' }))
-          setMessage('Ambassador logged in!')
-          setTimeout(() => router.push('/ambassador'), 1000)
-        } else {
-          setMessage('Invalid ambassador code')
-        }
-        setLoading(false)
-      }, 1000)
+      if (ambCode.length >= 4) {
+        localStorage.setItem('vibin_ambassador', JSON.stringify({ code: ambCode, status: 'active' }))
+        setMessage('Ambassador logged in!')
+        setTimeout(() => router.push('/ambassador'), 1000)
+      } else {
+        setMessage('Invalid ambassador code')
+      }
+      setLoading(false)
       return
     }
 
-    setTimeout(() => {
-      if (isRegister) {
-        const newUser = {
-          id: 'user_' + Date.now(),
-          email,
-          firstName,
-          lastName,
-          newsletter: true,
-          createdAt: new Date().toISOString()
+    if (isRegister) {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { first_name: firstName, last_name: lastName }
         }
-        localStorage.setItem('vibin_user', JSON.stringify(newUser))
-        setUser(newUser)
-        setMessage('Account created!')
-        setTimeout(() => router.push('/profile'), 1000)
+      })
+      if (error) {
+        setMessage(error.message)
       } else {
-        if (email && password.length >= 6) {
-          const loggedInUser = {
-            id: 'user_' + Date.now(),
-            email,
-            firstName: 'Demo',
-            lastName: 'User'
-          }
-          localStorage.setItem('vibin_user', JSON.stringify(loggedInUser))
-          setUser(loggedInUser)
-          setMessage('Welcome back!')
-          setTimeout(() => router.push('/profile'), 1000)
-        } else {
-          setMessage('Invalid email or password (min 6 chars)')
-        }
+        setMessage('Account created! Check your email.')
+        setTimeout(() => router.push('/profile'), 2000)
       }
-      setLoading(false)
-    }, 1000)
+    } else {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+      if (error) {
+        setMessage(error.message)
+      } else {
+        setMessage('Welcome back!')
+        setTimeout(() => router.push('/profile'), 1000)
+      }
+    }
+    setLoading(false)
   }
 
   function handleUnsubscribe(e) {
@@ -93,7 +91,7 @@ export default function LoginPage() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: styles }} />
-      
+
       <nav className="dark">
         <Link href="/" className="logo">VIBIN</Link>
         <Link href="/" className="back">← Back to Shop</Link>
@@ -106,7 +104,7 @@ export default function LoginPage() {
             <div className="sl-eye">{ambassadorMode ? 'Ambassador' : 'Member'} Access</div>
             <h1 className="sl-title">Move<br/><em>different.</em></h1>
             <p className="sl-body">
-              {ambassadorMode 
+              {ambassadorMode
                 ? 'Access your ambassador dashboard. Track earnings, share links, and earn commission on every sale.'
                 : 'Join the inside circle. Early access to drops, member-only pieces, and the people who actually move the brand forward.'}
             </p>
@@ -245,7 +243,9 @@ export default function LoginPage() {
 
                 <form onSubmit={handleSubmit}>
                   <div className="field">
-                    <div className="field-label">Email</div>
+                    <div className="field-label">
+                      <span>Email</span>
+                    </div>
                     <input className="field-input" type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
                   </div>
                   <div className="field">
@@ -267,18 +267,20 @@ export default function LoginPage() {
             )}
 
             {message && (
-              <div style={{ marginTop: '16px', padding: '12px', background: message.includes('error') || message.includes('Invalid') || message.includes('Invalid') || message.includes('unsubscribed') ? '#ffcccc' : '#ccffcc', color: message.includes('error') || message.includes('Invalid') ? '#cc0000' : '#006600' }}>
+              <div style={{ marginTop: '16px', padding: '12px', background: message.includes('error') || message.includes('Invalid') || message.includes('unsubscribed') ? '#ffcccc' : '#ccffcc', color: message.includes('error') || message.includes('Invalid') ? '#cc0000' : '#006600' }}>
                 {message}
               </div>
             )}
 
-            <a href="/ambassador" className="amb-strip" onClick={() => setAmbassadorMode(true)}>
+            {!ambassadorMode && !showUnsubscribe && (
+              <a href="#" className="amb-strip" onClick={() => setAmbassadorMode(true)}>
                 <div className="amb-strip-left">
                   Want to earn for sharing Vibin?
                   <strong>Ambassador Login →</strong>
                 </div>
                 <div className="amb-strip-arrow">→</div>
               </a>
+            )}
 
             {!ambassadorMode && !isRegister && (
               <div style={{ marginTop: '16px', textAlign: 'center' }}>
