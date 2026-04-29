@@ -51,8 +51,8 @@ export default function AdminSupportPage() {
            Support <em style={{fontStyle:'italic',color:'var(--coral)'}}>Verification</em>
          </h1>
          <img 
-           src="https://images.unsplash.com/photo-1423666639041-f56000c27a9a?w=1200&h=300&fit=crop" 
-           alt="Customer support"
+           src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=1200&h=300&fit=crop" 
+           alt="Different colored tees"
            style={{width:'100%',height:'300px',objectFit:'cover',marginBottom:'24px',borderRadius:'4px'}}
          />
          {requests.length === 0 ? (
