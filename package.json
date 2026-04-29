@@ -1,0 +1,22 @@
+{
+  "name": "vibin-store",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@stripe/stripe-js": "^9.3.1",
+    "@supabase/supabase-js": "^2.105.1",
+    "next": "^16.2.4",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "stripe": "^22.1.0"
+  },
+  "devDependencies": {
+    "surge": "^0.27.3",
+    "vercel": "^52.0.0"
+  }
+}
