@@ -31,14 +31,22 @@ jobs:
             echo "No build script found, skipping build step"
           fi
       
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Deploy to Vercel via API
+        run: |
+          echo "Deploying to Vercel..."
+          curl -X POST "https://api.vercel.com/v13/deployments" \
+            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "name": "vibin-store",
+              "gitSource": {
+                "type": "github",
+                "repoId": "pierrejosias-sys/vibin-store",
+                "ref": "main"
+              },
+              "projectId": "${{ secrets.VERCEL_PROJECT_ID }}",
+              "target": "production"
+            }'
       
       - name: Post deployment notification
         if: always()
