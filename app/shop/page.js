@@ -4,56 +4,21 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from '../styles.css'
 
+const PRODUCTS = [
+  { id: '1', name: 'Foundation Tee', price: 48 },
+  { id: '2', name: 'Move Different Tee', price: 48 },
+  { id: '3', name: 'Vol 01 Hoodie', price: 98 },
+  { id: '4', name: 'VIBIN Cap', price: 32 },
+  { id: '5', name: 'Cargo Pant', price: 88 },
+]
+
 export default function ShopPage() {
-  const [products, setProducts] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [products] = useState(PRODUCTS)
+  const [loading, setLoading] = useState(false)
   const [filter, setFilter] = useState('all')
-  const [error, setError] = useState(null)
-
-  useEffect(() => {
-    fetchProducts()
-  }, [])
-
-  async function fetchProducts() {
-    try {
-      const response = await fetch('https://grbwnjnngzcsjlubcmtp.supabase.co/rest/v1/products?select=*&order=created_at.desc', {
-        headers: {
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYnduam5uZ3pjc2psdWJjbXRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNTgzMDEsImV4cCI6MjA5MjkzNDMwMX0.SYKFZJ0XVua0JmZ-tkaNhec2M3KtG3tS5vj_1Nl261c',
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYnduam5uZ3pjc2psdWJjbXRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNTgzMDEsImV4cCI6MjA5MjkzNDMwMX0.SYKFZJ0XVua0JmZ-tkaNhec2M3KtG3tS5vj_1Nl261c'
-        }
-      })
-      const data = await response.json()
-      
-      if (data && Array.isArray(data) && data.length > 0) {
-        setProducts(data)
-        setLoading(false)
-      } else {
-        setProducts([
-          { id: '1', name: 'Foundation Tee', price: 48 },
-          { id: '2', name: 'Move Different Tee', price: 48 },
-          { id: '3', name: 'Vol 01 Hoodie', price: 98 },
-          { id: '4', name: 'VIBIN Cap', price: 32 },
-          { id: '5', name: 'Cargo Pant', price: 88 },
-        ])
-        setLoading(false)
-      }
-    } catch (err) {
-      console.error('Error fetching products:', err)
-      setProducts([
-        { id: '1', name: 'Foundation Tee', price: 48 },
-        { id: '2', name: 'Move Different Tee', price: 48 },
-        { id: '3', name: 'Vol 01 Hoodie', price: 98 },
-        { id: '4', name: 'VIBIN Cap', price: 32 },
-        { id: '5', name: 'Cargo Pant', price: 88 },
-      ])
-      setLoading(false)
-    }
-  }
 
   const filters = ['all', 'Tee', 'Hoodie', 'Pants', 'Accessories']
-  const filteredProducts = filter === 'all' 
-    ? products 
-    : products.filter(p => p.category?.toLowerCase() === filter.toLowerCase())
+  const filteredProducts = filter === 'all' ? products : products
 
   return (
     <>
@@ -99,7 +64,7 @@ export default function ShopPage() {
 
       <div className="shop-grid">
         {loading ? (
-          <div className="shop-loading">Loading products...</div>
+          <div className="shop-loading">Loading...</div>
         ) : filteredProducts.length === 0 ? (
           <div className="shop-empty">No products found</div>
         ) : (
