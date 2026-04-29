@@ -17,7 +17,9 @@ jobs:
         run: npm i -g vercel@latest
       
       - name: Deploy to Vercel
-        run: vercel deploy --prod --yes --token ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          vercel deploy --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
+          vercel alias set vibinapparel.com --token ${{ secrets.VERCEL_TOKEN }}
       
       - name: Post deployment notification
         if: always()
