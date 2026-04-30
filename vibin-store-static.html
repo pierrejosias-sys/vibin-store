@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VIBIN · Move Different</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ink:#0a0a0a;--cream:#f6f1e7;--coral:#ff4a3d;--muted:#888;--line:#1e1e1e;
+  --ink2:#1a1a1a;--cream2:#ebe5d9;
+}
+body{background:var(--ink);color:var(--cream);font-family:'Manrope',sans-serif;overflow-x:hidden}
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap');
+
+/* PROMO BAR */
+.promo{background:var(--ink);border-bottom:1px solid var(--line);overflow:hidden;padding:8px 0;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+.promo-track{display:flex;gap:40px;animation:scroll 30s linear infinite;white-space:nowrap}
+.promo-track span{padding:0 20px}
+@keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* NAV */
+nav{display:flex;justify-content:space-between;align-items:center;padding:20px 40px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--ink);z-index:100}
+.logo{font-family:'Anton',sans-serif;font-size:32px;color:var(--cream);text-decoration:none;text-transform:uppercase;letter-spacing:-.01em}
+.nav-links{display:flex;gap:30px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:13px;letter-spacing:.1em;text-transform:uppercase;transition:color .2s}
+.nav-links a:hover,.nav-links a.new{color:var(--coral)}
+.nav-actions{display:flex;gap:20px;align-items:center}
+.nav-icon{color:var(--cream);text-decoration:none;font-size:18px;position:relative}
+.cart-dot{position:absolute;top:-6px;right:-8px;background:var(--coral);color:var(--cream);font-size:9px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace}
+
+/* HERO */
+.hero{position:relative;height:100vh;min-height:600px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.hero-img{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,10,.3),rgba(10,10,10,.8)),url('https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1600&q=80');background-size:cover;background-position:center 30%;filter:contrast(1.05) saturate(.95)}
+.hero-grain{position:absolute;inset:0;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")}
+.hero-content{position:relative;z-index:2;text-align:center;max-width:900px;padding:0 40px}
+.hero-top{display:flex;justify-content:space-between;margin-bottom:30px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.15em;color:var(--muted)}
+.hero-title{font-family:'Anton',sans-serif;font-size:clamp(60px,10vw,140px);line-height:.85;letter-spacing:-.005em;text-transform:uppercase;margin-bottom:20px}
+.hero-title span{display:block}
+.vt-1{color:var(--cream)}
+.vt-2{color:var(--coral);font-style:italic;text-shadow:0 0 60px rgba(255,74,61,.3)}
+.hero-tag{font-size:14px;line-height:1.7;color:rgba(246,241,231,.8);max-width:500px;margin:0 auto 30px}
+.hero-cta{display:flex;gap:15px;justify-content:center}
+.btn{display:inline-block;padding:16px 32px;border:1px solid var(--line);color:var(--cream);text-decoration:none;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;transition:all .2s;cursor:pointer;background:transparent}
+.btn.primary{background:var(--coral);border-color:var(--coral)}
+.btn:hover{border-color:var(--coral);color:var(--coral)}
+.btn.primary:hover{background:transparent;color:var(--coral)}
+.arrow{margin-left:8px}
+
+/* MARQUEE */
+.marquee{background:var(--cream2);color:var(--ink);overflow:hidden;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.marquee-track{display:flex;gap:60px;animation:scroll 25s linear infinite;white-space:nowrap;font-family:'Anton',sans-serif;font-size:24px;text-transform:uppercase;letter-spacing:-.005em}
+.marquee-track em{color:var(--coral);font-style:italic}
+
+/* SECTIONS */
+.sec-hdr{display:flex;justify-content:space-between;align-items:flex-end;padding:60px 60px 30px;max-width:1400px;margin:0 auto}
+.sec-eye{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--coral);margin-bottom:8px}
+.sec-title{font-family:'Anton',sans-serif;font-size:clamp(36px,5vw,56px);text-transform:uppercase;letter-spacing:-.005em;line-height:.9}
+.sec-title em{font-style:italic;color:var(--coral)}
+.sec-link{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line);padding-bottom:2px;transition:color .2s}
+.sec-link:hover{color:var(--coral)}
+
+/* PRODUCTS */
+.products{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);max-width:1400px;margin:0 auto;padding:0 60px 60px}
+.prod{background:var(--ink);padding:24px;position:relative;transition:border-color .2s}
+.prod:hover{border:1px solid var(--coral)}
+.prod-img{aspect-ratio:3/4;background:var(--ink2);display:flex;align-items:center;justify-content:center;margin-bottom:16px;position:relative;overflow:hidden}
+.prod-graphic{font-family:'Anton',sans-serif;font-size:28px;text-transform:uppercase;letter-spacing:-.01em;text-align:center;line-height:.85}
+.prod-graphic em{font-style:italic;color:var(--coral);font-size:18px;display:block}
+.prod-tag-img{position:absolute;top:12px;left:12px;background:var(--coral);color:var(--cream);font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;padding:4px 8px}
+.prod-quick{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:var(--coral);color:var(--cream);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:8px 16px;opacity:0;transition:opacity .2s;cursor:pointer;border:none}
+.prod:hover .prod-quick{opacity:1}
+.prod-info{display:flex;justify-content:space-between;align-items:flex-end}
+.prod-name{font-size:14px;font-weight:600}
+.prod-cat{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:4px}
+.prod-price{font-family:'Anton',sans-serif;font-size:24px}
+
+/* CATEGORIES */
+.categories{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);max-width:1400px;margin:0 auto;padding:0 60px 60px}
+.cat{position:relative;aspect-ratio:4/5;overflow:hidden;cursor:pointer}
+.cat-bg{position:absolute;inset:0;background:var(--ink2)}
+.cat-content{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;justify-content:flex-end;padding:30px}
+.cat-num{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.cat-name{font-family:'Anton',sans-serif;font-size:32px;text-transform:uppercase;letter-spacing:-.005em;line:.9;margin-bottom:8px}
+.cat-count{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px}
+.cat-cta{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--coral);text-decoration:none;border-bottom:1px solid var(--coral);padding-bottom:2px}
+
+/* LOOKBOOK */
+.lookbook{position:relative;height:80vh;min-height:500px;display:flex;align-items:center;overflow:hidden}
+.lb-img{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,10,.4),rgba(10,10,10,.9)),url('https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=1600&q=80');background-size:cover;background-position:center}
+.lb-text{position:relative;z-index:2;max-width:700px;padding:0 60px}
+.lb-eye{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--coral);margin-bottom:16px}
+.lb-title{font-family:'Anton',sans-serif;font-size:clamp(36px,5vw,56px);text-transform:uppercase;letter-spacing:-.005em;line-height:.9;margin-bottom:20px}
+.lb-title em{font-style:italic;color:var(--coral)}
+.lb-body{font-size:15px;line-height:1.7;color:rgba(246,241,231,.8);margin-bottom:30px}
+
+/* MANIFESTO */
+.manifesto{background:var(--coral);color:var(--cream);padding:80px 60px;text-align:center}
+.man-text{font-family:'Anton',sans-serif;font-size:clamp(36px,5vw,64px);text-transform:uppercase;letter-spacing:-.005em;line-height:.85;margin-bottom:16px}
+.man-text em{font-style:italic;display:block;font-size:clamp(24px,3vw,36px)}
+.man-credit{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.7}
+
+/* DROP BLOCK */
+.drop-block{display:grid;grid-template-columns:1fr 1fr;gap:60px;padding:100px 60px;max-width:1400px;margin:0 auto;align-items:center}
+.drop-eye{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--coral);margin-bottom:16px}
+.drop-title{font-family:'Anton',sans-serif;font-size:clamp(48px,6vw,80px);text-transform:uppercase;letter-spacing:-.005em;line-height:.85;margin-bottom:20px}
+.drop-title em{font-style:italic;color:var(--coral)}
+.drop-info{font-size:15px;line-height:1.7;color:var(--muted);margin-bottom:30px}
+.countdown{display:flex;gap:20px}
+.cd{background:var(--ink2);border:1px solid var(--line);padding:20px;text-align:center;flex:1}
+.cd-num{font-family:'Anton',sans-serif;font-size:48px;text-transform:uppercase;line-height:.85}
+.cd-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+
+/* NEWSLETTER */
+.newsletter{background:var(--cream2);color:var(--ink);padding:100px 60px;text-align:center}
+.nl-eye{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--coral);margin-bottom:16px}
+.nl-title{font-family:'Anton',sans-serif;font-size:clamp(36px,5vw,56px);text-transform:uppercase;letter-spacing:-.005em;line-height:.85;margin-bottom:20px}
+.nl-title em{font-style:italic;color:var(--coral)}
+.nl-body{font-size:15px;line-height:1.7;max-width:500px;margin:0 auto 30px;color:var(--muted)}
+.nl-form{display:flex;gap:10px;max-width:500px;margin:0 auto}
+.nl-input{flex:1;padding:16px;background:var(--cream);border:1px solid var(--line);border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--ink)}
+.nl-btn{padding:16px 32px;background:var(--coral);border:none;border-radius:4px;color:var(--cream);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;font-weight:bold}
+.nl-disclaim{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:16px;letter-spacing:.1em}
+
+/* SHOP PAGE */
+.shop-hero{height:50vh;min-height:400px;background:var(--ink2);display:flex;align-items:center;justify-content:center;text-align:center;padding:0 40px}
+.shop-hero-content{max-width:700px}
+.shop-eye{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--coral);margin-bottom:16px}
+.shop-title{font-family:'Anton',sans-serif;font-size:clamp(48px,6vw,80px);text-transform:uppercase;letter-spacing:-.005em;line-height:.85;margin-bottom:20px}
+.shop-title em{font-style:italic;color:var(--coral)}
+.shop-desc{font-size:15px;line-height:1.7;color:var(--muted)}
+.shop-filters{display:flex;gap:10px;justify-content:center;padding:30px;background:var(--ink);border-bottom:1px solid var(--line)}
+.filter-btn{padding:10px 20px;background:transparent;border:1px solid var(--line);color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.filter-btn.on,.filter-btn:hover{border-color:var(--coral);color:var(--coral)}
+.shop-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);padding:0 60px 60px;max-width:1400px;margin:0 auto}
+.shop-card{background:var(--ink);padding:24px;cursor:pointer;transition:border-color .2s;position:relative}
+.shop-card:hover{border:1px solid var(--coral)}
+.shop-img{aspect-ratio:1;background:var(--ink2);display:flex;align-items:center;justify-content:center;margin-bottom:16px;font-family:'Anton',sans-serif;font-size:20px;text-transform:uppercase;letter-spacing:-.01em;text-align:center;line-height:.85}
+.shop-img em{font-style:italic;color:var(--coral);font-size:14px;display:block}
+.shop-info{display:flex;justify-content:space-between;align-items:flex-end}
+.shop-name{font-size:14px;font-weight:600}
+.shop-meta{text-align:right}
+.shop-cat{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.shop-price{font-family:'Anton',sans-serif;font-size:24px;margin-top:4px}
+.shop-loading,.shop-empty{grid-column:1/-1;text-align:center;padding:60px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.15em;text-transform:uppercase}
+
+/* ABOUT PAGE */
+.about-hero{position:relative;height:70vh;min-height:500px;background:var(--ink);display:flex;align-items:center;justify-content:center}
+.about-hero-bg{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.3),rgba(0,0,0,.7)),url('https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1600&q=80');background-size:cover;background-position:center 30%;filter:contrast(1.05) saturate(.95)}
+.about-hero-content{position:relative;z-index:2;text-align:center;max-width:800px;padding:0 60px}
+.about-eye{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--coral);margin-bottom:16px}
+.about-title{font-family:'Anton',sans-serif;font-size:clamp(60px,8vw,120px);line-height:.85;letter-spacing:-.005em;text-transform:uppercase;margin-bottom:20px}
+.about-title em{font-style:italic;color:var(--coral);text-shadow:0 0 40px rgba(255,74,61,.4)}
+.about-subtitle{font-size:16px;line-height:1.7;color:rgba(246,241,231,.8)}
+.about-story{padding:100px 60px;background:var(--cream);color:var(--ink)}
+.about-story-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;max-width:1200px;margin:0 auto}
+.about-body{font-size:15px;line-height:1.7;color:#555;margin-bottom:20px}
+.about-img-placeholder{aspect-ratio:4/5;background:var(--ink);display:flex;align-items:center;justify-content:center;color:var(--cream);font-family:'Anton',sans-serif;font-size:64px;text-align:center;line-height:.85;letter-spacing:-.01em;text-transform:uppercase;border:1px solid var(--line)}
+.about-img-placeholder em{font-style:italic;font-size:36px;color:var(--coral);display:block;margin-top:8px}
+
+/* LOGIN PAGE */
+.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px}
+.login-box{max-width:400px;width:100%}
+.login-box h1{font-family:'Anton',sans-serif;font-size:48px;text-transform:uppercase;letter-spacing:-.005em;margin-bottom:8px}
+.login-box .sub{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--coral);margin-bottom:30px}
+.login-box input{width:100%;padding:16px;background:var(--ink2);border:1px solid var(--line);border-radius:4px;color:var(--cream);font-family:'Manrope',sans-serif;font-size:14px;margin-bottom:15px}
+.login-box input:focus{outline:none;border-color:var(--coral)}
+.login-box button{width:100%;padding:16px;background:var(--coral);border:none;border-radius:4px;color:var(--cream);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;font-weight:bold;margin-bottom:15px}
+.login-links{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em}
+.login-links a{color:var(--muted);text-decoration:none}
+.login-links a:hover{color:var(--coral)}
+
+/* RETURNS PAGE */
+.returns-page{max-width:800px;margin:0 auto;padding:60px 20px}
+.returns-page h1{font-family:'Anton',sans-serif;font-size:56px;text-transform:uppercase;margin-bottom:40px}
+.ret-box{margin-bottom:40px;padding:20px;background:var(--cream2);color:var(--ink);border-radius:8px}
+.ret-box h3{font-family:'Anton',sans-serif;font-size:24px;text-transform:uppercase;margin-bottom:16px;color:var(--coral)}
+.ret-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin:40px 0}
+.ret-step{background:var(--ink2);border:1px solid var(--line);padding:20px;text-align:center}
+.ret-step-num{font-family:'Anton',sans-serif;font-size:36px;color:var(--coral);margin-bottom:8px}
+.ret-step-text{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+/* CART PAGE */
+.cart-page{max-width:800px;margin:0 auto;padding:60px 20px}
+.cart-page h1{font-family:'Anton',sans-serif;font-size:56px;text-transform:uppercase;margin-bottom:40px}
+.cart-item{display:flex;gap:20px;padding:20px;background:var(--ink2);border:1px solid var(--line);margin-bottom:1px;align-items:center}
+.cart-item-img{width:100px;height:120px;background:var(--ink);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:14px;text-transform:uppercase}
+.cart-item-details{flex:1}
+.cart-item-name{font-size:16px;font-weight:600;margin-bottom:4px}
+.cart-item-price{font-family:'Anton',sans-serif;font-size:24px}
+.cart-qty{display:flex;gap:10px;align-items:center;margin-top:10px}
+.cart-qty button{width:30px;height:30px;background:transparent;border:1px solid var(--line);color:var(--cream);cursor:pointer;font-size:16px}
+.cart-total{display:flex;justify-content:space-between;padding:20px;background:var(--ink2);border:1px solid var(--line);margin-top:20px;font-family:'Anton',sans-serif;font-size:32px}
+.checkout-btn{width:100%;padding:20px;background:var(--coral);border:none;color:var(--cream);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;font-weight:bold;margin-top:20px}
+
+/* FOOTER */
+footer{background:var(--ink);border-top:1px solid var(--line);padding:60px;margin-top:60px}
+.foot-top{font-family:'Anton',sans-serif;font-size:48px;text-transform:uppercase;text-align:center;margin-bottom:40px;line-height:.85}
+.foot-top em{font-style:italic;color:var(--coral)}
+.foot-cols{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;max-width:1400px;margin:0 auto 40px}
+.foot-logo{font-family:'Anton',sans-serif;font-size:32px;color:var(--cream);text-transform:uppercase;letter-spacing:-.01em;margin-bottom:16px}
+.foot-tagline{font-size:13px;line-height:1.7;color:var(--muted)}
+.foot-col h4{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--coral);margin-bottom:16px}
+.foot-col ul{list-style:none}
+.foot-col li{margin-bottom:8px}
+.foot-col a{color:var(--muted);text-decoration:none;font-size:13px;transition:color .2s}
+.foot-col a:hover{color:var(--coral)}
+.foot-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:40px;border-top:1px solid var(--line);max-width:1400px;margin:0 auto;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.1em}
+.foot-payments{display:flex;gap:15px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+/* BREADCRUMB */
+.breadcrumb{padding:20px 60px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.breadcrumb a{color:var(--muted);text-decoration:none}
+.breadcrumb a:hover{color:var(--coral)}
+.breadcrumb .current{color:var(--coral)}
+
+/* PAGE CONTENT */
+.page-content{max-width:800px;margin:0 auto;padding:60px 20px}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .products,.shop-grid,.categories{grid-template-columns:repeat(2,1fr);padding:0 20px 40px}
+  .foot-cols{grid-template-columns:1fr 1fr}
+  .drop-block{grid-template-columns:1fr;padding:60px 20px}
+  .about-story-grid{grid-template-columns:1fr}
+  .ret-steps{grid-template-columns:1fr 1fr}
+  nav{padding:15px 20px}
+  .nav-links{display:none}
+  .sec-hdr{flex-direction:column;align-items:flex-start;gap:16px;padding:40px 20px 20px}
+}
+@media(max-width:600px){
+  .products,.shop-grid,.categories{grid-template-columns:1fr}
+  .foot-cols{grid-template-columns:1fr}
+  .countdown{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+
+<!-- PROMO BAR -->
+<div class="promo">
+  <div class="promo-track" id="promoTrack">
+    <span>Free shipping on orders over $75</span>
+    <span>New SS26 Drop is live</span>
+    <span>Sign up for 15% off your first order</span>
+    <span>Free shipping on orders over $75</span>
+    <span>New SS26 Drop is live</span>
+    <span>Sign up for 15% off your first order</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo" onclick="showPage('home');return false">VIBIN</a>
+  <div class="nav-links">
+    <a href="#" onclick="showPage('shop');return false">Shop</a>
+    <a href="#" onclick="showPage('shop');return false" class="new">New Drop</a>
+    <a href="#" onclick="showPage('lookbook');return false">Lookbook</a>
+    <a href="#" onclick="showPage('about');return false">About</a>
+    <a href="#" onclick="showPage('about');return false">Stockists</a>
+  </div>
+  <div class="nav-actions">
+    <a href="#" class="nav-icon" onclick="showPage('shop');return false" style="text-decoration:none">🔍</a>
+    <a href="#" class="nav-icon" onclick="showPage('login');return false" style="text-decoration:none">👤</a>
+    <a href="#" class="nav-icon" onclick="showPage('cart');return false" style="text-decoration:none">
+      🛒<span class="cart-dot" id="cartDot">0</span>
+    </a>
+  </div>
+</nav>
+
+<!-- HOME PAGE -->
+<div id="page-home">
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-img"></div>
+    <div class="hero-grain"></div>
+    <div class="hero-content">
+      <div class="hero-top">
+        <div class="hero-meta">
+          <strong>SS26 Collection</strong> · Drop 01<br>
+          Vol. I — The Foundation
+        </div>
+        <div class="hero-meta">
+          Released · Jacksonville FL<br>
+          Shot at 6:42 AM
+        </div>
+      </div>
+      <h1 class="hero-title">
+        <span class="vt-1">Vibin</span>
+        <span class="vt-2">Different.</span>
+      </h1>
+      <div class="hero-tag">
+        Apparel for those who move with purpose, dress with intention, and vibe louder than the noise. Quality first, hype second.
+      </div>
+      <div class="hero-cta">
+        <a href="#" class="btn primary" onclick="showPage('shop');return false">Shop The Drop <span class="arrow">→</span></a>
+        <a href="#" class="btn" onclick="showPage('lookbook');return false">Lookbook</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee">
+    <div class="marquee-track">
+      <span>SS26 IS LIVE</span>
+      <span><em>The Foundation</em></span>
+      <span>NEW ARRIVALS</span>
+      <span>FREE SHIPPING $75+</span>
+      <span>SS26 IS LIVE</span>
+      <span><em>The Foundation</em></span>
+      <span>NEW ARRIVALS</span>
+      <span>FREE SHIPPING $75+</span>
+    </div>
+  </div>
+
+  <!-- THE DROP -->
+  <div class="sec-hdr">
+    <div>
+      <div class="sec-eye">SS26 · Drop 01</div>
+      <h2 class="sec-title">The <em>Foundation</em></h2>
+    </div>
+    <a href="#" class="sec-link" onclick="showPage('shop');return false">View All Products →</a>
+  </div>
+  <div class="products" id="homeProducts"></div>
+
+  <!-- CATEGORIES -->
+  <div class="sec-hdr">
+    <div>
+      <div class="sec-eye">Shop By</div>
+      <h2 class="sec-title">Cate<em>gory</em></h2>
+    </div>
+    <a href="#" class="sec-link" onclick="showPage('shop');return false">All Categories →</a>
+  </div>
+  <div class="categories">
+    <div class="cat" onclick="filterShop('Tee')">
+      <div class="cat-bg"></div>
+      <div class="cat-content">
+        <div class="cat-num">01 / 03</div>
+        <div class="cat-name">Tees</div>
+        <div class="cat-count">2 Pieces</div>
+        <a href="#" class="cat-cta" onclick="event.stopPropagation();filterShop('Tee')">Shop Tees →</a>
+      </div>
+    </div>
+    <div class="cat" onclick="filterShop('Hoodie')">
+      <div class="cat-bg"></div>
+      <div class="cat-content">
+        <div class="cat-num">02 / 03</div>
+        <div class="cat-name">Hoodies<br>+ Crews</div>
+        <div class="cat-count">1 Piece</div>
+        <a href="#" class="cat-cta" onclick="event.stopPropagation();filterShop('Hoodie')">Shop Hoodies →</a>
+      </div>
+    </div>
+    <div class="cat" onclick="filterShop('Pants')">
+      <div class="cat-bg"></div>
+      <div class="cat-content">
+        <div class="cat-num">03 / 03</div>
+        <div class="cat-name">Bottoms</div>
+        <div class="cat-count">1 Piece</div>
+        <a href="#" class="cat-cta" onclick="event.stopPropagation();filterShop('Pants')">Shop Bottoms →</a>
+      </div>
+    </div>
+    <div class="cat" onclick="filterShop('Accessories')">
+      <div class="cat-bg"></div>
+      <div class="cat-content">
+        <div class="cat-num">04 / 03</div>
+        <div class="cat-name">Headwear<br>+ Acc.</div>
+        <div class="cat-count">1 Piece</div>
+        <a href="#" class="cat-cta" onclick="event.stopPropagation();filterShop('Accessories')">Shop Accessories →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOOKBOOK -->
+  <section class="lookbook">
+    <div class="lb-img"></div>
+    <div id="editorial" class="lb-text">
+      <div class="lb-eye">Editorial Nº 01 · The Foundation</div>
+      <h2 class="lb-title">Built for the <em>quiet</em> ones who move loudest.</h2>
+      <p class="lb-body">
+        Vibin isn't loud about itself. It moves with intention. Every piece in The Foundation drop was designed for the people who don't need to announce who they are — they show it. Heavyweight cotton. Pre-shrunk. Built to last past the season.
+      </p>
+      <a href="#editorial" class="btn" onclick="return false">View Editorial →</a>
+    </div>
+  </section>
+
+  <!-- MANIFESTO -->
+  <section class="manifesto">
+    <div class="man-text">
+      Vibin <em>different</em> isn't a tagline. It's a posture. <em>Confident.</em> Calm. Community.
+    </div>
+    <div class="man-credit">— The Vibin Manifesto · Vol. 01</div>
+  </section>
+
+  <!-- DROP COUNTDOWN -->
+  <section class="drop-block">
+    <div class="drop-left">
+      <div class="drop-eye">Coming Next · Drop 02</div>
+      <h2 class="drop-title">Vol. <em>02</em></h2>
+      <p class="drop-info">
+        The next chapter. Pieces designed for late nights, sunrises, and everything in between. Sign up to get early access — drops always sell out before retail.
+      </p>
+      <a href="#newsletter" class="btn" style="border-color:var(--coral);color:var(--coral)" onclick="document.getElementById('newsletter').scrollIntoView({behavior:'smooth'});return false">Get Early Access →</a>
+    </div>
+    <div class="countdown" id="countdown">
+      <div class="cd"><div class="cd-num" id="cd-d">--</div><div class="cd-lbl">Days</div></div>
+      <div class="cd"><div class="cd-num" id="cd-h">--</div><div class="cd-lbl">Hours</div></div>
+      <div class="cd"><div class="cd-num" id="cd-m">--</div><div class="cd-lbl">Minutes</div></div>
+      <div class="cd"><div class="cd-num" id="cd-s">--</div><div class="cd-lbl">Seconds</div></div>
+    </div>
+  </section>
+
+  <!-- NEWSLETTER -->
+  <section id="newsletter" class="newsletter">
+    <div class="nl-eye">Join the List</div>
+    <h2 class="nl-title">Get <em>15% off</em><br>your first piece.</h2>
+    <p class="nl-body">
+      Be the first to know when drops go live. Early access, exclusive pieces, and 15% off your first order. No spam — just the good stuff.
+    </p>
+    <form class="nl-form" onsubmit="subscribeNewsletter(event)">
+      <input type="email" class="nl-input" placeholder="your@email.com" required>
+      <button type="submit" class="nl-btn">Subscribe</button>
+    </form>
+    <div class="nl-disclaim">No spam. Unsubscribe anytime.</div>
+  </section>
+</div>
+
+<!-- SHOP PAGE -->
+<div id="page-shop" style="display:none">
+  <div class="shop-hero">
+    <div class="shop-hero-content">
+      <div class="shop-eye">SS26 Collection</div>
+      <h1 class="shop-title">Move <em>different.</em></h1>
+      <p class="shop-desc">The foundation of everything we build on. Premium materials, intentional design, and pieces that actually last.</p>
+    </div>
+  </div>
+  <div class="shop-filters">
+    <button class="filter-btn on" onclick="filterShop('all')">All</button>
+    <button class="filter-btn" onclick="filterShop('Tee')">Tees</button>
+    <button class="filter-btn" onclick="filterShop('Hoodie')">Hoodies</button>
+    <button class="filter-btn" onclick="filterShop('Pants')">Pants</button>
+    <button class="filter-btn" onclick="filterShop('Accessories')">Accessories</button>
+  </div>
+  <div class="shop-grid" id="shopGrid"></div>
+</div>
+
+<!-- ABOUT PAGE -->
+<div id="page-about" style="display:none">
+  <section class="about-hero">
+    <div class="about-hero-bg"></div>
+    <div class="about-hero-content">
+      <div class="about-eye">About · The Brand</div>
+      <h1 class="about-title">Vibin <em>Different.</em></h1>
+      <p class="about-subtitle">Apparel for those who move with purpose, dress with intention, and vibe louder than the noise.</p>
+    </div>
+  </section>
+
+  <section class="manifesto">
+    <div class="man-text">
+      Vibin <em>different</em> isn't a tagline. It's a posture. <em>Confident.</em> Calm. Community.
+    </div>
+    <div class="man-credit">— The Vibin Manifesto · Vol. 01</div>
+  </section>
+
+  <section class="about-story">
+    <div class="about-story-grid">
+      <div class="about-story-text">
+        <div class="sec-eye">Our Story</div>
+        <h2 class="sec-title">Built in <em>Jacksonville.</em></h2>
+        <p class="about-body">
+          Vibin was born in the heart of Miami, FL — a city that moves to its own rhythm. Now based in Jacksonville, the brand carries that Miami energy into every piece: bold, intentional, and unapologetically different.
+        </p>
+        <p class="about-body">
+          Vibin isn't about following trends or chasing hype. It's about creating quality pieces that speak to the people who don't need to announce who they are — they show it. Every piece is designed with intention. Heavyweight cotton that lasts. Cuts that fit right. Graphics that mean something.
+        </p>
+        <p class="about-body">
+          A subsidiary of HVD Holdings, LLC, Vibin represents a new wave of lifestyle streetwear that prioritizes substance over spectacle. Built in Miami. Living in Jacksonville. Shipping everywhere.
+        </p>
+      </div>
+      <div class="about-story-img">
+        <div class="about-img-placeholder">
+          <div>JAX<br><em>904.</em></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-story" style="background:var(--cream2)">
+    <div class="about-story-grid">
+      <div class="about-story-text" style="order:2">
+        <div class="sec-eye" style="color:var(--coral)">What We Stand For</div>
+        <h2 class="sec-title">Our <em>Values</em></h2>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px;max-width:1200px;margin:0 auto;padding:0 60px">
+      <div style="background:var(--cream);border:1px solid var(--line);padding:30px">
+        <div style="font-size:32px;margin-bottom:16px">✦</div>
+        <div style="font-family:'Anton',sans-serif;font-size:24px;text-transform:uppercase;letter-spacing:-.005em;margin-bottom:12px">Quality First</div>
+        <div style="font-size:13px;line-height:1.7;color:var(--muted)">240 GSM heavyweight cotton. Pre-shrunk. Double-stitched. Built to last past the season.</div>
+      </div>
+      <div style="background:var(--cream);border:1px solid var(--line);padding:30px">
+        <div style="font-size:32px;margin-bottom:16px">🧵</div>
+        <div style="font-family:'Anton',sans-serif;font-size:24px;text-transform:uppercase;letter-spacing:-.005em;margin-bottom:12px">Intentional Design</div>
+        <div style="font-size:13px;line-height:1.7;color:var(--muted)">Every graphic, every cut, every stitch has a reason. We don't add anything that doesn't serve the vision.</div>
+      </div>
+      <div style="background:var(--cream);border:1px solid var(--line);padding:30px">
+        <div style="font-size:32px;margin-bottom:16px">🌍</div>
+        <div style="font-family:'Anton',sans-serif;font-size:24px;text-transform:uppercase;letter-spacing:-.005em;margin-bottom:12px">Community Driven</div>
+        <div style="font-size:13px;line-height:1.7;color:var(--muted)">Vibin isn't just a brand — it's a community of people who move different. We grow together, we win together.</div>
+      </div>
+      <div style="background:var(--cream);border:1px solid var(--line);padding:30px">
+        <div style="font-size:32px;margin-bottom:16px">📦</div>
+        <div style="font-family:'Anton',sans-serif;font-size:24px;text-transform:uppercase;letter-spacing:-.005em;margin-bottom:12px">Hype-Free Drops</div>
+        <div style="font-size:13px;line-height:1.7;color:var(--muted)">No artificial scarcity. No gimmicks. Just quality pieces released when they're ready.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-story">
+    <div class="about-story-grid">
+      <div class="about-story-text">
+        <div class="sec-eye" style="color:var(--coral);text-align:center">Built in Miami · Living in Jacksonville</div>
+        <h2 class="sec-title" style="text-align:center">Same <em>Vibe,</em> New City</h2>
+        <p class="about-body" style="text-align:center;max-width:700px;margin:0 auto">
+          Miami gave us the boldness. Jacksonville gave us the grit. Together, they shape everything we create — pieces that carry that 305 energy with 904 discipline.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="newsletter">
+    <div class="nl-eye" style="color:var(--coral);text-align:center">Join The Movement</div>
+    <h2 class="nl-title" style="text-align:center">Ready to <em>vibe different?</em></h2>
+    <p class="nl-body" style="text-align:center">
+      Be the first to know when drops go live. Early access, exclusive pieces, and 15% off your first order.
+    </p>
+    <form class="nl-form" style="margin-top:30px" onsubmit="subscribeNewsletter(event)">
+      <input type="email" class="nl-input" placeholder="your@email.com" required>
+      <button type="submit" class="nl-btn">Subscribe</button>
+    </form>
+  </section>
+</div>
+
+<!-- LOOKBOOK PAGE -->
+<div id="page-lookbook" style="display:none">
+  <section class="lookbook" style="height:60vh;min-height:400px">
+    <div class="lb-img"></div>
+    <div class="lb-text">
+      <div class="lb-eye">Editorial · SS26</div>
+      <h2 class="lb-title">The Foundation.<br><em>Vol. 01</em></h2>
+      <p class="lb-body">Built for the quiet ones who move loudest.</p>
+    </div>
+  </section>
+
+  <div style="max-width:1200px;margin:0 auto;padding:60px 20px">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+      <div style="background:var(--ink2);aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;border:1px solid var(--line)">
+        <div style="font-family:'Anton',sans-serif;font-size:48px;text-transform:uppercase;line-height:.85;margin-bottom:8px">01</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--coral)">Morning Routine</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.15em;color:var(--muted);margin-top:8px">Jacksonville · 6:42 AM</div>
+      </div>
+      <div style="background:var(--ink2);aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;border:1px solid var(--line)">
+        <div style="font-family:'Anton',sans-serif;font-size:48px;text-transform:uppercase;line-height:.85;margin-bottom:8px">02</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--coral)">City Movement</div>
+      </div>
+      <div style="background:var(--ink2);aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;border:1px solid var(--line)">
+        <div style="font-family:'Anton',sans-serif;font-size:48px;text-transform:uppercase;line-height:.85;margin-bottom:8px">03</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--coral)">Heavyweight</div>
+      </div>
+      <div style="background:var(--ink2);aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;border:1px solid var(--line)">
+        <div style="font-family:'Anton',sans-serif;font-size:48px;text-transform:uppercase;line-height:.85;margin-bottom:8px">04</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--coral)">The Details</div>
+      </div>
+      <div style="background:var(--ink2);aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;border:1px solid var(--line)">
+        <div style="font-family:'Anton',sans-serif;font-size:48px;text-transform:uppercase;line-height:.85;margin-bottom:8px">05</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--coral)">Vibe Different</div>
+      </div>
+      <div style="background:var(--ink2);aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;border:1px solid var(--line)">
+        <div style="font-family:'Anton',sans-serif;font-size:48px;text-transform:uppercase;line-height:.85;margin-bottom:8px">06</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--coral)">904 State of Mind</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN PAGE -->
+<div id="page-login" style="display:none">
+  <div class="login-page">
+    <div class="login-box">
+      <div style="margin-bottom:30px">
+        <a href="#" style="color:var(--muted);text-decoration:none;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em" onclick="showPage('shop');return false">← Back to Shop</a>
+      </div>
+      <h1>Sign In</h1>
+      <div class="sub">Member Access</div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:30px">
+        Join the inside circle. Early access to drops, member-only pieces, and the people who actually move the brand forward.
+      </p>
+      <div style="display:flex;gap:15px;margin-bottom:30px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--coral)">
+        <span>✦ Early access — 24hrs before public</span>
+      </div>
+      <div style="display:flex;gap:15px;margin-bottom:30px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--coral)">
+        <span>→ Member pricing — 15% off first order</span>
+      </div>
+      <form onsubmit="handleLogin(event)">
+        <input type="email" placeholder="Email" id="loginEmail" required>
+        <input type="password" placeholder="Password" id="loginPass" required>
+        <div style="text-align:right;margin-bottom:15px">
+          <a href="#" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--muted)">Forgot?</a>
+        </div>
+        <button type="submit">Sign In →</button>
+      </form>
+      <div class="login-links" style="margin-top:20px">
+        <span>New to Vibin? <a href="#" onclick="alert('Account creation coming soon!');return false">Create an account</a></span>
+      </div>
+      <div class="login-links" style="margin-top:10px">
+        <a href="#" onclick="alert('Ambassador login coming soon!');return false">Want to earn for sharing Vibin? Ambassador Login →</a>
+      </div>
+      <div class="login-links" style="margin-top:10px">
+        <a href="#" onclick="alert('Unsubscribe functionality coming soon!');return false">Unsubscribe from newsletter</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CART PAGE -->
+<div id="page-cart" style="display:none">
+  <div class="cart-page">
+    <h1>Cart</h1>
+    <div id="cartItems"></div>
+    <div class="cart-total">
+      <span>Total</span>
+      <span id="cartTotal">$0</span>
+    </div>
+    <button class="checkout-btn" onclick="alert('Checkout with Stripe coming soon!')">Proceed to Checkout →</button>
+  </div>
+</div>
+
+<!-- RETURNS PAGE -->
+<div id="page-returns" style="display:none">
+  <div class="returns-page">
+    <div class="breadcrumb">
+      <a href="#" onclick="showPage('home');return false">Home</a> / <span class="current">Returns</span>
+    </div>
+    <h1>Returns &<br><em>Exchanges.</em></h1>
+    <div class="ret-box">
+      <h3>30-Day Returns</h3>
+      <p style="line-height:1.7;color:#555">Not feeling it? Return any unused item within 30 days of delivery for a full refund or exchange.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin:40px 0">
+      <div class="ret-step">
+        <div class="ret-step-num">↻</div>
+        <div class="ret-step-text">30-Day<br>Returns</div>
+      </div>
+      <div class="ret-step">
+        <div class="ret-step-num">📦</div>
+        <div class="ret-step-text">Condition<br>Matters</div>
+      </div>
+      <div class="ret-step">
+        <div class="ret-step-num">💰</div>
+        <div class="ret-step-text">Refund<br>Timeline</div>
+      </div>
+      <div class="ret-step">
+        <div class="ret-step-num">🚚</div>
+        <div class="ret-step-text">Return<br>Shipping</div>
+      </div>
+    </div>
+    <h3 style="font-family:'Anton',sans-serif;font-size:24px;text-transform:uppercase;margin:40px 0 20px">How It Works</h3>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
+      <div style="padding:20px;background:var(--cream2);color:var(--ink);border-radius:8px;text-align:center">
+        <div style="font-family:'Anton',sans-serif;font-size:36px;color:var(--coral);margin-bottom:8px">01</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase">Email Us</div>
+      </div>
+      <div style="padding:20px;background:var(--cream2);color:var(--ink);border-radius:8px;text-align:center">
+        <div style="font-family:'Anton',sans-serif;font-size:36px;color:var(--coral);margin-bottom:8px">02</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase">Get RMA</div>
+      </div>
+      <div style="padding:20px;background:var(--cream2);color:var(--ink);border-radius:8px;text-align:center">
+        <div style="font-family:'Anton',sans-serif;font-size:36px;color:var(--coral);margin-bottom:8px">03</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase">Ship It</div>
+      </div>
+      <div style="padding:20px;background:var(--cream2);color:var(--ink);border-radius:8px;text-align:center">
+        <div style="font-family:'Anton',sans-serif;font-size:36px;color:var(--coral);margin-bottom:8px">04</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase">Refunded</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-top">Vibin <em>Different.</em></div>
+  <div class="foot-cols">
+    <div class="foot-brand">
+      <div class="foot-logo">VIBIN</div>
+      <div class="foot-tagline">
+        A lifestyle streetwear brand from Miami, FL. Now based in Jacksonville. A subsidiary of HVD Holdings. Apparel for those who move different.
+      </div>
+    </div>
+    <div class="foot-col">
+      <h4>Shop</h4>
+      <ul>
+        <li><a href="#" onclick="showPage('shop');return false">All Products</a></li>
+        <li><a href="#" onclick="filterShop('Tee');return false">Tees</a></li>
+        <li><a href="#" onclick="filterShop('Hoodie');return false">Hoodies</a></li>
+        <li><a href="#" onclick="filterShop('Accessories');return false">Accessories</a></li>
+        <li><a href="#" onclick="showPage('lookbook');return false">Lookbook</a></li>
+      </ul>
+    </div>
+    <div class="foot-col">
+      <h4>Help</h4>
+      <ul>
+        <li><a href="#" onclick="showPage('returns');return false">Returns</a></li>
+        <li><a href="#">Shipping</a></li>
+        <li><a href="#">FAQ</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+    <div class="foot-col">
+      <h4>Connect</h4>
+      <ul>
+        <li><a href="https://instagram.com/vibinapparel" target="_blank">Instagram</a></li>
+        <li><a href="https://tiktok.com/@vibinapparel" target="_blank">TikTok</a></li>
+        <li><a href="https://twitter.com/vibinapparel" target="_blank">Twitter / X</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <div>© 2026 Vibin Apparel · A subsidiary of HVD Holdings, LLC · Jacksonville, FL</div>
+    <div class="foot-payments">
+      <span>VISA</span>
+      <span>AMEX</span>
+      <span>PAYPAL</span>
+      <span>SHOP PAY</span>
+      <span>APPLE</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// PRODUCTS DATA
+const PRODUCTS = [
+  { id: '1', name: 'Foundation Tee', price: 48, cat: 'Tee', color: '#222' },
+  { id: '2', name: 'Move Different Tee', price: 48, cat: 'Tee', color: '#f5f0e6' },
+  { id: '3', name: 'Vol 01 Hoodie', price: 98, cat: 'Hoodie', color: '#ff6b5a' },
+  { id: '4', name: 'VIBIN Cap', price: 32, cat: 'Accessories', color: '#0a0a0a' },
+  { id: '5', name: 'Cargo Pant', price: 88, cat: 'Pants', color: '#3a3a3a' },
+];
+
+let cart = JSON.parse(localStorage.getItem('vibin_cart') || '[]');
+let currentFilter = 'all';
+
+// RENDER HOME PRODUCTS
+function renderHomeProducts() {
+  const c = document.getElementById('homeProducts');
+  if (!c) return;
+  c.innerHTML = PRODUCTS.map(function(p, i) {
+    var tags = '';
+    if (i === 0) tags = '<div class="prod-tag-img new">New</div>';
+    if (i === 2) tags = '<div class="prod-tag-img last">Last Pieces</div>';
+    var graphic = '';
+    if (i === 0) graphic = 'VIBIN<em>different.</em>';
+    if (i === 1) graphic = 'MOVE<em>different.</em>';
+    if (i === 2) graphic = 'VOL<em>01.</em>';
+    if (i === 3) graphic = '✦<em>vibin.</em>';
+    if (i === 4) graphic = 'DIFF<em>erent.</em>';
+    var catLabel = p.cat === 'Tee' ? 'Heavyweight' : p.cat === 'Hoodie' ? 'Fleece' : 'Accessory';
+    return '<div class="prod"><div class="prod-img">' + tags + '<div class="prod-graphic" style="color:' + p.color + '">' + graphic + '</div><div class="prod-quick" onclick="addToCart(\'' + p.id + '\')">+ Quick Add</div></div><div class="prod-info"><div><div class="prod-name">' + p.name + '</div><div class="prod-cat">' + p.cat + ' · ' + catLabel + '</div></div><div class="prod-price">$' + p.price + '</div></div></div>';
+  }).join('');
+}
+
+// RENDER SHOP GRID
+function renderShopGrid(filter) {
+  currentFilter = filter || 'all';
+  var grid = document.getElementById('shopGrid');
+  if (!grid) return;
+  var filtered = currentFilter === 'all' ? PRODUCTS : PRODUCTS.filter(function(p) { return p.cat === currentFilter; });
+  grid.innerHTML = filtered.map(function(p) {
+    var words = p.name.split(' ').slice(0, 2).map(function(w) { return '<div>' + w + '</div>'; }).join('');
+    return '<div class="shop-card" onclick="addToCart(\'' + p.id + '\')"><div class="shop-img" style="background:' + p.color + '20;color:' + p.color + '">' + words + '<em style="font-size:14px;display:block;color:var(--coral)">' + p.cat + '</em></div><div class="shop-info"><div><div class="shop-name">' + p.name + '</div><div class="shop-meta"><span class="shop-cat">In Stock</span></div></div><div class="shop-price">$' + p.price + '</div></div></div>';
+  }).join('');
+}
+
+// ADD TO CART
+function addToCart(id) {
+  var product = PRODUCTS.find(function(p) { return p.id === id; });
+  if (!product) return;
+  var existing = cart.find(function(item) { return item.id === id; });
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    cart.push({ id: product.id, name: product.name, price: product.price, cat: product.cat, color: product.color, size: 'M', qty: 1 });
+  }
+  localStorage.setItem('vibin_cart', JSON.stringify(cart));
+  updateCartUI();
+}
+
+// UPDATE CART UI
+function updateCartUI() {
+  var dot = document.getElementById('cartDot');
+  if (dot) dot.textContent = cart.reduce(function(sum, item) { return sum + item.qty; }, 0);
+  renderCartItems();
+}
+
+// RENDER CART ITEMS
+function renderCartItems() {
+  var c = document.getElementById('cartItems');
+  var t = document.getElementById('cartTotal');
+  if (!c) return;
+  if (cart.length === 0) {
+    c.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted);font-family:JetBrains Mono,monospace;font-size:12px;letter-spacing:.15em">Your cart is empty</div>';
+    if (t) t.textContent = '$0';
+    return;
+  }
+  c.innerHTML = cart.map(function(item, i) {
+    return '<div class="cart-item"><div class="cart-item-img" style="background:' + item.color + '20;color:' + item.color + '">' + item.name.split(' ')[0] + '</div><div class="cart-item-details"><div class="cart-item-name">' + item.name + '</div><div class="cart-item-price" style="font-family:Anton,sans-serif;font-size:24px">$' + item.price + '</div><div class="cart-qty"><button onclick="updateQty(' + i + ',-1)">−</button><span style="font-family:JetBrains Mono,monospace;font-size:12px">' + item.qty + '</span><button onclick="updateQty(' + i + ',1)">+</button><span style="margin-left:20px;color:var(--muted);font-size:12px;cursor:pointer" onclick="removeItem(' + i + ')">Remove</span></div></div></div>';
+  }).join('');
+  if (t) t.textContent = '$' + cart.reduce(function(sum, item) { return sum + (item.price * item.qty); }, 0);
+}
+
+function updateQty(i, delta) {
+  cart[i].qty += delta;
+  if (cart[i].qty <= 0) cart.splice(i, 1);
+  localStorage.setItem('vibin_cart', JSON.stringify(cart));
+  updateCartUI();
+}
+
+function removeItem(i) {
+  cart.splice(i, 1);
+  localStorage.setItem('vibin_cart', JSON.stringify(cart));
+  updateCartUI();
+}
+
+// FILTER SHOP
+function filterShop(cat) {
+  showPage('shop');
+  setTimeout(function() { renderShopGrid(cat); }, 0);
+}
+
+// PAGE NAVIGATION
+function showPage(page) {
+  var pages = ['home','shop','about','lookbook','login','cart','returns'];
+  pages.forEach(function(p) {
+    var el = document.getElementById('page-' + p);
+    if (el) el.style.display = p === page ? 'block' : 'none';
+  });
+  window.scrollTo(0, 0);
+  if (page === 'shop') renderShopGrid('all');
+  if (page === 'cart') updateCartUI();
+}
+
+// LOGIN HANDLER
+function handleLogin(e) {
+  e.preventDefault();
+  var email = document.getElementById('loginEmail').value;
+  if (email) {
+    localStorage.setItem('vibin_user', JSON.stringify({ email: email }));
+    alert('Signed in as ' + email + ' (demo mode)');
+    showPage('home');
+  }
+}
+
+// NEWSLETTER
+function subscribeNewsletter(e) {
+  e.preventDefault();
+  var btn = e.target.querySelector('.nl-btn') || e.target.querySelector('button');
+  btn.textContent = '✓ Subscribed';
+  btn.disabled = true;
+  e.target.insertAdjacentHTML('afterend', '<div style="background:#0a0a0a;color:#f6f1e7;padding:16px;margin-top:16px;font-family:Manrope,sans-serif">You\'re on the list. Check your email for your 15% off code. ✦</div>');
+}
+
+// COUNTDOWN
+function updateCountdown() {
+  var target = new Date();
+  target.setDate(target.getDate() + 30);
+  var now = new Date().getTime();
+  var diff = target.getTime() - now;
+  if (diff <= 0) {
+    var cd = document.getElementById('countdown');
+    if (cd) cd.innerHTML = '<a href="#" onclick="showPage(\'shop\');return false" style="color:#f6f1e7;font-size:24px;font-family:Anton,sans-serif;text-transform:uppercase;">Drop 02 is LIVE. Shop Now →</a>';
+    return;
+  }
+  var d = Math.floor(diff / (1000 * 60 * 60 * 24));
+  var h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  var m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  var s = Math.floor((diff % (1000 * 60)) / 1000);
+  var dd = document.getElementById('cd-d'), hd = document.getElementById('cd-h'), md = document.getElementById('cd-m'), sd = document.getElementById('cd-s');
+  if (dd) dd.textContent = String(d).padStart(2, '0');
+  if (hd) hd.textContent = String(h).padStart(2, '0');
+  if (md) md.textContent = String(m).padStart(2, '0');
+  if (sd) sd.textContent = String(s).padStart(2, '0');
+}
+
+// INIT
+renderHomeProducts();
+updateCartUI();
+updateCountdown();
+setInterval(updateCountdown, 1000);
+</script>
+</body>
+</html>
