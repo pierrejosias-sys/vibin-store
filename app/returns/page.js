@@ -28,7 +28,7 @@ export default function ReturnsPage() {
           <a href="/shop" className="new">New Drop</a>
           <a href="/lookbook">Lookbook</a>
           <a href="/about">About</a>
-          <a href="/contact">Stockists</a>
+          <a href="/returns">Stockists</a>
         </div>
         <div className="nav-actions">
           <a href="/qa" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>🔍</a>
@@ -144,7 +144,7 @@ export default function ReturnsPage() {
               <div className="contact-label">returns@vibinapparel.com</div>
               <div className="contact-sub">Email us anytime</div>
             </a>
-            <a href="/contact" className="contact-method">
+            <a href="/returns" className="contact-method">
               <div className="contact-icon">💬</div>
               <div className="contact-label">Contact Form</div>
               <div className="contact-sub">Fill out our form</div>
@@ -177,7 +177,7 @@ export default function ReturnsPage() {
               <li><a href="/shipping">Shipping</a></li>
               <li><a href="/returns">Returns</a></li>
               <li><a href="/qa">FAQ</a></li>
-              <li><a href="/contact">Contact</a></li>
+              <li><a href="/returns">Contact</a></li>
             </ul>
           </div>
           <div className="foot-col">

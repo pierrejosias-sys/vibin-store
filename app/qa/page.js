@@ -48,7 +48,7 @@ export default function FAQPage() {
 
       <div className="faq-cta">
         <p>Still have questions?</p>
-        <Link href="/contact">Contact Us →</Link>
+        <Link href="/returns">Contact Us →</Link>
       </div>
 
       <footer>

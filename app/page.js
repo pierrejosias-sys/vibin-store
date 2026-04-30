@@ -217,7 +217,7 @@ export default function HomePage() {
             <div className="cat-foot">
               <div className="cat-name">Tees</div>
               <div className="cat-count">2 Pieces</div>
-              <a href="/shop?cat=tees" className="cat-cta">Shop Tees →</a>
+              <a href="/shop" className="cat-cta">Shop Tees →</a>
             </div>
           </div>
         </div>
@@ -228,7 +228,7 @@ export default function HomePage() {
             <div className="cat-foot">
               <div className="cat-name">Hoodies<br/>+ Crews</div>
               <div className="cat-count">1 Piece</div>
-              <a href="/shop?cat=hoodies" className="cat-cta">Shop Hoodies →</a>
+              <a href="/shop" className="cat-cta">Shop Hoodies →</a>
             </div>
           </div>
         </div>
@@ -239,7 +239,7 @@ export default function HomePage() {
             <div className="cat-foot">
               <div className="cat-name">Bottoms</div>
               <div className="cat-count">1 Piece</div>
-              <a href="/shop?cat=bottoms" className="cat-cta">Shop Bottoms →</a>
+              <a href="/shop" className="cat-cta">Shop Bottoms →</a>
             </div>
           </div>
         </div>
@@ -250,7 +250,7 @@ export default function HomePage() {
             <div className="cat-foot">
               <div className="cat-name">Headwear<br/>+ Acc.</div>
               <div className="cat-count">1 Piece</div>
-              <a href="/shop?cat=accessories" className="cat-cta">Shop Accessories →</a>
+              <a href="/shop" className="cat-cta">Shop Accessories →</a>
             </div>
           </div>
         </div>
@@ -347,9 +347,9 @@ export default function HomePage() {
             <h4>Shop</h4>
             <ul>
               <li><a href="/shop">All Products</a></li>
-              <li><a href="/shop?cat=tees">Tees</a></li>
-              <li><a href="/shop?cat=hoodies">Hoodies</a></li>
-              <li><a href="/shop?cat=accessories">Accessories</a></li>
+              <li><a href="/shop">Tees</a></li>
+              <li><a href="/shop">Hoodies</a></li>
+              <li><a href="/shop">Accessories</a></li>
               <li><a href="/lookbook">Lookbook</a></li>
               <li><a href="/print">Print</a></li>
             </ul>

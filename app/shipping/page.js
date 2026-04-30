@@ -21,7 +21,7 @@ export default function ShippingPage() {
           <Link href="/shop">New Drop</Link>
           <Link href="/lookbook">Lookbook</Link>
           <Link href="/about">About</Link>
-          <Link href="/contact">Stockists</Link>
+          <Link href="/returns">Stockists</Link>
         </div>
         <div className="nav-actions">
           <Link href="/qa" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>🔍</Link>
@@ -105,7 +105,7 @@ export default function ShippingPage() {
               <li><a href="/shipping">Shipping</a></li>
               <li><a href="/returns">Returns</a></li>
               <li><a href="/qa">FAQ</a></li>
-              <li><a href="/contact">Contact</a></li>
+              <li><a href="/returns">Contact</a></li>
             </ul>
           </div>
           <div className="foot-col">

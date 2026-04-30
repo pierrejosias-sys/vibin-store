@@ -132,7 +132,7 @@ export default function LookbookPage() {
               <li><a href="/shipping">Shipping</a></li>
               <li><a href="/returns">Returns</a></li>
               <li><a href="/qa">FAQ</a></li>
-              <li><a href="/contact">Contact</a></li>
+              <li><a href="/returns">Contact</a></li>
               <li><a href="/login">Account</a></li>
               <li><a href="/ambassador">Ambassador</a></li>
             </ul>
@@ -144,8 +144,8 @@ export default function LookbookPage() {
               <li><a href="https://tiktok.com/@vibinapparel" target="_blank" rel="noopener">TikTok</a></li>
               <li><a href="https://twitter.com/vibinapparel" target="_blank" rel="noopener">Twitter / X</a></li>
               <li><a href="/lookbook">Lookbook</a></li>
-              <li><a href="/contact">Stockists</a></li>
-              <li><a href="/contact">Wholesale</a></li>
+              <li><a href="/returns">Stockists</a></li>
+              <li><a href="/returns">Wholesale</a></li>
             </ul>
           </div>
         </div>

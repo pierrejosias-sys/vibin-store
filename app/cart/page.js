@@ -131,7 +131,7 @@ export default function CartPage() {
               <li><a href="/shipping">Shipping</a></li>
               <li><a href="/returns">Returns</a></li>
               <li><a href="/qa">FAQ</a></li>
-              <li><a href="/contact">Contact</a></li>
+              <li><a href="/returns">Contact</a></li>
             </ul>
           </div>
           <div className="foot-col">
