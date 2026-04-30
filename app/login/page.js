@@ -19,6 +19,14 @@ export default function LoginPage() {
   const [ambCode, setAmbCode] = useState('')
   const router = useRouter()
 
+  // Check URL params for ambassador mode
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('role') === 'ambassador') {
+      setAmbassadorMode(true)
+    }
+  }, [])
+
   useEffect(() => {
     const savedUser = localStorage.getItem('vibin_user')
       if (savedUser) {

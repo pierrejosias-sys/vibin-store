@@ -114,7 +114,7 @@ export default function AmbassadorHub() {
           <h1 style={{fontFamily:'Anton, sans-serif',fontSize:'48px',textTransform:'uppercase',marginBottom:'20px'}}>Ambassador Hub ✦</h1>
           <p style={{color:'#888',marginBottom:'40px'}}>Your dashboard. Your commissions. Your community.</p>
           <p style={{color:'#555',marginBottom:'40px'}}>Vibin Apparel · Ambassador Program · SS26</p>
-          <Link href="/login" style={{display:'inline-block',padding:'16px 32px',background:'#e05c2e',color:'#fff',textDecoration:'none',borderRadius:'4px',fontWeight:'bold'}}>Login →</Link>
+          <Link href="/login?role=ambassador" style={{display:'inline-block',padding:'16px 32px',background:'#e05c2e',color:'#fff',textDecoration:'none',borderRadius:'4px',fontWeight:'bold'}}>Login →</Link>
         </div>
       </div>
     )
