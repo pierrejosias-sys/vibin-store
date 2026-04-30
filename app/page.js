@@ -94,7 +94,7 @@ export default function HomePage() {
            <a href="/drop-01" className="new" style={{color:'var(--coral)'}}>Drop 01 ★</a>
            <a href="/lookbook">Lookbook</a>
            <a href="/about">About</a>
-           <a href="/contact">Stockists</a>
+           <a href="/returns">Returns</a>
          </div>
          <div className="nav-actions">
            <Link href="/qa" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>🔍</Link>
@@ -360,7 +360,7 @@ export default function HomePage() {
               <li><a href="/shipping">Shipping</a></li>
               <li><a href="/returns">Returns</a></li>
               <li><a href="/qa">FAQ</a></li>
-              <li><a href="/contact">Contact</a></li>
+              <li><a href="/support-agent" style={{color:'var(--coral)'}}>Support Agent</a></li>
               <li><a href="/login">Account</a></li>
               <li><a href="/ambassador">Ambassador</a></li>
             </ul>

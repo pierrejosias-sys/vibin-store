@@ -44,7 +44,7 @@ Required environment variables in Vercel:
 ## Environment Variables
 Never hardcode secrets. Set them in Vercel project settings.
 
-## Pages (22 routes)
+## Pages (25 routes)
 | Route              | Description                          |
 |--------------------|--------------------------------------|
 | `/`                | Homepage — SS26 hero, shop grid      |
@@ -61,6 +61,9 @@ Never hardcode secrets. Set them in Vercel project settings.
 | `/returns`         | Returns policy                       |
 | `/shipping`        | Shipping information                  |
 | `/print`           | Custom print service                  |
+| `/drop-01`        | Drop 01 coming soon page              |
+| `/careers`        | Job openings (Support, Dev, DevOps)  |
+| `/support-agent`   | Support agent portal (admin only)     |
 | `/admin`           | Admin dashboard                      |
 | `/admin/orders`    | Order management                     |
 | `/admin/support`   | Support verification                 |
