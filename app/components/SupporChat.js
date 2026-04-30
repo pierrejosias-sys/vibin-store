@@ -72,22 +72,30 @@ export default function SupporChat() {
           }
         ])
 
-        // If needs verification, create verification request
+        // If needs verification, create verification request or handoff
         if (botResponse.needsVerification) {
-          await supabase.from('verification_requests').insert([
-            {
-              chat_id: currentChatId,
-              message_id: (await supabase
-                .from('support_messages')
-                .select('id')
-                .eq('chat_id', currentChatId)
-                .order('created_at', { ascending: false })
-                .limit(1)
-                .single()).data?.id,
-              requester_email: 'guest@vibinapparel.com',
-              request_type: botResponse.requestType || 'other'
-            }
-          ])
+          if (botResponse.requestType === 'human_handoff') {
+            // Update chat status to waiting_for_agent
+            await supabase
+              .from('support_chats')
+              .update({ status: 'waiting_for_agent', updated_at: new Date() })
+              .eq('id', currentChatId);
+          } else {
+            await supabase.from('verification_requests').insert([
+              {
+                chat_id: currentChatId,
+                message_id: (await supabase
+                  .from('support_messages')
+                  .select('id')
+                  .eq('chat_id', currentChatId)
+                  .order('created_at', { ascending: false })
+                  .limit(1)
+                  .single()).data?.id,
+                requester_email: 'guest@vibinapparel.com',
+                request_type: botResponse.requestType || 'other'
+              }
+            ])
+          }
         }
       }
     }, 1000)
@@ -131,7 +139,13 @@ export default function SupporChat() {
         text: 'Hey there! 👋 How can I help you today? I can assist with returns, exchanges, order tracking, or price matching.'
       }
     }
-
+    if (input.includes('talk to human') || input.includes('agent') || input.includes('person') || input.includes('support')) {
+      return {
+        text: 'I\'m transferring you to a support agent. They\'ll be with you shortly. You can also email us directly at returns@vibinapparel.com',
+        needsVerification: true,
+        requestType: 'human_handoff'
+      }
+    }
     return {
       text: 'I\'m here to help! I can assist with:\n• Returns & refunds\n• Product exchanges\n• Order tracking\n• Price matching\n\nWhat do you need help with?',
       needsVerification: false
