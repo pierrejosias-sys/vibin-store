@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100">
+  <rect width="400" height="100" fill="#111"/>
+  <text x="30" y="65" font-family="Arial Black, sans-serif" font-size="42" font-weight="900" fill="#fff">
+    <tspan>VIBIN</tspan>
+  </text>
+  <circle cx="175" cy="38" r="6" fill="#ff4a3d"/>
+  <line x1="190" y1="48" x2="370" y2="48" stroke="#333" stroke-width="2" stroke-dasharray="8,4"/>
+  <text x="370" y="65" font-family="Courier New, monospace" font-size="10" fill="#ff4a3d" text-anchor="end" letter-spacing="2">NYC•LA•FL</text>
+</svg>

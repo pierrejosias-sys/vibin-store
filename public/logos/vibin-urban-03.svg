@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 150">
+  <rect width="600" height="150" fill="#0a0a0a"/>
+  <path d="M0 100 Q150 110 300 100 T600 100" fill="none" stroke="#ff4a3d" stroke-width="3"/>
+  <text x="30" y="85" font-family="Arial Black, sans-serif" font-size="72" font-weight="900" fill="#fff" letter-spacing="-2">IBIN</text>
+  <path d="M10 30 L25 15 L25 35 Z" fill="#ff4a3d"/>
+  <text x="280" y="65" font-family="Arial Black, sans-serif" font-size="32" font-weight="900" fill="#ff4a3d" letter-spacing="0">NYC</text>
+  <line x1="360" y1="50" x2="380" y2="50" stroke="#ff4a3d" stroke-width="2"/>
+  <text x="390" y="65" font-family="Arial Black, sans-serif" font-size="32" font-weight="900" fill="#fff" letter-spacing="0">LA</text>
+  <line x1="470" y1="50" x2="490" y2="50" stroke="#333" stroke-width="2"/>
+  <text x="500" y="65" font-family="Arial Black, sans-serif" font-size="32" font-weight="900" fill="#888" letter-spacing="0">FL</text>
+  <rect x="45" y="115" width="510" height="2" fill="#222"/>
+  <text x="300" y="135" font-family="Courier New, monospace" font-size="10" fill="#555" text-anchor="middle" letter-spacing="8">EST. 2024</text>
+</svg>
