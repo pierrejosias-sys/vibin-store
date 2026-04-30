@@ -86,24 +86,24 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* NAV */}
-      <nav>
-        <a href="/" className="logo">VIBIN</a>
-        <div className="nav-links">
-          <a href="/shop">Shop</a>
-          <a href="/shop" className="new">New Drop</a>
-          <a href="/lookbook">Lookbook</a>
-          <a href="/about">About</a>
-          <a href="/contact">Stockists</a>
-        </div>
-        <div className="nav-actions">
-          <Link href="/qa" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>🔍</Link>
-          <a href="/login" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>👤</a>
-          <a href="/cart" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>
-            🛒{cartCount > 0 && <span className="cart-dot">{cartCount}</span>}
-          </a>
-        </div>
-      </nav>
+       {/* NAV */}
+       <nav>
+         <a href="/" className="logo">VIBIN</a>
+         <div className="nav-links">
+           <a href="/shop">Shop</a>
+           <a href="/drop-01" className="new" style={{color:'var(--coral)'}}>Drop 01 ★</a>
+           <a href="/lookbook">Lookbook</a>
+           <a href="/about">About</a>
+           <a href="/contact">Stockists</a>
+         </div>
+         <div className="nav-actions">
+           <Link href="/qa" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>🔍</Link>
+           <a href="/login" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>👤</a>
+           <a href="/cart" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>
+             🛒{cartCount > 0 && <span className="cart-dot">{cartCount}</span>}
+           </a>
+         </div>
+       </nav>
 
       {/* HERO */}
       <section className="hero">
