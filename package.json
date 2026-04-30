@@ -8,13 +8,6 @@
     "start": "next start"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "next": "14.2.0",
-    "react": "18.2.0",
-    "react-dom": "18.2.0"
-  }
-}
-=======
     "@stripe/stripe-js": "^9.3.1",
     "@supabase/supabase-js": "^2.105.1",
     "@vercel/speed-insights": "^2.0.0",
@@ -28,4 +21,3 @@
     "vercel": "^52.0.0"
   }
 }
->>>>>>> dev

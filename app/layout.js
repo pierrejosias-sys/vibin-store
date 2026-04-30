@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import "./globals.css"
-import Link from "next/link"
-export default function Layout({children}){return(<html><body className="bg-black text-white min-h-screen">{children}</body></html>)}
-=======
+
 import './styles.css'
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { CartProvider } from './lib/cart-context'
@@ -39,4 +35,4 @@ export default function RootLayout({ children }) {
     </html>
   )
 }
->>>>>>> dev
+
