@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import styles from '../styles.css';
 
 export default function CareersPage() {
@@ -185,12 +186,12 @@ export default function CareersPage() {
                     </div>
                   )}
 
-                  <a
-                    href={`mailto:hello@vibinapparel.com?subject=Application: ${role.title}&body=Hey Vibin team,%0D%0A%0D%0AI'm interested in the ${role.title} position.%0D%0A%0D%0AHere's my background:%0D%0A%0D%0AName:%0D%0AExperience:%0D%0ALinkedIn/Portfolio:%0D%0A%0D%0ALet's move different.`}
+                  <Link
+                    href={`/careers/${role.id}`}
                     style={{display:'inline-block', padding:'14px 28px', background:'var(--coral)', color:'var(--cream)', textDecoration:'none', fontFamily:'Manrope, sans-serif', fontSize:'12px', fontWeight:700, letterSpacing:'.1em', textTransform:'uppercase', cursor:'pointer'}}
                   >
                     Apply Now →
-                  </a>
+                  </Link>
                 </div>
               )}
             </div>
@@ -204,12 +205,12 @@ export default function CareersPage() {
           <p style={{fontSize:'14px', color:'var(--muted)', lineHeight:'1.7', marginBottom:'24px', maxWidth:'480px', margin:'0 auto 24px'}}>
             We're always looking for creative, technical, and operational talent. Send us your info and we'll keep you in mind.
           </p>
-          <a
-            href="mailto:hello@vibinapparel.com?subject=General Application - Vibin Apparel&body=Hey Vibin team,%0D%0A%0D%0AI'd like to express interest in working with Vibin Apparel.%0D%0A%0D%0AName:%0D%0ARole I'm interested in:%0D%0AExperience:%0D%0ALinkedIn/Portfolio:%0D%0A%0D%0ALet's move different."
+          <Link
+            href="/careers/1"
             style={{display:'inline-block', padding:'14px 28px', background:'transparent', color:'var(--cream)', border:'2px solid var(--cream)', textDecoration:'none', fontFamily:'Manrope, sans-serif', fontSize:'12px', fontWeight:700, letterSpacing:'.1em', textTransform:'uppercase'}}
           >
             Send General Application →
-          </a>
+          </Link>
         </div>
       </section>
 
