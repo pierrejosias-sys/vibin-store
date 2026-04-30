@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import supabase from '../lib/supabase-public'
 import styles from '../styles.css'
+import AIAssistant from '../../components/ai-assistant'
 
 export default function AdminPage() {
   const router = useRouter();
@@ -380,6 +381,7 @@ export default function AdminPage() {
           )}
         </div>
       </div>
-    </>
-  )
-}
+          <AIAssistant />
+          </>
+        )
+  }

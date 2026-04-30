@@ -20,6 +20,37 @@ export default function AmbassadorHub() {
     setLoading(false)
   }, [])
 
+  // Save ambassador to Supabase if not already saved
+  useEffect(() => {
+    if (ambassador && ambassador.email) {
+      const saveToSupabase = async () => {
+        try {
+          const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+          const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+          if (SUPABASE_URL && SUPABASE_ANON_KEY && SUPABASE_URL !== 'YOUR_PROJECT_URL_HERE') {
+            const { createClient } = require('@supabase/supabase-js')
+            const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+            // Upsert ambassador data
+            await supabase
+              .from('ambassadors')
+              .upsert({
+                code: ambassador.code,
+                name: ambassador.name || 'Ambassador',
+                email: ambassador.email,
+                status: 'approved', // Auto-approve for now
+                referral_link: `https://vibinapparel.com/?ref=${ambassador.code}`,
+                commission_rate: 15,
+                approved_at: new Date().toISOString()
+              }, { onConflict: 'code' })
+          }
+        } catch (err) {
+          console.warn('Could not save ambassador to Supabase:', err)
+        }
+      }
+      saveToSupabase()
+    }
+  }, [ambassador])
+
   useEffect(() => {
     if (ambassador) {
       const refs = JSON.parse(localStorage.getItem('vibin_referrals') || '[]')
@@ -118,14 +149,30 @@ export default function AmbassadorHub() {
         ))}
       </section>
 
-      {/* REFERRAL LINK */}
+      {/* REFERRAL LINK + QR CODE */}
       <section style={{padding:'60px 40px',borderBottom:'1px solid #1e1e1e'}}>
-        <h2 style={{fontFamily:'Anton, sans-serif',fontSize:'24px',textTransform:'uppercase',marginBottom:'20px',textAlign:'center'}}>Your Referral Link</h2>
-        <div style={{display:'flex',maxWidth:'500px',margin:'0 auto',gap:'10px'}}>
-          <input value={shareLink} readOnly style={{flex:1,padding:'16px',background:'#111',border:'1px solid #1e1e1e',borderRadius:'4px',color:'#f0ede6',fontFamily:'JetBrains Mono, monospace',fontSize:'14px'}} />
-          <button onClick={copyRef} style={{padding:'16px 24px',background:'#e05c2e',border:'none',borderRadius:'4px',color:'#fff',fontWeight:'bold',cursor:'pointer'}}>
-            {refCopied ? 'Copied ✓' : 'Copy Link'}
-          </button>
+        <h2 style={{fontFamily:'Anton, sans-serif',fontSize:'24px',textTransform:'uppercase',marginBottom:'30px',textAlign:'center'}}>Your Referral Link</h2>
+        <div style={{display:'flex',maxWidth:'700px',margin:'0 auto',gap:'30px',alignItems:'center',flexWrap:'wrap',justifyContent:'center'}}>
+          <div style={{flex:'1 1 300px'}}>
+            <div style={{display:'flex',gap:'10px',marginBottom:'20px'}}>
+              <input value={shareLink} readOnly style={{flex:1,padding:'16px',background:'#111',border:'1px solid #1e1e1e',borderRadius:'4px',color:'#f0ede6',fontFamily:'JetBrains Mono, monospace',fontSize:'14px'}} />
+              <button onClick={copyRef} style={{padding:'16px 24px',background:'#e05c2e',border:'none',borderRadius:'4px',color:'#fff',fontWeight:'bold',cursor:'pointer'}}>
+                {refCopied ? 'Copied ✓' : 'Copy Link'}
+              </button>
+            </div>
+            <p style={{color:'#888',fontSize:'13px',textAlign:'center'}}>Share this link on social media, emails, or messages</p>
+          </div>
+          <div style={{textAlign:'center'}}>
+            <div style={{background:'#fff',padding:'20px',borderRadius:'8px',display:'inline-block',marginBottom:'12px'}}>
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareLink)}`}
+                alt="QR Code"
+                style={{width:'200px',height:'200px',display:'block'}}
+              />
+            </div>
+            <p style={{color:'#888',fontSize:'12px',fontFamily:'JetBrains Mono, monospace'}}>{ambassador.code}</p>
+            <p style={{color:'#666',fontSize:'11px',marginTop:'4px'}}>Scan to shop with your code</p>
+          </div>
         </div>
       </section>
 

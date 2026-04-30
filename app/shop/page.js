@@ -105,11 +105,20 @@ export default function ShopPage() {
         )}
       </div>
 
-      <footer>
-        <div className="foot-logo">VIBIN</div>
-        <div className="foot-tag">Apparel for those who move different · Jacksonville, FL · A subsidiary of HVD Holdings</div>
+      {/* Footer with Legal Links */}
+      <footer style={{background:'#0a0a0a',borderTop:'1px solid #1e1e1e',padding:'40px',textAlign:'center'}}>
+        <div style={{maxWidth:'1200px',margin:'0 auto'}}>
+          <div style={{marginBottom:'20px'}}>
+            <a href="/legal/privacy" style={{color:'#888',textDecoration:'none',fontSize:'13px',marginRight:'20px',fontFamily:'JetBrains Mono, monospace'}}>Privacy Policy</a>
+            <a href="/legal/terms" style={{color:'#888',textDecoration:'none',fontSize:'13px',marginRight:'20px',fontFamily:'JetBrains Mono, monospace'}}>Terms of Service</a>
+            <a href="/returns" style={{color:'#888',textDecoration:'none',fontSize:'13px',fontFamily:'JetBrains Mono, monospace'}}>Returns</a>
+          </div>
+          <p style={{fontSize:'11px',color:'#555',fontFamily:'JetBrains Mono, monospace',letterSpacing:'.15em',textTransform:'uppercase'}}>
+            Vibin Apparel, LLC · A Subsidiary of HVD Holdings, LLC · Florida
+          </p>
+        </div>
       </footer>
     </>
-  )
+   )
 }
 
