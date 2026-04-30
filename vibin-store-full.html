@@ -1637,11 +1637,147 @@ setInterval(updateCountdown, 1000);
   <h1 style="font-family:'Anton',sans-serif;font-size:48px;text-transform:uppercase;margin-bottom:12px">
     Support <em style="font-style:italic;color:var(--coral)">Verification</em>
   </h1>
-  <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=1200&h=300&fit=crop" 
+  <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=1200&h=300&fit=crop"
        alt="Different colored tees"
        style="width:100%;height:300px;object-fit:cover;margin-bottom:24px;border-radius:4px">
   <div id="supportRequests" style="padding:60px;text-align:center;color:var(--muted)">
     No pending verification requests.
+  </div>
+</div>
+
+<!-- ADMIN SECURITY PAGE -->
+<div id="admin-security" style="display:none">
+  <div style="margin-bottom:24px">
+    <h1 style="font-family:'Anton',sans-serif;font-size:48px;text-transform:uppercase;margin-bottom:8px">Security <em style="font-style:italic;color:var(--coral)">Auditor</em></h1>
+    <div style="display:flex;gap:12px;margin-top:16px">
+      <button onclick="setAdminSecurityTab('overview')" id="sec-overview-btn" style="padding:8px 16px;background:var(--ink);color:var(--cream);border:1px solid var(--line);cursor:pointer;text-transform:uppercase;letter-spacing:.1em;font-size:11px;font-family:'JetBrains Mono',monospace">Overview</button>
+      <button onclick="setAdminSecurityTab('logs')" id="sec-logs-btn" style="padding:8px 16px;background:var(--ink2);color:var(--cream);border:1px solid var(--line);cursor:pointer;text-transform:uppercase;letter-spacing:.1em;font-size:11px;font-family:'JetBrains Mono',monospace">Logs</button>
+      <button onclick="setAdminSecurityTab('checks')" id="sec-checks-btn" style="padding:8px 16px;background:var(--ink2);color:var(--cream);border:1px solid var(--line);cursor:pointer;text-transform:uppercase;letter-spacing:.1em;font-size:11px;font-family:'JetBrains Mono',monospace">Checks</button>
+    </div>
+  </div>
+
+  <!-- Overview Tab -->
+  <div id="sec-overview" style="display:block">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
+      <div style="background:var(--ink2);border:1px solid var(--line);padding:20px;border-radius:4px">
+        <div style="font-size:32px;font-family:'Anton',sans-serif;letter-spacing:.04em">2</div>
+        <div style="font-size:10px;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;font-family:'JetBrains Mono',monospace">Successful Logins</div>
+      </div>
+      <div style="background:var(--ink2);border:1px solid var(--line);padding:20px;border-radius:4px">
+        <div style="font-size:32px;font-family:'Anton',sans-serif;letter-spacing:.04em;color:var(--coral)">1</div>
+        <div style="font-size:10px;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;font-family:'JetBrains Mono',monospace">Blocked Attempts</div>
+      </div>
+      <div style="background:var(--ink2);border:1px solid var(--line);padding:20px;border-radius:4px">
+        <div style="font-size:32px;font-family:'Anton',sans-serif;letter-spacing:.04em">6/7</div>
+        <div style="font-size:10px;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;font-family:'JetBrains Mono',monospace">Checks Passing</div>
+      </div>
+      <div style="background:var(--ink2);border:1px solid var(--line);padding:20px;border-radius:4px">
+        <div style="font-size:32px;font-family:'Anton',sans-serif;letter-spacing:.04em">90</div>
+        <div style="font-size:10px;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;font-family:'JetBrains Mono',monospace">Days Retention</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logs Tab -->
+  <div id="sec-logs" style="display:none">
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button onclick="filterSecurityLogs('all')" style="padding:6px 12px;background:var(--ink);color:var(--cream);border:1px solid var(--line);cursor:pointer;font-size:10px;text-transform:uppercase;letter-spacing:.1em">All</button>
+      <button onclick="filterSecurityLogs('success')" style="padding:6px 12px;background:var(--ink2);color:var(--cream);border:1px solid var(--line);cursor:pointer;font-size:10px;text-transform:uppercase;letter-spacing:.1em">Success</button>
+      <button onclick="filterSecurityLogs('failed')" style="padding:6px 12px;background:var(--ink2);color:var(--cream);border:1px solid var(--line);cursor:pointer;font-size:10px;text-transform:uppercase;letter-spacing:.1em">Failed</button>
+      <button onclick="filterSecurityLogs('blocked')" style="padding:6px 12px;background:var(--ink2);color:var(--cream);border:1px solid var(--line);cursor:pointer;font-size:10px;text-transform:uppercase;letter-spacing:.1em">Blocked</button>
+    </div>
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr style="border-bottom:1px solid var(--line)">
+          <th style="padding:12px;text-align:left;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-family:'JetBrains Mono',monospace">Type</th>
+          <th style="padding:12px;text-align:left;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-family:'JetBrains Mono',monospace">User</th>
+          <th style="padding:12px;text-align:left;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-family:'JetBrains Mono',monospace">IP / Location</th>
+          <th style="padding:12px;text-align:left;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-family:'JetBrains Mono',monospace">Status</th>
+        </tr>
+      </thead>
+      <tbody id="security-logs-body">
+        <tr style="border-bottom:1px solid var(--line)">
+          <td style="padding:12px;font-size:13px">login</td>
+          <td style="padding:12px;font-size:13px">john@email.com</td>
+          <td style="padding:12px;font-size:13px">192.168.1.1<br><span style="font-size:10px;color:var(--muted)">Jacksonville, FL</span></td>
+          <td style="padding:12px"><span style="padding:4px 8px;background:rgba(0,255,0,.1);color:#00ff00;font-size:10px;text-transform:uppercase;letter-spacing:.1em">Success</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--line)">
+          <td style="padding:12px;font-size:13px">login</td>
+          <td style="padding:12px;font-size:13px">admin@email.com</td>
+          <td style="padding:12px;font-size:13px">10.0.0.1<br><span style="font-size:10px;color:var(--muted)">Miami, FL</span></td>
+          <td style="padding:12px"><span style="padding:4px 8px;background:rgba(255,0,0,.1);color:var(--coral);font-size:10px;text-transform:uppercase;letter-spacing:.1em">Failed</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--line)">
+          <td style="padding:12px;font-size:13px">login</td>
+          <td style="padding:12px;font-size:13px">unknown@hack.com</td>
+          <td style="padding:12px;font-size:13px">45.33.99.12<br><span style="font-size:10px;color:var(--muted)">Moscow, RU</span></td>
+          <td style="padding:12px"><span style="padding:4px 8px;background:rgba(255,0,0,.2);color:var(--cream);font-size:10px;text-transform:uppercase;letter-spacing:.1em;background:#8B0000">Blocked</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Checks Tab -->
+  <div id="sec-checks" style="display:none">
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px" id="security-checks-grid">
+      <div style="background:var(--ink2);border:1px solid var(--line);padding:16px;border-radius:4px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:13px;font-weight:600">SSL Certificate</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;font-family:'JetBrains Mono',monospace">Expires 2026-08-15</div>
+        </div>
+        <div style="color:#00ff00;font-size:20px">✓</div>
+      </div>
+      <div style="background:var(--ink2);border:1px solid var(--line);padding:16px;border-radius:4px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:13px;font-weight:600">Admin Password</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;font-family:'JetBrains Mono',monospace">Changed 30 days ago</div>
+        </div>
+        <div style="color:#00ff00;font-size:20px">✓</div>
+      </div>
+      <div style="background:var(--ink2);border:1px solid var(--line);padding:16px;border-radius:4px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:13px;font-weight:600">2FA Enabled</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;font-family:'JetBrains Mono',monospace">Not configured</div>
+        </div>
+        <div style="color:var(--coral);font-size:20px">✗</div>
+      </div>
+      <div style="background:var(--ink2);border:1px solid var(--line);padding:16px;border-radius:4px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:13px;font-weight:600">Failed Login Lock</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;font-family:'JetBrains Mono',monospace">3 attempts, 15min lockout</div>
+        </div>
+        <div style="color:#00ff00;font-size:20px">✓</div>
+      </div>
+      <div style="background:var(--ink2);border:1px solid var(--line);padding:16px;border-radius:4px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:13px;font-weight:600">API Rate Limit</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;font-family:'JetBrains Mono',monospace">100 requests/hr</div>
+        </div>
+        <div style="color:#00ff00;font-size:20px">✓</div>
+      </div>
+      <div style="background:var(--ink2);border:1px solid var(--line);padding:16px;border-radius:4px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:13px;font-weight:600">Session Timeout</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;font-family:'JetBrains Mono',monospace">30 minutes</div>
+        </div>
+        <div style="color:#00ff00;font-size:20px">✓</div>
+      </div>
+      <div style="background:var(--ink2);border:1px solid var(--line);padding:16px;border-radius:4px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:13px;font-weight:600">Audit Logs</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;font-family:'JetBrains Mono',monospace">90 days retention</div>
+        </div>
+        <div style="color:#00ff00;font-size:20px">✓</div>
+      </div>
+      <div style="background:var(--ink2);border:1px solid var(--line);padding:16px;border-radius:4px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:13px;font-weight:600">Secure Headers</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;font-family:'JetBrains Mono',monospace">CSP, HSTS active</div>
+        </div>
+        <div style="color:#00ff00;font-size:20px">✓</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1690,17 +1826,50 @@ setInterval(updateCountdown, 1000);
   </div>
 </div>
 
+<!-- SUPPORT CHAT PAGE -->
+<div id="page-support-chat" style="display:none">
+  <nav>
+    <a href="#" class="logo" onclick="showPage('home');return false">VIBIN</a>
+    <div class="nav-actions">
+      <a href="#" class="nav-icon" onclick="showPage('login');return false" style="text-decoration:none">👤</a>
+      <a href="#" class="nav-icon" onclick="showPage('cart');return false" style="text-decoration:none">🛒<span class="cart-dot">0</span></a>
+    </div>
+  </nav>
+  <div style="max-width:900px;margin:0 auto;padding:60px 20px">
+    <h1 style="font-family:'Anton',sans-serif;font-size:48px;text-transform:uppercase;margin-bottom:20px">Support <em style="font-style:italic;color:var(--coral)">Chat</em></h1>
+    <p style="color:var(--muted);margin-bottom:40px;line-height:1.7">
+      Chat with Vibin Support for help with returns, exchanges, order tracking, or price matching.
+    </p>
+    <div style="background:var(--ink2);border:1px solid var(--line);border-radius:8px;padding:30px;max-width:500px;margin:0 auto">
+      <div id="chatMessages" style="min-height:300px;max-height:400px;overflow-y:auto;margin-bottom:20px;padding:16px;background:var(--ink);border-radius:4px">
+        <div style="margin-bottom:12px;text-align:left">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-family:'JetBrains Mono',monospace">BOT</div>
+          <div style="background:var(--ink2);padding:10px 14px;border-radius:4px;font-size:13px;line-height:1.5;display:inline-block">Hey! 🛎 I'm Vibin Support. How can I help you today?</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="chatInput" style="flex:1;padding:10px 14px;background:var(--ink);border:1px solid var(--line);color:var(--cream);border-radius:4px;font-size:13px;font-family:'Manrope',sans-serif" placeholder="Type your message..." onkeypress="if(event.key==='Enter') sendChatMessage()">
+        <button onclick="sendChatMessage()" style="padding:10px 20px;background:var(--coral);color:var(--cream);border:none;border-radius:4px;cursor:pointer;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-family:'Manrope',sans-serif">Send</button>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:12px;text-align:center;font-family:'JetBrains Mono',monospace">💡 Tip: Ask about refunds, exchanges, or order tracking</div>
+    </div>
+  </div>
+</div>
+
+<!-- CHAT BUBBLE (floating) -->
+<div id="chatBubble" style="position:fixed;bottom:24px;right:24px;width:60px;height:60px;border-radius:50%;background:var(--coral);color:var(--cream);display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;box-shadow:0 4px 12px rgba(255,74,61,.3);z-index:1000;border:none" onclick="toggleChatBubble()">💬</div>
+
 <script>
 // Update showPage to handle new pages
 var _showPage = showPage;
 showPage = function(page) {
-  var pages = ['home','shop','about','lookbook','login','cart','checkout','product','admin','faq','returns','profile','ambassador','shipping','print'];
+  var pages = ['home','shop','about','lookbook','login','cart','checkout','product','admin','faq','returns','profile','ambassador','shipping','print','support-chat'];
   pages.forEach(function(p) {
     var el = document.getElementById('page-' + p);
     if (el) el.style.display = p === page ? 'block' : 'none';
   });
   // Handle admin sub-pages
-  var adminPages = ['admin-orders','admin-support','admin-dashboard','admin-analytics','admin-reviews'];
+  var adminPages = ['admin-orders','admin-support','admin-dashboard','admin-analytics','admin-reviews','admin-security'];
   adminPages.forEach(function(p) {
     var el = document.getElementById(p);
     if (el) el.style.display = 'none';
@@ -1717,4 +1886,89 @@ showPage = function(page) {
     }
   }
 };
+
+// Support Chat Functions
+function sendChatMessage() {
+  var input = document.getElementById('chatInput');
+  var msg = input.value.trim();
+  if (!msg) return;
+
+  var chatMessages = document.getElementById('chatMessages');
+
+  // Add user message
+  var userDiv = document.createElement('div');
+  userDiv.style.cssText = 'margin-bottom:12px;text-align:right';
+  userDiv.innerHTML = '<div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-family:JetBrains Mono,monospace">YOU</div><div style="background:var(--coral);color:var(--cream);padding:10px 14px;border-radius:4px;font-size:13px;line-height:1.5;display:inline-block">' + msg + '</div>';
+  chatMessages.appendChild(userDiv);
+
+  input.value = '';
+
+  // Bot response
+  setTimeout(function() {
+    var botResponse = getBotResponse(msg);
+    var botDiv = document.createElement('div');
+    botDiv.style.cssText = 'margin-bottom:12px;text-align:left';
+    var verificationHtml = botResponse.needsVerification ? '<div style="font-size:10px;color:var(--muted);margin-top:6px;font-family:JetBrains Mono,monospace;letter-spacing:.1em">⏳ AWAITING ADMIN VERIFICATION...</div>' : '<div style="font-size:10px;color:var(--coral);margin-top:6px;font-family:JetBrains Mono,monospace;letter-spacing:.1em">✓ VERIFIED RESPONSE</div>';
+    botDiv.innerHTML = '<div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-family:JetBrains Mono,monospace">BOT</div><div style="background:var(--ink2);padding:10px 14px;border-radius:4px;font-size:13px;line-height:1.5;display:inline-block">' + botResponse.text + '</div>' + verificationHtml;
+    chatMessages.appendChild(botDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }, 1000);
+}
+
+function getBotResponse(input) {
+  var lowerInput = input.toLowerCase();
+
+  if (lowerInput.includes('refund') || lowerInput.includes('return')) {
+    return { text: 'I can help with your refund request. I\'ll need to verify this with our admin team. They\'ll review and process within 24 hours. Is this okay?', needsVerification: true, requestType: 'refund' };
+  }
+  if (lowerInput.includes('exchange') || lowerInput.includes('swap')) {
+    return { text: 'I can initiate an exchange for you. Let me verify this with our admin team. They\'ll contact you within 24 hours with next steps.', needsVerification: true, requestType: 'exchange' };
+  }
+  if (lowerInput.includes('price') || lowerInput.includes('match') || lowerInput.includes('cheaper')) {
+    return { text: 'Found a better price? I can submit a price match request to our admin team. They\'ll review and adjust if eligible.', needsVerification: true, requestType: 'price_match' };
+  }
+  if (lowerInput.includes('order') || lowerInput.includes('track') || lowerInput.includes('shipping')) {
+    return { text: 'I can help track your order! Please provide your order number (e.g., ORD-1234567890) and I\'ll look it up for you.' };
+  }
+  if (lowerInput.includes('hello') || lowerInput.includes('hi') || lowerInput.includes('hey')) {
+    return { text: 'Hey there! 👋 How can I help you today? I can assist with returns, exchanges, order tracking, or price matching.' };
+  }
+  return { text: 'I\'m here to help! I can assist with:\n• Returns & refunds\n• Product exchanges\n• Order tracking\n• Price matching\n\nWhat do you need help with?', needsVerification: false };
+}
+
+function toggleChatBubble() {
+  var chatPage = document.getElementById('page-support-chat');
+  if (chatPage.style.display === 'block') {
+    showPage('home');
+  } else {
+    showPage('support-chat');
+  }
+}
+
+// Admin Security Tab Functions
+function setAdminSecurityTab(tab) {
+  document.getElementById('sec-overview').style.display = tab === 'overview' ? 'block' : 'none';
+  document.getElementById('sec-logs').style.display = tab === 'logs' ? 'block' : 'none';
+  document.getElementById('sec-checks').style.display = tab === 'checks' ? 'block' : 'none';
+
+  document.getElementById('sec-overview-btn').style.background = tab === 'overview' ? 'var(--ink)' : 'var(--ink2)';
+  document.getElementById('sec-logs-btn').style.background = tab === 'logs' ? 'var(--ink)' : 'var(--ink2)';
+  document.getElementById('sec-checks-btn').style.background = tab === 'checks' ? 'var(--ink)' : 'var(--ink2)';
+}
+
+function filterSecurityLogs(filter) {
+  var rows = document.querySelectorAll('#security-logs-body tr');
+  rows.forEach(function(row) {
+    if (filter === 'all') {
+      row.style.display = 'table-row';
+    } else {
+      var statusCell = row.cells[3];
+      if (statusCell && statusCell.textContent.toLowerCase().includes(filter)) {
+        row.style.display = 'table-row';
+      } else {
+        row.style.display = 'none';
+      }
+    }
+  });
+}
 <script>
