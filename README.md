@@ -6,18 +6,16 @@ Built in Jacksonville, FL. SS26 Drop 01 live.
 ---
 
 ## Stack
-<!-- Update this section based on what's actually in the repo -->
-- Next.js / React / JavaScript
+- Next.js 16 / React 19 / JavaScript
 - Hosted on: Vercel
-- Email: Mailchimp
 - Payments: Stripe
+- Database: Supabase
+- Analytics: Vercel Speed Insights
 
 ## Branch Strategy
 | Branch    | Purpose                        | Auto-deploys to       |
 |-----------|--------------------------------|-----------------------|
 | `main`    | Production — live site         | vibinapparel.com      |
-| `staging` | Pre-production QA              | staging.vibinapparel.com (if configured) |
-| `dev`     | Active development             | —                     |
 
 ## Local Development
 ```bash
@@ -35,26 +33,47 @@ npm run dev
 ```
 
 ## Deployment
-Pushes to main trigger auto-deploy via GitHub Actions.  
-See `.github/workflows/deploy.yml` and `.github/SECRETS_REQUIRED.md` for setup.
+Pushes to `main` trigger auto-deploy to Vercel → vibinapparel.com
+
+Required environment variables in Vercel:
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+- `STRIPE_SECRET_KEY`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
 ## Environment Variables
-Never hardcode secrets. See `.github/SECRETS_REQUIRED.md` for required secrets.
+Never hardcode secrets. Set them in Vercel project settings.
 
-## Pages
-| Route        | Description                          |
-|--------------|--------------------------------------|
-| `/`          | Homepage — SS26 hero, shop grid      |
-| `/shop`      | Full product catalog                  |
-| `/lookbook`  | Editorial SS26 photography            |
-| `/about`     | Brand story + values                 |
-| `/ambassador`| Ambassador hub + dashboard            |
-| `/shipping`  | Shipping information                  |
-| `/returns`   | Returns policy                       |
-| `/qa`        | FAQ                                  |
-| `/contact`   | Contact + Wholesale + Stockists       |
-| `/admin`     | Admin dashboard                      |
-| `/admin/support` | Support verification            |
+## Pages (22 routes)
+| Route              | Description                          |
+|--------------------|--------------------------------------|
+| `/`                | Homepage — SS26 hero, shop grid      |
+| `/shop`            | Full product catalog                  |
+| `/product/[id]`    | Individual product page               |
+| `/cart`            | Shopping cart                        |
+| `/checkout`        | Checkout with Stripe                  |
+| `/lookbook`        | Editorial SS26 photography            |
+| `/about`           | Brand story + values                  |
+| `/ambassador`      | Ambassador hub + dashboard            |
+| `/login`           | Login/register                       |
+| `/profile`         | User profile                         |
+| `/qa`              | FAQ                                  |
+| `/returns`         | Returns policy                       |
+| `/shipping`        | Shipping information                  |
+| `/print`           | Custom print service                  |
+| `/admin`           | Admin dashboard                      |
+| `/admin/orders`    | Order management                     |
+| `/admin/support`   | Support verification                 |
+| `/admin/security`  | Security auditor                     |
+
+## Project Structure
+```
+app/
+├── components/     # Reusable components (Support Chat)
+├── lib/           # Utilities (Supabase, cart context, search)
+├── api/           # API routes (checkout, webhook, notify)
+└── [pages]/       # Route pages
+```
 
 ## Contact
 - hello@vibinapparel.com
