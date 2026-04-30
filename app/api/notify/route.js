@@ -15,7 +15,7 @@ export async function POST(request) {
     //     'Authorization': `Bearer ${process.env.RESEND_API_KEY}`
     //   },
     //   body: JSON.stringify({
-    //     from: 'Vibin Support <support@vibinstore.com>',
+    //     from: 'Vibin Support <support@vibinapparel.com>',
     //     to: [email],
     //     subject: `Vibin Support - ${type.replace('_', ' ')}`,
     //     html: `<p>Your request has been ${type.includes('approved') ? 'approved' : 'received'}.</p><pre>${JSON.stringify(data, null, 2)}</pre>`

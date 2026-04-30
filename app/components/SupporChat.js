@@ -32,7 +32,7 @@ export default function SupporChat() {
     if (!currentChatId) {
       const { data: chat } = await supabase
         .from('support_chats')
-        .insert({ user_id: 'guest', email: 'guest@vibinstore.com' })
+        .insert({ user_id: 'guest', email: 'guest@vibinapparel.com' })
         .select()
         .single()
 
@@ -84,7 +84,7 @@ export default function SupporChat() {
                 .order('created_at', { ascending: false })
                 .limit(1)
                 .single()).data?.id,
-              requester_email: 'guest@vibinstore.com',
+              requester_email: 'guest@vibinapparel.com',
               request_type: botResponse.requestType || 'other'
             }
           ])

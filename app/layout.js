@@ -26,7 +26,7 @@ export default function RootLayout({ children }) {
                 bubble.innerHTML = '💬';
                 bubble.style.cssText = 'position:fixed;bottom:24px;right:24px;width:60px;height:60px;border-radius:50%;background:#ff4a3d;color:#f6f1e7;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;z-index:1000;border:none;box-shadow:0 4px 12px rgba(255,74,61,0.3);';
                 document.body.appendChild(bubble);
-                bubble.onclick = function() { alert('Support chat coming soon! For now, email returns@vibinstore.com'); };
+                bubble.onclick = function() { alert('Support chat coming soon! For now, email returns@vibinapparel.com'); };
               }
             });
           ` }} />

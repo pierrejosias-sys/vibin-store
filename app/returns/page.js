@@ -91,7 +91,7 @@ export default function ReturnsPage() {
               <div className="step-num">01</div>
               <div className="step-content">
                 <h4>Email Us</h4>
-                <p>Send an email to <strong>returns@vibinstore.com</strong> with your order number and reason for return.</p>
+                <p>Send an email to <strong>returns@vibinapparel.com</strong> with your order number and reason for return.</p>
               </div>
             </div>
 
@@ -139,9 +139,9 @@ export default function ReturnsPage() {
             Questions about returns or exchanges? We're here to help.
           </p>
           <div className="returns-contact-methods">
-            <a href="mailto:returns@vibinstore.com" className="contact-method">
+            <a href="mailto:returns@vibinapparel.com" className="contact-method">
               <div className="contact-icon">📧</div>
-              <div className="contact-label">returns@vibinstore.com</div>
+              <div className="contact-label">returns@vibinapparel.com</div>
               <div className="contact-sub">Email us anytime</div>
             </a>
             <a href="/contact" className="contact-method">
