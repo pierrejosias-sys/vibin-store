@@ -21,10 +21,18 @@ export default function LoginPage() {
 
   useEffect(() => {
     const savedUser = localStorage.getItem('vibin_user')
-    if (savedUser) {
-      setUser(JSON.parse(savedUser))
-      router.push('/profile')
-    }
+      if (savedUser) {
+        const parsedUser = JSON.parse(savedUser)
+        setUser(parsedUser)
+        // Check role and redirect accordingly
+        if (parsedUser.is_admin) {
+          router.push('/admin')
+        } else if (parsedUser.is_ambassador) {
+          router.push('/ambassador')
+        } else {
+          router.push('/profile')
+        }
+      }
   }, [router])
 
   function handleSubmit(e) {
@@ -47,40 +55,52 @@ export default function LoginPage() {
       return
     }
 
-    setTimeout(() => {
-      if (isRegister) {
-        const refCode = 'VIBIN-' + Math.random().toString(36).substring(2, 8).toUpperCase()
-        const newUser = {
-          id: 'user_' + Date.now(),
-          email,
-          firstName,
-          lastName,
-          ambassadorCode: refCode,
-          createdAt: new Date().toISOString()
-        }
-        localStorage.setItem('vibin_user', JSON.stringify(newUser))
-        
-        const ambData = { code: refCode, status: 'active', createdAt: new Date().toISOString() }
-        localStorage.setItem('vibin_ambassador', JSON.stringify(ambData))
-        
-        setMessage('Account created! Redirecting...')
-        window.location.href = '/ambassador'
-      } else {
-        if (email && password.length >= 6) {
-          const loggedInUser = {
-            id: 'user_' + Date.now(),
-            email,
-            firstName: email.split('@')[0],
-            lastName: ''
+        setTimeout(() => {
+          if (isRegister) {
+            const refCode = 'VIBIN-' + Math.random().toString(36).substring(2, 8).toUpperCase()
+            const newUser = {
+              id: 'user_' + Date.now(),
+              email,
+              firstName,
+              lastName,
+              ambassadorCode: refCode,
+              is_ambassador: true,
+              is_admin: false,
+              createdAt: new Date().toISOString()
+            }
+            localStorage.setItem('vibin_user', JSON.stringify(newUser))
+            
+            const ambData = { code: refCode, status: 'active', createdAt: new Date().toISOString() }
+            localStorage.setItem('vibin_ambassador', JSON.stringify(ambData))
+            
+            setMessage('Account created! Redirecting...')
+            window.location.href = '/ambassador'
+          } else {
+            if (email && password.length >= 6) {
+              // Check if admin (hardcoded for now - should check Supabase in production)
+              const isAdmin = email.includes('admin') || email === 'hello@vibinapparel.com'
+              const loggedInUser = {
+                id: 'user_' + Date.now(),
+                email,
+                firstName: email.split('@')[0],
+                lastName: '',
+                is_admin: isAdmin,
+                is_ambassador: false
+              }
+              localStorage.setItem('vibin_user', JSON.stringify(loggedInUser))
+              setMessage('Welcome back! Redirecting...')
+              
+              // Role-based redirect
+              if (isAdmin) {
+                window.location.href = '/admin'
+              } else {
+                window.location.href = '/profile'
+              }
+            }
           }
-          localStorage.setItem('vibin_user', JSON.stringify(loggedInUser))
-          setMessage('Welcome back! Redirecting...')
-          window.location.href = '/profile'
-        }
-      }
-      setLoading(false)
-    }, 500)
-  }
+          setLoading(false)
+        }, 500)
+    }
 
   function handleUnsubscribe(e) {
     e.preventDefault()

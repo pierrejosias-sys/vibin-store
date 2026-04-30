@@ -2,10 +2,24 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import supabase from '../lib/supabase-public'
 import styles from '../styles.css'
 
 export default function AdminPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('vibin_user');
+    if (!savedUser) {
+      router.push('/admin/login');
+      return;
+    }
+    const user = JSON.parse(savedUser);
+    if (!user.is_admin) {
+      router.push('/login');
+    }
+  }, [router]);
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({

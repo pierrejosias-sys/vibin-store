@@ -1,11 +1,26 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 const mockOrders = [
   { id: 'ORD-001', customer: 'John Doe', email: 'john@email.com', product: 'VIBIN Foundation Tee', size: 'M', color: 'Black', quantity: 1, total: 45, status: 'pending', date: '2026-04-29', address: { street: '123 Main St', city: 'Jacksonville', state: 'FL', zip: '32256' } },
   { id: 'ORD-002', customer: 'Jane Smith', email: 'jane@email.com', product: 'Move Different Tee', size: 'L', color: 'Black', quantity: 2, total: 90, status: 'paid', date: '2026-04-28', address: { street: '456 Oak Ave', city: 'Miami', state: 'FL', zip: '33101' } },
   { id: 'ORD-003', customer: 'Mike Johnson', email: 'mike@email.com', product: 'VOL 01 Hoodie', size: 'XL', color: 'Black', quantity: 1, total: 75, status: 'shipped', date: '2026-04-27', tracking: '1Z999AA10123456784', address: { street: '789 Pine Rd', city: 'Tampa', state: 'FL', zip: '33601' } },
 ];
 export default function AdminOrdersPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('vibin_user');
+    if (!savedUser) {
+      router.push('/admin/login');
+      return;
+    }
+    const user = JSON.parse(savedUser);
+    if (!user.is_admin) {
+      router.push('/login');
+    }
+  }, [router]);
+
   const [filter, setFilter] = useState('all');
   const [selected, setSelected] = useState(null);
   const filtered = filter === 'all' ? mockOrders : mockOrders.filter(o => o.status === filter);
