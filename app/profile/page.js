@@ -117,8 +117,17 @@ export default function ProfilePage() {
         <button onClick={handleLogout} style={{ marginTop: '40px', padding: '12px 24px', background: 'transparent', border: '1px solid #ccc', cursor: 'pointer' }}>
           Sign Out
         </button>
-      </div>
 
+        {/* Ambassador Section */}
+        <div style={{ marginTop: '40px', padding: '30px', background: '#111', borderRadius: '8px', textAlign: 'center' }}>
+          <h3 style={{ fontFamily: 'Anton, sans-serif', fontSize: '24px', textTransform: 'uppercase', marginBottom: '12px' }}>Want to Earn as an Ambassador?</h3>
+          <p style={{ color: '#888', fontSize: '14px', marginBottom: '20px' }}>Earn 15-25% commission by sharing Vibin with your audience.</p>
+          <Link href="/ambassador/apply" style={{ display: 'inline-block', padding: '12px 24px', background: '#e05c2e', color: '#fff', textDecoration: 'none', borderRadius: '4px', fontWeight: 'bold', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '.1em' }}>
+            Apply as Ambassador →
+          </Link>
+        </div>
+      </div>
+      
       <footer>
         <div className="foot-logo">VIBIN</div>
         <div className="foot-tag">Custom prints · Made to order · Jacksonville, FL</div>

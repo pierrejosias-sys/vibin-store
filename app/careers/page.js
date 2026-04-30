@@ -214,7 +214,20 @@ export default function CareersPage() {
         </div>
       </section>
 
-      <footer>
+        {/* Ambassador Apply Section */}
+        <section style={{padding:'80px 60px',background:'#0a0a0a',textAlign:'center'}}>
+          <h2 style={{fontFamily:'Anton, sans-serif',fontSize:'36px',color:'#f6f1e7',textTransform:'uppercase',marginBottom:'16px'}}>
+            Want to Earn as an <em style={{fontStyle:'italic',color:'#e05c2e'}}>Ambassador?</em>
+          </h2>
+          <p style={{color:'#888',fontSize:'16px',marginBottom:'32px',maxWidth:'600px',margin:'0 auto 32px'}}>
+            Earn 15-25% commission by sharing Vibin with your audience. No 9-5 required.
+          </p>
+          <Link href="/ambassador/apply" style={{display:'inline-block',padding:'16px 32px',background:'#e05c2e',color:'#fff',textDecoration:'none',borderRadius:'4px',fontWeight:'bold',fontSize:'14px',textTransform:'uppercase',letterSpacing:'.1em'}}>
+            Apply as Ambassador →
+          </Link>
+        </section>
+
+        <footer>
         <div className="foot-logo">VIBIN</div>
         <div className="foot-social">
           <a href="#">Instagram</a>

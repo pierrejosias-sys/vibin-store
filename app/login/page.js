@@ -281,7 +281,7 @@ export default function LoginPage() {
                   <div className="field">
                     <div className="field-label">
                       <span>Password</span>
-                      <a href="#">Forgot?</a>
+                      <a href="/forgot-password">Forgot?</a>
                     </div>
                     <input className="field-input" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
                   </div>
@@ -303,7 +303,7 @@ export default function LoginPage() {
             )}
 
             {!ambassadorMode && !showUnsubscribe && (
-              <a href="#" className="amb-strip" onClick={() => setAmbassadorMode(true)}>
+              <a href="/ambassador/login" className="amb-strip">
                 <div className="amb-strip-left">
                   Want to earn for sharing Vibin?
                   <strong>Ambassador Login →</strong>

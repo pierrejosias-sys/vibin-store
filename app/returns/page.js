@@ -144,10 +144,10 @@ export default function ReturnsPage() {
               <div className="contact-label">returns@vibinapparel.com</div>
               <div className="contact-sub">Email us anytime</div>
             </a>
-            <a href="/returns" className="contact-method">
+            <a href="/support-agent" className="contact-method">
               <div className="contact-icon">💬</div>
-              <div className="contact-label">Contact Form</div>
-              <div className="contact-sub">Fill out our form</div>
+              <div className="contact-label">Live Chat</div>
+              <div className="contact-sub">Chat with support</div>
             </a>
           </div>
         </div>
