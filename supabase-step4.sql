@@ -1,0 +1,33 @@
+CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
+CREATE INDEX IF NOT EXISTS idx_orders_email ON orders(customer_email);
+CREATE INDEX IF NOT EXISTS idx_vibin_signups_email ON vibin_signups(email);
+CREATE INDEX IF NOT EXISTS idx_job_applications_job_id ON job_applications(job_id);
+CREATE INDEX IF NOT EXISTS idx_ambassadors_code ON ambassadors(code);
+CREATE INDEX IF NOT EXISTS idx_ambassador_referrals_code ON ambassador_referrals(ambassador_code);
+CREATE INDEX IF NOT EXISTS idx_support_chats_email ON support_chats(email);
+CREATE INDEX IF NOT EXISTS idx_support_messages_chat ON support_messages(chat_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_email ON notifications(user_email);
+
+ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE vibin_signups ENABLE ROW LEVEL SECURITY;
+ALTER TABLE job_applications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ambassadors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ambassador_referrals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE support_chats ENABLE ROW LEVEL SECURITY;
+ALTER TABLE support_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE verification_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public can view products" ON products FOR SELECT USING (true);
+CREATE POLICY "Admins manage orders" ON orders FOR ALL USING (true);
+CREATE POLICY "Anyone can sign up" ON vibin_signups FOR INSERT WITH CHECK (true);
+CREATE POLICY "Anyone can apply" ON job_applications FOR INSERT WITH CHECK (true);
+CREATE POLICY "Ambassadors view own" ON ambassadors FOR SELECT USING (true);
+CREATE POLICY "Anyone can apply ambassador" ON ambassadors FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users view own chats" ON support_chats FOR SELECT USING (true);
+CREATE POLICY "Anyone can create chat" ON support_chats FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users view messages" ON support_messages FOR SELECT USING (true);
+CREATE POLICY "Anyone can send message" ON support_messages FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users view own notifications" ON notifications FOR SELECT USING (true);
