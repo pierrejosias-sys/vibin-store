@@ -1,38 +1,69 @@
+import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = 'https://grbwnjnngzcsjlubcmtp.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyYnduam5uZ3pjc2psdWJjbXRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNTgzMDEsImV4cCI6MjA5MjkzNDMwMX0.SYKFZJ0XVua0JmZ-tkaNhec2M3KtG3tS5vj_1Nl261c'
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
-const supabase = createClient(supabaseUrl, supabaseKey)
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+)
+
+// Required: disable Next.js body parsing so Stripe can verify the raw signature
+export const config = {
+  api: { bodyParser: false },
+}
 
 export async function POST(request) {
+  const sig = request.headers.get('stripe-signature')
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+
+  let event
+
   try {
-    const body = await request.json()
-    const { orderId, email, items, status } = body
+    const rawBody = await request.text()
+    event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret)
+  } catch (err) {
+    console.error('Webhook signature verification failed:', err.message)
+    return Response.json({ error: `Webhook Error: ${err.message}` }, { status: 400 })
+  }
 
-    if (status === 'paid' || status === 'completed') {
-      const { data, error } = await supabase
-        .from('orders')
-        .update({ status: 'paid', stripe_payment_id: body.paymentId })
-        .eq('id', orderId)
-        .select()
+  try {
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object
 
-      const { error: emailError } = await supabase
+      const orderId = session.metadata?.orderId
+      const email = session.customer_email
+      const paymentId = session.payment_intent
+      const items = session.metadata?.items ? JSON.parse(session.metadata.items) : []
+
+      // Update order status in Supabase
+      if (orderId) {
+        await supabase
+          .from('orders')
+          .update({ status: 'paid', stripe_payment_id: paymentId })
+          .eq('id', orderId)
+      }
+
+      // Insert order confirmation notification
+      await supabase
         .from('notifications')
         .insert({
           type: 'order_confirmation',
           email,
-          order_id: orderId,
+          order_id: orderId || null,
           items: JSON.stringify(items),
           status: 'sent',
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
         })
 
-      return Response.json({ success: true, order: data })
+      console.log(`✅ Order confirmed — payment: ${paymentId}, email: ${email}`)
+      return Response.json({ received: true })
     }
 
-    return Response.json({ success: false, message: 'Invalid status' })
-  } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 })
+    // Acknowledge other event types without acting on them
+    return Response.json({ received: true })
+  } catch (err) {
+    console.error('Webhook handler error:', err.message)
+    return Response.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
