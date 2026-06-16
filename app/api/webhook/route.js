@@ -1,17 +1,14 @@
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 
+export const runtime = 'nodejs'
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
-
-// Required: disable Next.js body parsing so Stripe can verify the raw signature
-export const config = {
-  api: { bodyParser: false },
-}
 
 export async function POST(request) {
   const sig = request.headers.get('stripe-signature')
@@ -36,7 +33,6 @@ export async function POST(request) {
       const paymentId = session.payment_intent
       const items = session.metadata?.items ? JSON.parse(session.metadata.items) : []
 
-      // Update order status in Supabase
       if (orderId) {
         await supabase
           .from('orders')
@@ -44,7 +40,6 @@ export async function POST(request) {
           .eq('id', orderId)
       }
 
-      // Insert order confirmation notification
       await supabase
         .from('notifications')
         .insert({
@@ -60,7 +55,6 @@ export async function POST(request) {
       return Response.json({ received: true })
     }
 
-    // Acknowledge other event types without acting on them
     return Response.json({ received: true })
   } catch (err) {
     console.error('Webhook handler error:', err.message)

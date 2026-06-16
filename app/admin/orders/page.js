@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createBrowserClient } from '@supabase/ssr';
 
 const STATUS_ORDER = ['pending', 'paid', 'shipped', 'delivered', 'cancelled'];
 
@@ -15,7 +15,10 @@ const STATUS_STYLES = {
 
 export default function AdminOrdersPage() {
   const router = useRouter();
-  const supabase = createClientComponentClient();
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -3,9 +3,12 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@supabase/ssr'
 
-const supabase = createClientComponentClient()
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+)
 
 export default function LoginPage() {
   const [isRegister, setIsRegister] = useState(false)
@@ -16,7 +19,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [oauthLoading, setOauthLoading] = useState('')
   const [message, setMessage] = useState('')
-  const [messageType, setMessageType] = useState('') // 'success' | 'error'
+  const [messageType, setMessageType] = useState('')
   const [ambassadorMode, setAmbassadorMode] = useState(false)
   const [ambCode, setAmbCode] = useState('')
   const [showUnsubscribe, setShowUnsubscribe] = useState(false)
@@ -30,7 +33,6 @@ export default function LoginPage() {
       setMessageType('error')
     }
 
-    // Check existing Supabase session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) redirectByRole(session.user)
     })
@@ -47,7 +49,6 @@ export default function LoginPage() {
     else router.push('/profile')
   }
 
-  // ── OAuth ──────────────────────────────────────────────
   async function signInWithOAuth(provider) {
     setOauthLoading(provider)
     const { error } = await supabase.auth.signInWithOAuth({
@@ -64,17 +65,14 @@ export default function LoginPage() {
     }
   }
 
-  // ── Email / Password ───────────────────────────────────
   async function handleSubmit(e) {
     e.preventDefault()
     setLoading(true)
     setMessage('')
 
-    // Ambassador code mode (unchanged)
     if (ambassadorMode) {
       setTimeout(() => {
         if (ambCode.length >= 4) {
-          localStorage.setItem('vibin_ambassador', JSON.stringify({ code: ambCode.toUpperCase(), status: 'active', createdAt: new Date().toISOString() }))
           setMessage('Ambassador logged in!')
           setMessageType('success')
           setTimeout(() => router.push('/ambassador'), 1000)
@@ -180,7 +178,6 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* AMBASSADOR MODE */}
             {ambassadorMode ? (
               <div className="panel on">
                 <div className="form-eye">Ambassador Portal</div>
@@ -203,7 +200,7 @@ export default function LoginPage() {
               <div className="panel on">
                 <div className="form-eye">Newsletter</div>
                 <h2 className="form-title">Unsubscribe</h2>
-                <p className="form-sub">We’ll miss you! Enter your email to unsubscribe.</p>
+                <p className="form-sub">We'll miss you! Enter your email to unsubscribe.</p>
                 <form onSubmit={handleUnsubscribe}>
                   <div className="field">
                     <div className="field-label">Email</div>
@@ -226,19 +223,12 @@ export default function LoginPage() {
                   {isRegister ? 'Get 15% off your first order plus early access to drops.' : 'Enter your details to continue.'}
                 </p>
 
-                {/* ── OAUTH BUTTONS ── */}
                 <div style={{display:'flex',flexDirection:'column',gap:'10px',marginBottom:'20px'}}>
                   <button
                     type="button"
                     onClick={() => signInWithOAuth('google')}
                     disabled={!!oauthLoading}
-                    style={{
-                      display:'flex',alignItems:'center',justifyContent:'center',gap:'10px',
-                      width:'100%',padding:'12px 16px',borderRadius:'8px',
-                      border:'1px solid #d4d4d4',background:'#fff',
-                      fontFamily:'inherit',fontSize:'0.9rem',fontWeight:'500',
-                      color:'#3c3c3c',cursor:'pointer',transition:'background 0.15s'
-                    }}
+                    style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'10px',width:'100%',padding:'12px 16px',borderRadius:'8px',border:'1px solid #d4d4d4',background:'#fff',fontFamily:'inherit',fontSize:'0.9rem',fontWeight:'500',color:'#3c3c3c',cursor:'pointer',transition:'background 0.15s'}}
                     onMouseOver={e => e.currentTarget.style.background='#f5f5f5'}
                     onMouseOut={e => e.currentTarget.style.background='#fff'}
                   >
@@ -259,13 +249,7 @@ export default function LoginPage() {
                     type="button"
                     onClick={() => signInWithOAuth('apple')}
                     disabled={!!oauthLoading}
-                    style={{
-                      display:'flex',alignItems:'center',justifyContent:'center',gap:'10px',
-                      width:'100%',padding:'12px 16px',borderRadius:'8px',
-                      border:'none',background:'#000',
-                      fontFamily:'inherit',fontSize:'0.9rem',fontWeight:'500',
-                      color:'#fff',cursor:'pointer',transition:'background 0.15s'
-                    }}
+                    style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'10px',width:'100%',padding:'12px 16px',borderRadius:'8px',border:'none',background:'#000',fontFamily:'inherit',fontSize:'0.9rem',fontWeight:'500',color:'#fff',cursor:'pointer',transition:'background 0.15s'}}
                     onMouseOver={e => e.currentTarget.style.background='#1a1a1a'}
                     onMouseOut={e => e.currentTarget.style.background='#000'}
                   >
@@ -280,14 +264,12 @@ export default function LoginPage() {
                   </button>
                 </div>
 
-                {/* DIVIDER */}
                 <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'20px'}}>
                   <div style={{flex:1,height:'1px',background:'#e0e0e0'}} />
                   <span style={{fontSize:'0.75rem',color:'#aaa',letterSpacing:'0.05em'}}>OR</span>
                   <div style={{flex:1,height:'1px',background:'#e0e0e0'}} />
                 </div>
 
-                {/* EMAIL FORM */}
                 <form onSubmit={handleSubmit}>
                   {isRegister && (
                     <div className="field-row">
@@ -327,14 +309,8 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* MESSAGE */}
             {message && (
-              <div style={{
-                marginTop:'16px',padding:'12px 14px',borderRadius:'8px',fontSize:'0.85rem',
-                background: messageType === 'error' ? '#fff0f0' : '#f0fff4',
-                color: messageType === 'error' ? '#cc0000' : '#006600',
-                border: `1px solid ${messageType === 'error' ? '#ffd0d0' : '#c3e6cb'}`
-              }}>
+              <div style={{marginTop:'16px',padding:'12px 14px',borderRadius:'8px',fontSize:'0.85rem',background: messageType === 'error' ? '#fff0f0' : '#f0fff4',color: messageType === 'error' ? '#cc0000' : '#006600',border: `1px solid ${messageType === 'error' ? '#ffd0d0' : '#c3e6cb'}`}}>
                 {message}
               </div>
             )}
