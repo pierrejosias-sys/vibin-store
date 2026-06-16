@@ -25,7 +25,9 @@ export default function ShopPage() {
     fetchProducts()
   }, [])
 
-  function addToCart(product) {
+  function addToCart(e, product) {
+    e.preventDefault()
+    e.stopPropagation()
     const cart = JSON.parse(localStorage.getItem('vibin_cart') || '[]')
     const existing = cart.find(item => item.id === product.id)
     if (existing) {
@@ -39,6 +41,11 @@ export default function ShopPage() {
 
   const categories = ['all', ...new Set(products.map(p => p.category).filter(Boolean))]
   const filteredProducts = filter === 'all' ? products : products.filter(p => p.category === filter)
+
+  // Resolve the correct link: prefer slug, fall back to id
+  function productHref(product) {
+    return `/product/${product.slug || product.id}`
+  }
 
   return (
     <>
@@ -89,20 +96,47 @@ export default function ShopPage() {
           <div className="shop-empty">No products found</div>
         ) : (
           filteredProducts.map(product => (
-            <div key={product.id} className="shop-card" onClick={() => addToCart(product)}>
-              <div className="shop-img">
-                {product.name.split(' ').slice(0, 3).map((w, i) => (
-                  <span key={i}>{w}{i < Math.min(product.name.split(' ').length, 3) - 1 && <br/>}</span>
-                ))}
+            <Link key={product.id} href={productHref(product)} className="shop-card" style={{textDecoration:'none',color:'inherit',display:'block'}}>
+              <div className="shop-img" style={{position:'relative',overflow:'hidden'}}>
+                {product.image_url ? (
+                  <img
+                    src={product.image_url}
+                    alt={product.name}
+                    loading="lazy"
+                    style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}
+                  />
+                ) : (
+                  product.name.split(' ').slice(0, 3).map((w, i) => (
+                    <span key={i}>{w}{i < Math.min(product.name.split(' ').length, 3) - 1 && <br/>}</span>
+                  ))
+                )}
+                {product.tags?.includes('new') && (
+                  <div style={{position:'absolute',top:'10px',left:'10px',background:'#01696f',color:'#fff',fontSize:'0.65rem',fontWeight:'700',letterSpacing:'0.1em',padding:'3px 8px',borderRadius:'20px'}}>NEW</div>
+                )}
+                {/* Quick add button */}
+                <button
+                  className="shop-quick-add"
+                  onClick={(e) => addToCart(e, product)}
+                  style={{
+                    position:'absolute',bottom:'10px',left:'50%',transform:'translateX(-50%)',
+                    background:'#fff',color:'#111',border:'none',borderRadius:'20px',
+                    padding:'6px 16px',fontSize:'0.7rem',fontWeight:'700',letterSpacing:'0.08em',
+                    cursor:'pointer',opacity:0,transition:'opacity 0.2s',whiteSpace:'nowrap'
+                  }}
+                >
+                  + Quick Add
+                </button>
               </div>
               <div className="shop-info">
                 <div className="shop-name">{product.name}</div>
                 <div className="shop-meta">
-                  <span className="shop-cat">{product.color ? product.color.charAt(0).toUpperCase() + product.color.slice(1) : 'In Stock'}</span>
-                  <span className="shop-price">${product.price}</span>
+                  <span className="shop-cat">
+                    {product.color ? product.color.charAt(0).toUpperCase() + product.color.slice(1) : 'In Stock'}
+                  </span>
+                  <span className="shop-price">${Number(product.price).toFixed(2)}</span>
                 </div>
               </div>
-            </div>
+            </Link>
           ))
         )}
       </div>
