@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 
+const PAGE_SIZE = 25;
+
 const STATUS_ORDER = ['pending', 'paid', 'shipped', 'delivered', 'cancelled'];
 
 const STATUS_STYLES = {
@@ -21,8 +23,12 @@ export default function AdminOrdersPage() {
   );
 
   const [orders, setOrders] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [page, setPage] = useState(0);
   const [selected, setSelected] = useState(null);
   const [updating, setUpdating] = useState(false);
   const [trackingInput, setTrackingInput] = useState('');
@@ -46,19 +52,44 @@ export default function AdminOrdersPage() {
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    const from = page * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+
+    let query = supabase
       .from('orders')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (!error) setOrders(data || []);
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (filter !== 'all') query = query.eq('status', filter);
+
+    if (search.trim()) {
+      query = query.or(
+        `order_number.ilike.%${search.trim()}%,customer_email.ilike.%${search.trim()}%,customer_name.ilike.%${search.trim()}%,referral_code.ilike.%${search.trim()}%`
+      );
+    }
+
+    const { data, error, count } = await query;
+    if (!error) {
+      setOrders(data || []);
+      setTotalCount(count || 0);
+    }
     setLoading(false);
-  }, [supabase]);
+  }, [supabase, filter, search, page]);
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
+
+  // Reset page on filter/search change
+  useEffect(() => { setPage(0); }, [filter, search]);
 
   const showToast = (msg, type = 'success') => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setSearch(searchInput);
   };
 
   const updateOrderStatus = async (orderId, newStatus) => {
@@ -90,7 +121,7 @@ export default function AdminOrdersPage() {
       showToast('Failed to save changes', 'error');
     } else {
       showToast('Order updated');
-      await fetchOrders();
+      setOrders(prev => prev.map(o => o.id === selected.id ? { ...o, ...updates } : o));
       setSelected(prev => ({ ...prev, ...updates }));
     }
     setUpdating(false);
@@ -102,27 +133,27 @@ export default function AdminOrdersPage() {
     setNotesInput(order.notes || '');
   };
 
-  const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter);
-  const counts = STATUS_ORDER.reduce((acc, s) => {
-    acc[s] = orders.filter(o => o.status === s).length;
-    return acc;
-  }, {});
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Toast */}
       {toast && (
-        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg transition-all ${toast.type === 'error' ? 'bg-red-600' : 'bg-green-600'}`}>
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${
+          toast.type === 'error' ? 'bg-red-600' : 'bg-green-600'
+        }`}>
           {toast.msg}
         </div>
       )}
 
       <div className="max-w-7xl mx-auto p-6 lg:p-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">ORDERS</h1>
-            <p className="text-gray-500 text-sm mt-1">{orders.length} total orders</p>
+            <p className="text-gray-500 text-sm mt-1">
+              {totalCount} {filter !== 'all' ? filter : 'total'} orders
+            </p>
           </div>
           <button
             onClick={fetchOrders}
@@ -132,21 +163,43 @@ export default function AdminOrdersPage() {
           </button>
         </div>
 
+        {/* Search */}
+        <form onSubmit={handleSearch} className="mb-5 flex gap-2">
+          <input
+            type="text"
+            value={searchInput}
+            onChange={e => setSearchInput(e.target.value)}
+            placeholder="Search by order #, email, name, or referral code…"
+            className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-gray-500"
+          />
+          <button
+            type="submit"
+            className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm transition-colors"
+          >
+            Search
+          </button>
+          {search && (
+            <button
+              type="button"
+              onClick={() => { setSearch(''); setSearchInput(''); }}
+              className="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg text-sm text-gray-400 transition-colors"
+            >
+              ✕
+            </button>
+          )}
+        </form>
+
         {/* Filter tabs */}
         <div className="flex gap-2 flex-wrap mb-6">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === 'all' ? 'bg-white text-black' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`}
-          >
-            ALL ({orders.length})
-          </button>
-          {STATUS_ORDER.map(s => (
+          {['all', ...STATUS_ORDER].map(s => (
             <button
               key={s}
               onClick={() => setFilter(s)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === s ? 'bg-white text-black' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                filter === s ? 'bg-white text-black' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+              }`}
             >
-              {s.toUpperCase()} {counts[s] > 0 && `(${counts[s]})`}
+              {s.toUpperCase()}
             </button>
           ))}
         </div>
@@ -154,20 +207,22 @@ export default function AdminOrdersPage() {
         {/* Table */}
         {loading ? (
           <div className="text-center py-24 text-gray-500">Loading orders...</div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-24 text-gray-500">No {filter !== 'all' ? filter : ''} orders found.</div>
+        ) : orders.length === 0 ? (
+          <div className="text-center py-24 text-gray-500">
+            {search ? `No orders found for "${search}"` : `No ${filter !== 'all' ? filter : ''} orders found.`}
+          </div>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-gray-800">
             <table className="w-full">
               <thead className="bg-gray-900 border-b border-gray-800">
                 <tr>
-                  {['ORDER', 'CUSTOMER', 'ITEMS', 'TOTAL', 'STATUS', 'DATE', 'ACTIONS'].map(h => (
+                  {['ORDER', 'CUSTOMER', 'ITEMS', 'REFERRAL', 'TOTAL', 'STATUS', 'DATE', 'ACTIONS'].map(h => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-400 tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-800/60">
-                {filtered.map(order => {
+                {orders.map(order => {
                   const items = Array.isArray(order.items) ? order.items : [];
                   const itemSummary = items.map(i => `${i.name || i.product_name || 'Item'} x${i.quantity || 1}`).join(', ');
                   const nextStatus = STATUS_ORDER[STATUS_ORDER.indexOf(order.status) + 1];
@@ -177,21 +232,35 @@ export default function AdminOrdersPage() {
                         <span className="font-mono text-sm">{order.order_number}</span>
                       </td>
                       <td className="px-4 py-4">
-                        <span className="text-sm text-gray-300">{order.customer_email}</span>
+                        <div className="text-sm">{order.customer_name || '—'}</div>
+                        <div className="text-xs text-gray-500">{order.customer_email}</div>
                       </td>
                       <td className="px-4 py-4">
-                        <span className="text-xs text-gray-400 max-w-[200px] block truncate">{itemSummary || '—'}</span>
+                        <span className="text-xs text-gray-400 max-w-[180px] block truncate">{itemSummary || '—'}</span>
+                      </td>
+                      <td className="px-4 py-4">
+                        {order.referral_code ? (
+                          <span className="px-2 py-0.5 bg-purple-900/40 text-purple-300 border border-purple-700 rounded text-xs font-mono">
+                            {order.referral_code}
+                          </span>
+                        ) : (
+                          <span className="text-gray-600 text-xs">—</span>
+                        )}
                       </td>
                       <td className="px-4 py-4">
                         <span className="font-medium">${Number(order.total || 0).toFixed(2)}</span>
                       </td>
                       <td className="px-4 py-4">
-                        <span className={`px-2.5 py-1 rounded-md text-xs font-semibold ${STATUS_STYLES[order.status] || STATUS_STYLES.pending}`}>
+                        <span className={`px-2.5 py-1 rounded-md text-xs font-semibold ${
+                          STATUS_STYLES[order.status] || STATUS_STYLES.pending
+                        }`}>
                           {(order.status || 'pending').toUpperCase()}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-xs text-gray-500">
-                        {new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        {new Date(order.created_at).toLocaleDateString('en-US', {
+                          month: 'short', day: 'numeric', year: 'numeric'
+                        })}
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex gap-2 items-center">
@@ -219,6 +288,29 @@ export default function AdminOrdersPage() {
             </table>
           </div>
         )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-4 text-sm text-gray-400">
+            <span>Page {page + 1} of {totalPages} · {totalCount} orders</span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPage(p => Math.max(0, p - 1))}
+                disabled={page === 0}
+                className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded-lg disabled:opacity-40 transition-colors"
+              >
+                ← Prev
+              </button>
+              <button
+                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                disabled={page >= totalPages - 1}
+                className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded-lg disabled:opacity-40 transition-colors"
+              >
+                Next →
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Order Detail Modal */}
@@ -235,9 +327,20 @@ export default function AdminOrdersPage() {
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h2 className="text-xl font-bold">{selected.order_number}</h2>
-                <p className="text-gray-500 text-sm mt-0.5">{selected.customer_email}</p>
+                <p className="text-gray-300 text-sm mt-0.5">{selected.customer_name || selected.customer_email}</p>
+                {selected.customer_name && (
+                  <p className="text-gray-500 text-xs">{selected.customer_email}</p>
+                )}
+                {selected.referral_code && (
+                  <p className="text-xs mt-1">
+                    <span className="text-gray-500">Referred by </span>
+                    <span className="font-mono text-purple-400">{selected.referral_code}</span>
+                  </p>
+                )}
               </div>
-              <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${STATUS_STYLES[selected.status] || STATUS_STYLES.pending}`}>
+              <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
+                STATUS_STYLES[selected.status] || STATUS_STYLES.pending
+              }`}>
                 {(selected.status || 'pending').toUpperCase()}
               </span>
             </div>
@@ -248,7 +351,7 @@ export default function AdminOrdersPage() {
               <div className="space-y-2">
                 {(Array.isArray(selected.items) ? selected.items : []).map((item, i) => (
                   <div key={i} className="flex justify-between text-sm bg-gray-800 rounded-lg px-3 py-2">
-                    <span>{item.name || item.product_name || 'Item'} {item.size && `(${item.size})`} x{item.quantity || 1}</span>
+                    <span>{item.name || item.product_name || 'Item'}{item.size ? ` (${item.size})` : ''} x{item.quantity || 1}</span>
                     <span className="text-gray-400">${((item.price || 0) * (item.quantity || 1)).toFixed(2)}</span>
                   </div>
                 ))}
@@ -267,7 +370,9 @@ export default function AdminOrdersPage() {
                   {selected.shipping_address.name && <div>{selected.shipping_address.name}</div>}
                   <div>{selected.shipping_address.line1 || selected.shipping_address.street}</div>
                   {selected.shipping_address.line2 && <div>{selected.shipping_address.line2}</div>}
-                  <div>{selected.shipping_address.city}, {selected.shipping_address.state} {selected.shipping_address.postal_code || selected.shipping_address.zip}</div>
+                  <div>
+                    {selected.shipping_address.city}, {selected.shipping_address.state} {selected.shipping_address.postal_code || selected.shipping_address.zip}
+                  </div>
                   {selected.shipping_address.country && <div>{selected.shipping_address.country}</div>}
                 </div>
               </div>
@@ -285,6 +390,9 @@ export default function AdminOrdersPage() {
                 placeholder="e.g. 1Z999AA10123456784"
                 className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-gray-500"
               />
+              {selected.tracking_number && (
+                <p className="text-xs text-gray-500 mt-1">Current: {selected.tracking_number}</p>
+              )}
               {trackingInput && selected.status === 'paid' && (
                 <p className="text-xs text-green-400 mt-1">Saving this will automatically mark the order as Shipped.</p>
               )}
@@ -313,7 +421,11 @@ export default function AdminOrdersPage() {
                     key={s}
                     disabled={selected.status === s || updating}
                     onClick={() => updateOrderStatus(selected.id, s)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-40 ${selected.status === s ? 'bg-white text-black cursor-default' : 'bg-gray-800 hover:bg-gray-700 text-gray-300'}`}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-40 ${
+                      selected.status === s
+                        ? 'bg-white text-black cursor-default'
+                        : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+                    }`}
                   >
                     {s.toUpperCase()}
                   </button>
