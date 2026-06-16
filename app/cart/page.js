@@ -16,7 +16,6 @@ export default function CartPage() {
       const saved = localStorage.getItem('vibin_cart')
       if (saved) {
         const parsed = JSON.parse(saved)
-        // Validate: must be an array of objects with required fields
         if (
           Array.isArray(parsed) &&
           parsed.every(
@@ -32,7 +31,6 @@ export default function CartPage() {
         ) {
           setItems(parsed)
         } else {
-          // Stale or corrupt data — clear it
           localStorage.removeItem('vibin_cart')
         }
       }
@@ -40,7 +38,6 @@ export default function CartPage() {
       localStorage.removeItem('vibin_cart')
     }
     setLoading(false)
-    // Mark initialized AFTER state is set so the write effect doesn't fire prematurely
     setTimeout(() => { initialized.current = true }, 0)
   }, [])
 
@@ -52,11 +49,17 @@ export default function CartPage() {
   }, [items])
 
   function updateQty(id, color, size, change) {
-    setItems(prev => prev.map(item =>
-      item.id === id && item.color === color && item.size === size
-        ? { ...item, qty: Math.max(1, item.qty + change) }
-        : item
-    ))
+    setItems(prev => {
+      return prev.reduce((acc, item) => {
+        if (item.id === id && item.color === color && item.size === size) {
+          const newQty = item.qty + change
+          // If qty drops to 0 or below, remove the item
+          if (newQty <= 0) return acc
+          return [...acc, { ...item, qty: newQty }]
+        }
+        return [...acc, item]
+      }, [])
+    })
   }
 
   function removeItem(id, color, size) {
