@@ -1,25 +1,29 @@
-
 'use client'
- 
+
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '../lib/supabase'
 import { useCart } from '../lib/cart-context'
-import styles from '../styles.css'
-
-const PRODUCTS = [
-  { id: '1', name: 'Foundation Tee', price: 48, cat: 'Tee' },
-  { id: '2', name: 'Move Different Tee', price: 48, cat: 'Tee' },
-  { id: '3', name: 'Vol 01 Hoodie', price: 98, cat: 'Hoodie' },
-  { id: '4', name: 'VIBIN Cap', price: 32, cat: 'Accessories' },
-  { id: '5', name: 'Cargo Pant', price: 88, cat: 'Pants' },
-]
 
 export default function ShopPage() {
-  const [products] = useState(PRODUCTS)
-  const [loading, setLoading] = useState(false)
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
   const { cartCount, updateCart } = useCart()
+
+  useEffect(() => {
+    async function fetchProducts() {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('in_stock', true)
+        .order('created_at', { ascending: false })
+
+      if (!error && data) setProducts(data)
+      setLoading(false)
+    }
+    fetchProducts()
+  }, [])
 
   function addToCart(product) {
     const cart = JSON.parse(localStorage.getItem('vibin_cart') || '[]')
@@ -33,13 +37,11 @@ export default function ShopPage() {
     updateCart()
   }
 
-  const filters = ['all', 'Tee', 'Hoodie', 'Pants', 'Accessories']
-  const filteredProducts = filter === 'all' ? products : products.filter(p => p.cat === filter)
+  const categories = ['all', ...new Set(products.map(p => p.category).filter(Boolean))]
+  const filteredProducts = filter === 'all' ? products : products.filter(p => p.category === filter)
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles }} />
-      
       <div className="promo">
         <div className="promo-track">
           <span>Free shipping over $75</span><span>SS26 Drop is live</span><span>15% off your first order</span>
@@ -73,9 +75,9 @@ export default function ShopPage() {
       </div>
 
       <div className="shop-filters">
-        {filters.map(f => (
+        {categories.map(f => (
           <button key={f} className={`filter-btn ${filter === f ? 'on' : ''}`} onClick={() => setFilter(f)}>
-            {f === 'all' ? 'All' : f}
+            {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
           </button>
         ))}
       </div>
@@ -96,7 +98,7 @@ export default function ShopPage() {
               <div className="shop-info">
                 <div className="shop-name">{product.name}</div>
                 <div className="shop-meta">
-                  <span className="shop-cat">In Stock</span>
+                  <span className="shop-cat">{product.color ? product.color.charAt(0).toUpperCase() + product.color.slice(1) : 'In Stock'}</span>
                   <span className="shop-price">${product.price}</span>
                 </div>
               </div>
@@ -105,7 +107,6 @@ export default function ShopPage() {
         )}
       </div>
 
-      {/* Footer with Legal Links */}
       <footer style={{background:'#0a0a0a',borderTop:'1px solid #1e1e1e',padding:'40px',textAlign:'center'}}>
         <div style={{maxWidth:'1200px',margin:'0 auto'}}>
           <div style={{marginBottom:'20px'}}>
@@ -119,6 +120,5 @@ export default function ShopPage() {
         </div>
       </footer>
     </>
-   )
+  )
 }
-
