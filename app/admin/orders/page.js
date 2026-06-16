@@ -2,12 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { createBrowserClient } from '@supabase/ssr'
-
-const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
 
 const STATUS_FLOW = ['pending', 'paid', 'shipped', 'delivered', 'cancelled']
 const STATUS_COLORS = {
@@ -32,11 +26,14 @@ export default function AdminOrders() {
 
   async function fetchOrders() {
     setLoading(true)
-    const { data, error } = await supabase
-      .from('orders')
-      .select('*')
-      .order('created_at', { ascending: false })
-    if (!error) setOrders(data || [])
+    try {
+      const res = await fetch('/api/admin/orders')
+      const { orders, error } = await res.json()
+      if (error) throw new Error(error)
+      setOrders(orders || [])
+    } catch (e) {
+      showToast('Failed to load orders', 'error')
+    }
     setLoading(false)
   }
 
@@ -47,14 +44,17 @@ export default function AdminOrders() {
 
   async function updateStatus(orderId, newStatus) {
     setSaving(s => ({ ...s, [orderId]: true }))
-    const { error } = await supabase
-      .from('orders')
-      .update({ status: newStatus })
-      .eq('id', orderId)
-    if (!error) {
-      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o))
+    try {
+      const res = await fetch('/api/admin/orders', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: orderId, status: newStatus }),
+      })
+      const { order, error } = await res.json()
+      if (error) throw new Error(error)
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, ...order } : o))
       showToast(`Order updated to ${newStatus}`)
-    } else {
+    } catch (e) {
       showToast('Failed to update status', 'error')
     }
     setSaving(s => ({ ...s, [orderId]: false }))
@@ -64,14 +64,17 @@ export default function AdminOrders() {
     const tracking = trackingInputs[orderId] || ''
     if (!tracking.trim()) return
     setSaving(s => ({ ...s, [`track_${orderId}`]: true }))
-    const { error } = await supabase
-      .from('orders')
-      .update({ tracking_number: tracking, status: 'shipped' })
-      .eq('id', orderId)
-    if (!error) {
-      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, tracking_number: tracking, status: 'shipped' } : o))
+    try {
+      const res = await fetch('/api/admin/orders', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: orderId, tracking_number: tracking, status: 'shipped' }),
+      })
+      const { order, error } = await res.json()
+      if (error) throw new Error(error)
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, ...order } : o))
       showToast('Tracking saved — order marked shipped')
-    } else {
+    } catch (e) {
       showToast('Failed to save tracking', 'error')
     }
     setSaving(s => ({ ...s, [`track_${orderId}`]: false }))
@@ -81,8 +84,7 @@ export default function AdminOrders() {
     const matchStatus = statusFilter === 'all' || o.status === statusFilter
     const matchSearch = !search ||
       o.customer_email?.toLowerCase().includes(search.toLowerCase()) ||
-      String(o.id).includes(search) ||
-      o.order_number?.toLowerCase().includes(search.toLowerCase())
+      String(o.id).includes(search)
     return matchStatus && matchSearch
   })
 
@@ -90,7 +92,9 @@ export default function AdminOrders() {
     total: orders.length,
     paid: orders.filter(o => o.status === 'paid').length,
     shipped: orders.filter(o => o.status === 'shipped').length,
-    revenue: orders.filter(o => ['paid','shipped','delivered'].includes(o.status)).reduce((s, o) => s + (o.total || 0), 0),
+    revenue: orders
+      .filter(o => ['paid', 'shipped', 'delivered'].includes(o.status))
+      .reduce((s, o) => s + (o.total || 0), 0),
   }
 
   const s = {
@@ -106,7 +110,7 @@ export default function AdminOrders() {
       {/* Toast */}
       {toast && (
         <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 9999, background: toast.type === 'error' ? '#3a0000' : '#003a15', border: `1px solid ${toast.type === 'error' ? '#f87171' : '#22c55e'}`, borderRadius: '8px', padding: '14px 20px', color: toast.type === 'error' ? '#f87171' : '#22c55e', ...s.mono, fontSize: '13px' }}>
-          {toast.type === 'error' ? '✗' : '✓'} {toast.msg}
+          {toast.type === 'error' ? '\u2717' : '\u2713'} {toast.msg}
         </div>
       )}
 
@@ -137,7 +141,7 @@ export default function AdminOrders() {
       {/* Filters */}
       <div style={{ padding: '20px 40px', borderBottom: '1px solid #1e1e1e', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
         <input
-          placeholder="Search by email, order ID…"
+          placeholder="Search by email or order ID…"
           value={search}
           onChange={e => setSearch(e.target.value)}
           style={{ ...s.input, width: '280px' }}
@@ -186,7 +190,7 @@ export default function AdminOrders() {
                         {order.status}
                       </span>
                     </div>
-                    <div style={{ ...s.mono, fontSize: '18px', color: '#555', userSelect: 'none' }}>{isExpanded ? '▲' : '▼'}</div>
+                    <div style={{ ...s.mono, fontSize: '18px', color: '#555', userSelect: 'none' }}>{isExpanded ? '\u25b2' : '\u25bc'}</div>
                   </div>
 
                   {/* Expanded detail */}
@@ -197,7 +201,7 @@ export default function AdminOrders() {
                         <p style={{ ...s.mono, fontSize: '10px', color: '#555', letterSpacing: '.15em', textTransform: 'uppercase', marginBottom: '12px' }}>Items</p>
                         {items.length === 0 ? <p style={{ color: '#555', fontSize: '13px' }}>No item data</p> : items.map((item, i) => (
                           <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #1a1a1a', fontSize: '14px' }}>
-                            <span>{item.name} {item.color && `· ${item.color}`} {item.size && `/ ${item.size}`} × {item.qty}</span>
+                            <span>{item.name} {item.color && `\u00b7 ${item.color}`} {item.size && `/ ${item.size}`} \u00d7 {item.qty}</span>
                             <span style={{ color: '#888' }}>${((item.price || 0) * (item.qty || 1)).toFixed(2)}</span>
                           </div>
                         ))}
@@ -214,9 +218,9 @@ export default function AdminOrders() {
                                 key={st}
                                 onClick={() => updateStatus(order.id, st)}
                                 disabled={saving[order.id]}
-                                style={s.btn(STATUS_COLORS[st]?.text === '#22c55e' ? '#003a15' : STATUS_COLORS[st]?.bg || '#1a1a1a')}
+                                style={s.btn(STATUS_COLORS[st]?.bg || '#1a1a1a')}
                               >
-                                → {st}
+                                \u2192 {st}
                               </button>
                             ))}
                           </div>
@@ -245,12 +249,14 @@ export default function AdminOrders() {
                           </div>
                         </div>
 
-                        {/* Commission info */}
+                        {/* Ambassador info */}
                         {order.ambassador_code && (
                           <div style={{ background: '#0d0d0d', border: '1px solid #2a1a00', borderRadius: '6px', padding: '12px' }}>
-                            <p style={{ ...s.mono, fontSize: '10px', color: '#e05c2e', letterSpacing: '.15em', textTransform: 'uppercase', marginBottom: '6px' }}>Ambassador Commission</p>
-                            <p style={{ fontSize: '20px', ...s.anton }}>$ {(order.commission_amount || 0).toFixed(2)}</p>
-                            <p style={{ ...s.mono, fontSize: '11px', color: '#555', marginTop: '4px' }}>Code: {order.ambassador_code} · Status: {order.commission_status || 'pending'}</p>
+                            <p style={{ ...s.mono, fontSize: '10px', color: '#e05c2e', letterSpacing: '.15em', textTransform: 'uppercase', marginBottom: '6px' }}>Ambassador</p>
+                            <p style={{ ...s.mono, fontSize: '13px' }}>Code: <strong>{order.ambassador_code}</strong></p>
+                            {order.commission_amount > 0 && (
+                              <p style={{ fontSize: '18px', ...s.anton, marginTop: '4px' }}>Commission: ${(order.commission_amount || 0).toFixed(2)}</p>
+                            )}
                           </div>
                         )}
 
