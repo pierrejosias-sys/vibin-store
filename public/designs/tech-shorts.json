@@ -1,0 +1,39 @@
+{
+  "product": "Vibin Tech Shorts",
+  "sku_prefix": "VB-SHORT-TEC",
+  "collection": "SS26 Drop 01",
+  "type": "shorts",
+  "description": "7-inch inseam performance shorts with zip side pockets and an internal mesh liner. Moisture-wicking stretch fabric.",
+  "fabric": "88% Polyester 12% Elastane 4-way stretch",
+  "fit": "Athletic / Slim",
+  "inseam_inches": 7,
+  "waistband": "2.5-inch elastic with internal drawcord",
+  "sizes": ["XS", "S", "M", "L", "XL", "XXL"],
+  "colorways": [
+    { "name": "Black",      "hex": "#111111", "pantone": "Black C" },
+    { "name": "Navy",       "hex": "#1a2744", "pantone": "2767 C" },
+    { "name": "Olive",      "hex": "#4a4a2a", "pantone": "7758 C" },
+    { "name": "Coral",      "hex": "#e85d3a", "pantone": "172 C" }
+  ],
+  "pockets": [
+    { "type": "side_seam_zip", "count": 2, "zipper": "YKK #3, tone-on-tone" },
+    { "type": "back_right_zip", "count": 1, "zipper": "YKK #3, tone-on-tone" }
+  ],
+  "branding": [
+    {
+      "placement": "left_thigh",
+      "technique": "heat_transfer",
+      "artwork": "VIBIN wordmark",
+      "size_inches": "3 x 0.8",
+      "color": "white"
+    }
+  ],
+  "labels": {
+    "waistband_label": "debossed_silicone",
+    "care_label": "sewn_inside_waistband"
+  },
+  "mockup_views": ["front", "back", "detail_pocket"],
+  "price": 45,
+  "compare_price": null,
+  "slug": "tech-shorts"
+}

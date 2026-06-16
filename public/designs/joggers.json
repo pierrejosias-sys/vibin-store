@@ -1,0 +1,44 @@
+{
+  "product": "Vibin Joggers",
+  "sku_prefix": "VB-JOG",
+  "collection": "SS26 Drop 01",
+  "type": "joggers",
+  "description": "Tapered heavyweight fleece joggers with deep side pockets and ribbed cuffs. Relaxed through the seat and thigh, tapered to the ankle.",
+  "fabric": "80% Cotton 20% Polyester 380gsm Fleece",
+  "fit": "Tapered",
+  "sizes": ["XS", "S", "M", "L", "XL", "XXL"],
+  "waistband": "2.5-inch rib-knit waistband with internal drawcord and external tie",
+  "cuffs": "2-inch rib-knit ankle cuffs",
+  "colorways": [
+    { "name": "Washed Black", "hex": "#1a1a1a", "pantone": "Black C" },
+    { "name": "Cement",       "hex": "#8a8a8a", "pantone": "Cool Gray 8 C" },
+    { "name": "Bone",         "hex": "#e8e0d5", "pantone": "9182 C" },
+    { "name": "Navy",         "hex": "#1a2744", "pantone": "2767 C" }
+  ],
+  "pockets": [
+    { "type": "side_seam_open", "count": 2, "depth_inches": 9 },
+    { "type": "back_right_zip", "count": 1, "zipper": "YKK #3, tone-on-tone" }
+  ],
+  "branding": [
+    {
+      "placement": "left_thigh",
+      "technique": "embroidery",
+      "artwork": "VIBIN wordmark",
+      "size_inches": "3.5 x 1",
+      "thread_color": "white"
+    },
+    {
+      "placement": "right_cuff_outside",
+      "technique": "woven_label",
+      "artwork": "V logo mark"
+    }
+  ],
+  "labels": {
+    "waistband_label": "woven_inside",
+    "care_label": "sewn_inside_waistband"
+  },
+  "mockup_views": ["front", "back", "detail_cuff", "detail_pocket"],
+  "price": 65,
+  "compare_price": null,
+  "slug": "joggers"
+}

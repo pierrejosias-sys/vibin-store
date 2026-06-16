@@ -1,0 +1,51 @@
+{
+  "product": "Vibin Urban Cargo Shorts",
+  "sku_prefix": "VB-SHORT-CRG",
+  "collection": "SS26 Drop 01",
+  "type": "cargo_shorts",
+  "description": "Relaxed urban cargo shorts with distressed raw-hem finish and oversized snap-flap cargo pockets. Street-ready silhouette with a slightly flared leg opening.",
+  "fabric": "100% 12oz Washed Cotton Twill",
+  "fit": "Relaxed / Slightly Flared Leg",
+  "inseam_inches": 11,
+  "waistband": "Belt-loop waistband with internal drawcord",
+  "distressing": {
+    "hem": "raw frayed cut",
+    "wash": "acid wash / stone wash",
+    "optional_rips": true
+  },
+  "sizes": ["XS", "S", "M", "L", "XL", "XXL"],
+  "colorways": [
+    { "name": "Washed Black",   "hex": "#2a2a2a", "pantone": "426 C" },
+    { "name": "Khaki",          "hex": "#c2a97a", "pantone": "4665 C" },
+    { "name": "Olive Drab",     "hex": "#4a4a2a", "pantone": "7758 C" },
+    { "name": "Stone",          "hex": "#8a7a6a", "pantone": "7530 C" }
+  ],
+  "pockets": [
+    { "type": "front_slash",        "count": 2 },
+    { "type": "back_button_flap",   "count": 2 },
+    { "type": "side_cargo_snap_flap", "count": 2, "hardware": "gunmetal snaps" },
+    { "type": "coin",               "count": 1 }
+  ],
+  "branding": [
+    {
+      "placement": "left_cargo_pocket_flap",
+      "technique": "embroidery",
+      "artwork": "V logo mark",
+      "size_inches": "1.5 x 1.5",
+      "thread_color": "match_colorway_contrast"
+    },
+    {
+      "placement": "back_waistband_center",
+      "technique": "woven_label",
+      "artwork": "VIBIN wordmark"
+    }
+  ],
+  "labels": {
+    "back_waistband": "woven",
+    "care_label": "sewn_inside_waistband"
+  },
+  "mockup_views": ["front", "back", "side_cargo", "detail_pocket_hardware"],
+  "price": 65,
+  "compare_price": null,
+  "slug": "cargo-shorts"
+}

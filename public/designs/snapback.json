@@ -1,0 +1,43 @@
+{
+  "product": "Vibin Snapback Cap",
+  "sku_prefix": "VB-CAP-SNAP",
+  "collection": "SS26 Drop 01",
+  "type": "snapback_cap",
+  "description": "6-panel structured snapback with a flat brim and custom tonal snapback closure. One size fits most.",
+  "construction": "6-panel, structured mid-profile",
+  "brim": "flat, 3.25-inch",
+  "closure": "custom plastic snapback with VIBIN deboss",
+  "sweatband": "grey cotton",
+  "sizes": ["OSFA"],
+  "colorways": [
+    { "name": "All Black",     "hex": "#111111", "pantone": "Black C",     "brim_undervisor": "grey" },
+    { "name": "White",         "hex": "#f5f5f5", "pantone": "9080 C",     "brim_undervisor": "grey" },
+    { "name": "Black / Coral", "hex": "#111111", "pantone": "Black C",     "brim_undervisor": "grey", "accent": "#e85d3a" },
+    { "name": "Olive",         "hex": "#4a4a2a", "pantone": "7758 C",     "brim_undervisor": "grey" }
+  ],
+  "branding": [
+    {
+      "placement": "front_panel_center",
+      "technique": "3d_puff_embroidery",
+      "artwork": "VIBIN arch wordmark",
+      "size_inches": "3.5 x 1.5",
+      "thread_color": "white"
+    },
+    {
+      "placement": "left_side_panel",
+      "technique": "flat_embroidery",
+      "artwork": "V logo mark",
+      "size_inches": "1 x 1",
+      "thread_color": "white"
+    },
+    {
+      "placement": "back_snapback_strap",
+      "technique": "deboss",
+      "artwork": "VIBIN wordmark"
+    }
+  ],
+  "mockup_views": ["front", "back", "side_left", "3quarter", "detail_front_embroidery"],
+  "price": 35,
+  "compare_price": null,
+  "slug": "snapback"
+}

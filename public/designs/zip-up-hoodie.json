@@ -1,0 +1,45 @@
+{
+  "product": "Vibin Zip-Up Hoodie",
+  "sku_prefix": "VB-HOOD-ZU",
+  "collection": "SS26 Drop 01",
+  "type": "zip_hoodie",
+  "description": "Full-zip heavyweight hoodie with two zip pockets. Adjustable drawcord hood, ribbed cuffs and hem.",
+  "fabric": "80% Cotton 20% Polyester 400gsm Fleece",
+  "fit": "Regular / Slightly Oversized",
+  "sizes": ["XS", "S", "M", "L", "XL", "XXL"],
+  "colorways": [
+    { "name": "Washed Black", "hex": "#1a1a1a", "pantone": "Black C" },
+    { "name": "Slate",        "hex": "#4a5568", "pantone": "7545 C" },
+    { "name": "Cream",        "hex": "#f5f0e8", "pantone": "9180 C" },
+    { "name": "Olive",        "hex": "#4a4a2a", "pantone": "7758 C" }
+  ],
+  "hardware": {
+    "zipper": "YKK #5 coil, gunmetal",
+    "drawcord_tips": "gunmetal aglets",
+    "pocket_zippers": "YKK #3 coil, gunmetal"
+  },
+  "branding": [
+    {
+      "placement": "chest_left",
+      "technique": "embroidery",
+      "artwork": "VIBIN wordmark",
+      "size_inches": "3.5 x 1",
+      "thread_color": "match_colorway"
+    },
+    {
+      "placement": "back_center_upper",
+      "technique": "screen_print",
+      "artwork": "Vibin arch logo",
+      "size_inches": "9 x 4",
+      "ink_colors": ["white"]
+    }
+  ],
+  "labels": {
+    "neck_tag": "woven",
+    "care_label": "sewn_inside_hem"
+  },
+  "mockup_views": ["front_open", "front_closed", "back", "detail_zipper"],
+  "price": 85,
+  "compare_price": null,
+  "slug": "zip-up-hoodie"
+}

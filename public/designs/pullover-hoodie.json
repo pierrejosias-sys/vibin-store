@@ -1,0 +1,40 @@
+{
+  "product": "Vibin Pullover Hoodie",
+  "sku_prefix": "VB-HOOD-PO",
+  "collection": "SS26 Drop 01",
+  "type": "pullover_hoodie",
+  "description": "Oversized heavyweight pullover hoodie with kangaroo pocket. Dropped shoulders, ribbed cuffs and hem.",
+  "fabric": "100% 450gsm French Terry Cotton",
+  "fit": "Oversized",
+  "sizes": ["XS", "S", "M", "L", "XL", "XXL"],
+  "colorways": [
+    { "name": "Washed Black", "hex": "#1a1a1a", "pantone": "Black C" },
+    { "name": "Cement",       "hex": "#8a8a8a", "pantone": "Cool Gray 8 C" },
+    { "name": "Bone",         "hex": "#e8e0d5", "pantone": "9182 C" },
+    { "name": "Forest",       "hex": "#2d4a3e", "pantone": "3305 C" }
+  ],
+  "branding": [
+    {
+      "placement": "chest_left",
+      "technique": "embroidery",
+      "artwork": "VIBIN wordmark",
+      "size_inches": "3.5 x 1",
+      "thread_color": "white"
+    },
+    {
+      "placement": "back_center_upper",
+      "technique": "screen_print",
+      "artwork": "Vibin graphic logo",
+      "size_inches": "10 x 10",
+      "ink_colors": ["white", "coral"]
+    }
+  ],
+  "labels": {
+    "neck_tag": "woven",
+    "care_label": "sewn_inside_hem"
+  },
+  "mockup_views": ["front", "back", "side", "detail_chest"],
+  "price": 75,
+  "compare_price": null,
+  "slug": "pullover-hoodie"
+}
