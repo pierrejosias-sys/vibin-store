@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import supabase from '../../lib/supabase-public';
 import styles from '../../styles.css';
 
 export default function AdminLoginPage() {
@@ -11,30 +12,39 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('');
   const router = useRouter();
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    // Simulated admin check (replace with real Supabase auth in production)
-    setTimeout(() => {
-      if (email.includes('admin') && password.length >= 6) {
-        const adminUser = {
-          id: 'admin_' + Date.now(),
-          email,
-          is_admin: true,
-          is_ambassador: false,
-          firstName: 'Admin',
-          lastName: 'User'
-        };
-        localStorage.setItem('vibin_user', JSON.stringify(adminUser));
-        setLoading(false);
-        router.push('/admin');
-      } else {
-        setError('Invalid admin credentials. Try using an email with "admin" in it.');
-        setLoading(false);
-      }
-    }, 500);
+    // Sign in with real Supabase Auth
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (authError) {
+      setError('Invalid email or password.');
+      setLoading(false);
+      return;
+    }
+
+    // Check if this user is an admin in the profiles table
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', data.user.id)
+      .single();
+
+    if (profileError || !profile?.is_admin) {
+      await supabase.auth.signOut();
+      setError('You do not have admin access.');
+      setLoading(false);
+      return;
+    }
+
+    setLoading(false);
+    router.push('/admin');
   }
 
   return (
@@ -130,12 +140,9 @@ export default function AdminLoginPage() {
                 letterSpacing: '.15em',
                 textTransform: 'uppercase',
                 color: 'var(--muted)',
-                marginBottom: '8px',
-                display: 'flex',
-                justifyContent: 'space-between'
+                marginBottom: '8px'
               }}>
-                <span>Password</span>
-                <a href="#" style={{ color: 'var(--coral)', textDecoration: 'none', fontSize: '10px' }}>Forgot?</a>
+                Password
               </div>
               <input
                 type="password"
@@ -143,7 +150,6 @@ export default function AdminLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password"
                 required
-                minLength={6}
                 style={{
                   width: '100%',
                   padding: '12px 16px',

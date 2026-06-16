@@ -11,16 +11,25 @@ export default function AdminPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('vibin_user');
-    if (!savedUser) {
-      router.push('/admin/login');
-      return;
+    async function checkAdminAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/admin/login');
+        return;
+      }
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single();
+      if (!profile?.is_admin) {
+        await supabase.auth.signOut();
+        router.push('/admin/login');
+      }
     }
-    const user = JSON.parse(savedUser);
-    if (!user.is_admin) {
-      router.push('/login');
-    }
+    checkAdminAuth();
   }, [router]);
+
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({
@@ -85,10 +94,15 @@ export default function AdminPage() {
       { platform: 'tiktok', user: '@fashiondave', rating: 5, text: 'VIBIN different frfr', time: '5h ago' },
       { platform: 'google', user: 'Marcus R.', rating: 5, text: 'Exactly what I expected. Fire fits.', time: '1d ago' },
       { platform: 'instagram', user: '@atlanta_mike', rating: 4, text: 'Love the fit but shipping took forever', time: '2d ago' },
-      { platform: 'tiktok', user: '@vibecheck', rating: 5, text: ' ambassador program is crazy 🔥', time: '3d ago' },
+      { platform: 'tiktok', user: '@vibecheck', rating: 5, text: 'ambassador program is crazy 🔥', time: '3d ago' },
       { platform: 'google', user: 'Jaylen T.', rating: 5, text: 'Already got my second order. VIBIN different.', time: '4d ago' },
     ])
     setLoading(false)
+  }
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    router.push('/admin/login');
   }
 
   const platformIcons = {
@@ -134,6 +148,7 @@ export default function AdminPage() {
                )}
              </Link>
              <Link href="/" className="admin-nav-link">View Store</Link>
+             <a href="#" className="admin-nav-link" onClick={handleSignOut} style={{ marginTop: 'auto', color: 'var(--coral)' }}>Sign Out</a>
            </nav>
         </div>
 
@@ -382,7 +397,7 @@ export default function AdminPage() {
           )}
         </div>
       </div>
-          <AIAssistant />
-          </>
-        )
-  }
+      <AIAssistant />
+    </>
+  );
+}
