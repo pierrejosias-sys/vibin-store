@@ -12,10 +12,36 @@ export default function CartPage() {
 
   // READ from localStorage once on mount
   useEffect(() => {
-    const saved = localStorage.getItem('vibin_cart')
-    if (saved) setItems(JSON.parse(saved))
+    try {
+      const saved = localStorage.getItem('vibin_cart')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        // Validate: must be an array of objects with required fields
+        if (
+          Array.isArray(parsed) &&
+          parsed.every(
+            (item) =>
+              item &&
+              typeof item === 'object' &&
+              typeof item.id !== 'undefined' &&
+              typeof item.name === 'string' &&
+              typeof item.price === 'number' &&
+              typeof item.qty === 'number' &&
+              item.qty > 0
+          )
+        ) {
+          setItems(parsed)
+        } else {
+          // Stale or corrupt data — clear it
+          localStorage.removeItem('vibin_cart')
+        }
+      }
+    } catch {
+      localStorage.removeItem('vibin_cart')
+    }
     setLoading(false)
-    initialized.current = true
+    // Mark initialized AFTER state is set so the write effect doesn't fire prematurely
+    setTimeout(() => { initialized.current = true }, 0)
   }, [])
 
   // WRITE to localStorage only after initial load
