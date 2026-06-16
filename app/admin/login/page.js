@@ -1,211 +1,169 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import styles from '../../styles.css';
+import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { createClient } from '../../lib/supabase-browser'
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const router = useRouter();
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirectTo') || '/admin'
 
-  function handleSubmit(e) {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-    // Simulated admin check (replace with real Supabase auth in production)
-    setTimeout(() => {
-      if (email.includes('admin') && password.length >= 6) {
-        const adminUser = {
-          id: 'admin_' + Date.now(),
-          email,
-          is_admin: true,
-          is_ambassador: false,
-          firstName: 'Admin',
-          lastName: 'User'
-        };
-        localStorage.setItem('vibin_user', JSON.stringify(adminUser));
-        setLoading(false);
-        router.push('/admin');
-      } else {
-        setError('Invalid admin credentials. Try using an email with "admin" in it.');
-        setLoading(false);
-      }
-    }, 500);
+  async function handleLogin(e) {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+
+    const supabase = createClient()
+
+    // 1. Sign in with Supabase Auth
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    if (authError) {
+      setError('Invalid email or password.')
+      setLoading(false)
+      return
+    }
+
+    // 2. Confirm is_admin in profiles table
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', data.user.id)
+      .single()
+
+    if (profileError || !profile?.is_admin) {
+      await supabase.auth.signOut()
+      setError('Access denied. Admin accounts only.')
+      setLoading(false)
+      return
+    }
+
+    // 3. All good — navigate to admin dashboard (or wherever they were going)
+    router.push(redirectTo)
+    router.refresh()
   }
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: styles }} />
-
-      <nav>
-        <a href="/" className="logo">VIBIN ADMIN</a>
-      </nav>
-
-      <div style={{ 
-        minHeight: 'calc(100vh - 80px)', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        padding: '40px 20px',
-        background: 'var(--ink)'
+    <div style={{
+      minHeight: '100vh',
+      background: '#0a0a0a',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: 'Inter, sans-serif',
+    }}>
+      <div style={{
+        background: '#111',
+        border: '1px solid #222',
+        borderRadius: '16px',
+        padding: '48px',
+        width: '100%',
+        maxWidth: '420px',
       }}>
-        <div style={{ 
-          maxWidth: '400px', 
-          width: '100%',
-          background: 'var(--ink2)',
-          border: '1px solid var(--line)',
-          padding: '40px 32px'
-        }}>
-          <div style={{ 
-            fontFamily: 'JetBrains Mono, monospace',
-            fontSize: '11px',
-            letterSpacing: '.2em',
-            textTransform: 'uppercase',
-            color: 'var(--coral)',
-            marginBottom: '12px',
-            textAlign: 'center'
-          }}>
-            Admin Access Only
-          </div>
-
-          <h1 style={{ 
-            fontFamily: 'Anton, sans-serif',
-            fontSize: '32px',
-            textTransform: 'uppercase',
-            letterSpacing: '.02em',
+        <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+          <div style={{
+            fontSize: '28px',
+            fontWeight: '900',
+            letterSpacing: '0.15em',
+            color: '#fff',
             marginBottom: '8px',
-            textAlign: 'center'
-          }}>
-            Sign <em style={{ fontStyle: 'italic', color: 'var(--coral)' }}>In</em>
-          </h1>
+          }}>VIBIN</div>
+          <div style={{ color: '#666', fontSize: '14px' }}>Admin Portal</div>
+        </div>
 
-          <p style={{ 
-            fontSize: '13px',
-            color: 'var(--muted)',
-            textAlign: 'center',
-            marginBottom: '32px',
-            lineHeight: '1.6'
-          }}>
-            Access the admin dashboard, orders, support, and security auditor.
-          </p>
-
-          <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: '16px' }}>
-              <div style={{ 
-                fontFamily: 'JetBrains Mono, monospace',
-                fontSize: '10px',
-                letterSpacing: '.15em',
-                textTransform: 'uppercase',
-                color: 'var(--muted)',
-                marginBottom: '8px'
-              }}>
-                Email
-              </div>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@vibinapparel.com"
-                required
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  background: 'var(--ink)',
-                  border: '1px solid var(--line)',
-                  color: 'var(--cream)',
-                  fontSize: '14px',
-                  fontFamily: 'Manrope, sans-serif'
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '24px' }}>
-              <div style={{ 
-                fontFamily: 'JetBrains Mono, monospace',
-                fontSize: '10px',
-                letterSpacing: '.15em',
-                textTransform: 'uppercase',
-                color: 'var(--muted)',
-                marginBottom: '8px',
-                display: 'flex',
-                justifyContent: 'space-between'
-              }}>
-                <span>Password</span>
-                <a href="#" style={{ color: 'var(--coral)', textDecoration: 'none', fontSize: '10px' }}>Forgot?</a>
-              </div>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
-                required
-                minLength={6}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  background: 'var(--ink)',
-                  border: '1px solid var(--line)',
-                  color: 'var(--cream)',
-                  fontSize: '14px',
-                  fontFamily: 'Manrope, sans-serif'
-                }}
-              />
-            </div>
-
-            {error && (
-              <div style={{ 
-                padding: '12px',
-                background: 'rgba(255, 74, 61, 0.15)',
-                border: '1px solid rgba(255, 74, 61, 0.4)',
-                color: '#ff8b8b',
-                fontSize: '12px',
-                marginBottom: '16px',
-                textAlign: 'center'
-              }}>
-                {error}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
+        <form onSubmit={handleLogin}>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', color: '#aaa', fontSize: '13px', marginBottom: '8px', fontWeight: '500' }}>
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+              placeholder="admin@vibin.store"
               style={{
                 width: '100%',
-                padding: '14px',
-                background: 'var(--coral)',
-                color: 'var(--cream)',
-                border: 'none',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                fontFamily: 'Manrope, sans-serif',
-                fontSize: '12px',
-                fontWeight: 700,
-                letterSpacing: '.1em',
-                textTransform: 'uppercase'
+                background: '#1a1a1a',
+                border: '1px solid #2a2a2a',
+                borderRadius: '8px',
+                padding: '12px 16px',
+                color: '#fff',
+                fontSize: '14px',
+                outline: 'none',
+                boxSizing: 'border-box',
               }}
-            >
-              {loading ? 'Signing in...' : 'Sign In →'}
-            </button>
-          </form>
-
-          <div style={{ 
-            marginTop: '24px',
-            textAlign: 'center',
-            fontSize: '12px',
-            color: 'var(--muted)'
-          }}>
-            Not an admin? <a href="/login" style={{ color: 'var(--coral)', textDecoration: 'none' }}>Customer login →</a>
+            />
           </div>
-        </div>
-      </div>
 
-      <footer>
-        <div className="foot-logo">VIBIN</div>
-        <div className="foot-tag">© 2026 Vibin Apparel · Jacksonville, FL</div>
-      </footer>
-    </>
-  );
+          <div style={{ marginBottom: '28px' }}>
+            <label style={{ display: 'block', color: '#aaa', fontSize: '13px', marginBottom: '8px', fontWeight: '500' }}>
+              Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+              placeholder="••••••••"
+              style={{
+                width: '100%',
+                background: '#1a1a1a',
+                border: '1px solid #2a2a2a',
+                borderRadius: '8px',
+                padding: '12px 16px',
+                color: '#fff',
+                fontSize: '14px',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+
+          {error && (
+            <div style={{
+              background: 'rgba(255, 80, 80, 0.1)',
+              border: '1px solid rgba(255, 80, 80, 0.3)',
+              borderRadius: '8px',
+              padding: '12px 16px',
+              color: '#ff6b6b',
+              fontSize: '13px',
+              marginBottom: '20px',
+            }}>
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: '100%',
+              background: loading ? '#333' : '#fff',
+              color: loading ? '#666' : '#000',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '14px',
+              fontSize: '14px',
+              fontWeight: '700',
+              letterSpacing: '0.05em',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s',
+            }}
+          >
+            {loading ? 'Signing in...' : 'Sign In'}
+          </button>
+        </form>
+      </div>
+    </div>
+  )
 }
