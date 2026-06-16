@@ -1,457 +1,279 @@
-'use client';
-import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+'use client'
 
-const PAGE_SIZE = 25;
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { createBrowserClient } from '@supabase/ssr'
 
-const STATUS_ORDER = ['pending', 'paid', 'shipped', 'delivered', 'cancelled'];
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+)
 
-const STATUS_STYLES = {
-  pending:   'bg-yellow-900/40 text-yellow-300 border border-yellow-700',
-  paid:      'bg-blue-900/40 text-blue-300 border border-blue-700',
-  shipped:   'bg-green-900/40 text-green-300 border border-green-700',
-  delivered: 'bg-purple-900/40 text-purple-300 border border-purple-700',
-  cancelled: 'bg-red-900/40 text-red-300 border border-red-700',
-};
+const STATUS_FLOW = ['pending', 'paid', 'shipped', 'delivered', 'cancelled']
+const STATUS_COLORS = {
+  pending:   { bg: '#1a1a00', border: '#3a3a00', text: '#d4a017' },
+  paid:      { bg: '#001a0a', border: '#003a15', text: '#22c55e' },
+  shipped:   { bg: '#001020', border: '#003060', text: '#60a5fa' },
+  delivered: { bg: '#0a1a00', border: '#1a3a00', text: '#86efac' },
+  cancelled: { bg: '#1a0000', border: '#3a0000', text: '#f87171' },
+}
 
-export default function AdminOrdersPage() {
-  const router = useRouter();
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
+export default function AdminOrders() {
+  const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [expandedId, setExpandedId] = useState(null)
+  const [trackingInputs, setTrackingInputs] = useState({})
+  const [saving, setSaving] = useState({})
+  const [toast, setToast] = useState(null)
 
-  const [orders, setOrders] = useState([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
-  const [search, setSearch] = useState('');
-  const [searchInput, setSearchInput] = useState('');
-  const [page, setPage] = useState(0);
-  const [selected, setSelected] = useState(null);
-  const [updating, setUpdating] = useState(false);
-  const [trackingInput, setTrackingInput] = useState('');
-  const [notesInput, setNotesInput] = useState('');
-  const [toast, setToast] = useState(null);
+  useEffect(() => { fetchOrders() }, [])
 
-  // Auth guard
-  useEffect(() => {
-    const check = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { router.push('/admin/login'); return; }
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', session.user.id)
-        .single();
-      if (!profile?.is_admin) router.push('/');
-    };
-    check();
-  }, [router, supabase]);
-
-  const fetchOrders = useCallback(async () => {
-    setLoading(true);
-    const from = page * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
-
-    let query = supabase
+  async function fetchOrders() {
+    setLoading(true)
+    const { data, error } = await supabase
       .from('orders')
-      .select('*', { count: 'exact' })
+      .select('*')
       .order('created_at', { ascending: false })
-      .range(from, to);
+    if (!error) setOrders(data || [])
+    setLoading(false)
+  }
 
-    if (filter !== 'all') query = query.eq('status', filter);
+  function showToast(msg, type = 'success') {
+    setToast({ msg, type })
+    setTimeout(() => setToast(null), 3000)
+  }
 
-    if (search.trim()) {
-      query = query.or(
-        `order_number.ilike.%${search.trim()}%,customer_email.ilike.%${search.trim()}%,customer_name.ilike.%${search.trim()}%,referral_code.ilike.%${search.trim()}%`
-      );
-    }
-
-    const { data, error, count } = await query;
-    if (!error) {
-      setOrders(data || []);
-      setTotalCount(count || 0);
-    }
-    setLoading(false);
-  }, [supabase, filter, search, page]);
-
-  useEffect(() => { fetchOrders(); }, [fetchOrders]);
-
-  // Reset page on filter/search change
-  useEffect(() => { setPage(0); }, [filter, search]);
-
-  const showToast = (msg, type = 'success') => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3000);
-  };
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setSearch(searchInput);
-  };
-
-  const updateOrderStatus = async (orderId, newStatus) => {
-    setUpdating(true);
+  async function updateStatus(orderId, newStatus) {
+    setSaving(s => ({ ...s, [orderId]: true }))
     const { error } = await supabase
       .from('orders')
       .update({ status: newStatus })
-      .eq('id', orderId);
-    if (error) {
-      showToast('Failed to update status', 'error');
+      .eq('id', orderId)
+    if (!error) {
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o))
+      showToast(`Order updated to ${newStatus}`)
     } else {
-      showToast(`Order marked as ${newStatus}`);
-      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
-      if (selected?.id === orderId) setSelected(prev => ({ ...prev, status: newStatus }));
+      showToast('Failed to update status', 'error')
     }
-    setUpdating(false);
-  };
+    setSaving(s => ({ ...s, [orderId]: false }))
+  }
 
-  const saveTrackingAndStatus = async () => {
-    if (!selected) return;
-    setUpdating(true);
-    const updates = { tracking_number: trackingInput, notes: notesInput };
-    if (trackingInput && selected.status === 'paid') updates.status = 'shipped';
+  async function saveTracking(orderId) {
+    const tracking = trackingInputs[orderId] || ''
+    if (!tracking.trim()) return
+    setSaving(s => ({ ...s, [`track_${orderId}`]: true }))
     const { error } = await supabase
       .from('orders')
-      .update(updates)
-      .eq('id', selected.id);
-    if (error) {
-      showToast('Failed to save changes', 'error');
+      .update({ tracking_number: tracking, status: 'shipped' })
+      .eq('id', orderId)
+    if (!error) {
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, tracking_number: tracking, status: 'shipped' } : o))
+      showToast('Tracking saved — order marked shipped')
     } else {
-      showToast('Order updated');
-      setOrders(prev => prev.map(o => o.id === selected.id ? { ...o, ...updates } : o));
-      setSelected(prev => ({ ...prev, ...updates }));
+      showToast('Failed to save tracking', 'error')
     }
-    setUpdating(false);
-  };
+    setSaving(s => ({ ...s, [`track_${orderId}`]: false }))
+  }
 
-  const openOrder = (order) => {
-    setSelected(order);
-    setTrackingInput(order.tracking_number || '');
-    setNotesInput(order.notes || '');
-  };
+  const filtered = orders.filter(o => {
+    const matchStatus = statusFilter === 'all' || o.status === statusFilter
+    const matchSearch = !search ||
+      o.customer_email?.toLowerCase().includes(search.toLowerCase()) ||
+      String(o.id).includes(search) ||
+      o.order_number?.toLowerCase().includes(search.toLowerCase())
+    return matchStatus && matchSearch
+  })
 
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+  const stats = {
+    total: orders.length,
+    paid: orders.filter(o => o.status === 'paid').length,
+    shipped: orders.filter(o => o.status === 'shipped').length,
+    revenue: orders.filter(o => ['paid','shipped','delivered'].includes(o.status)).reduce((s, o) => s + (o.total || 0), 0),
+  }
+
+  const s = {
+    page: { background: '#0a0a0a', minHeight: '100vh', color: '#f0ede6', fontFamily: 'Manrope, sans-serif' },
+    mono: { fontFamily: 'JetBrains Mono, monospace' },
+    anton: { fontFamily: 'Anton, sans-serif' },
+    input: { background: '#111', border: '1px solid #2a2a2a', borderRadius: '6px', color: '#f0ede6', padding: '10px 14px', fontSize: '14px', fontFamily: 'Manrope, sans-serif', outline: 'none' },
+    btn: (color = '#e05c2e') => ({ background: color, border: 'none', borderRadius: '4px', color: '#fff', padding: '8px 16px', fontSize: '12px', fontFamily: 'JetBrains Mono, monospace', letterSpacing: '.05em', textTransform: 'uppercase', cursor: 'pointer', fontWeight: 'bold' }),
+  }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div style={s.page}>
       {/* Toast */}
       {toast && (
-        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg ${
-          toast.type === 'error' ? 'bg-red-600' : 'bg-green-600'
-        }`}>
-          {toast.msg}
+        <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 9999, background: toast.type === 'error' ? '#3a0000' : '#003a15', border: `1px solid ${toast.type === 'error' ? '#f87171' : '#22c55e'}`, borderRadius: '8px', padding: '14px 20px', color: toast.type === 'error' ? '#f87171' : '#22c55e', ...s.mono, fontSize: '13px' }}>
+          {toast.type === 'error' ? '✗' : '✓'} {toast.msg}
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto p-6 lg:p-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">ORDERS</h1>
-            <p className="text-gray-500 text-sm mt-1">
-              {totalCount} {filter !== 'all' ? filter : 'total'} orders
-            </p>
-          </div>
-          <button
-            onClick={fetchOrders}
-            className="text-sm bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg transition-colors"
-          >
-            ↻ Refresh
-          </button>
+      {/* Header */}
+      <header style={{ padding: '20px 40px', borderBottom: '1px solid #1e1e1e', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <Link href="/admin" style={{ ...s.anton, fontSize: '28px', color: '#f0ede6', textDecoration: 'none' }}>VIBIN</Link>
+          <span style={{ ...s.mono, fontSize: '11px', color: '#555', letterSpacing: '.15em', textTransform: 'uppercase' }}>/ Orders</span>
         </div>
+        <button onClick={fetchOrders} style={s.btn('#333')}>↻ Refresh</button>
+      </header>
 
-        {/* Search */}
-        <form onSubmit={handleSearch} className="mb-5 flex gap-2">
-          <input
-            type="text"
-            value={searchInput}
-            onChange={e => setSearchInput(e.target.value)}
-            placeholder="Search by order #, email, name, or referral code…"
-            className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-gray-500"
-          />
-          <button
-            type="submit"
-            className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm transition-colors"
-          >
-            Search
-          </button>
-          {search && (
-            <button
-              type="button"
-              onClick={() => { setSearch(''); setSearchInput(''); }}
-              className="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg text-sm text-gray-400 transition-colors"
-            >
-              ✕
-            </button>
-          )}
-        </form>
+      {/* Stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1px', background: '#1e1e1e', borderBottom: '1px solid #1e1e1e' }}>
+        {[
+          { label: 'Total Orders', value: stats.total },
+          { label: 'Awaiting Shipment', value: stats.paid },
+          { label: 'Shipped', value: stats.shipped },
+          { label: 'Revenue', value: `$${stats.revenue.toFixed(2)}` },
+        ].map((stat, i) => (
+          <div key={i} style={{ background: '#111', padding: '24px 30px' }}>
+            <div style={{ ...s.mono, fontSize: '10px', color: '#555', letterSpacing: '.15em', textTransform: 'uppercase', marginBottom: '8px' }}>{stat.label}</div>
+            <div style={{ ...s.anton, fontSize: '28px' }}>{stat.value}</div>
+          </div>
+        ))}
+      </div>
 
-        {/* Filter tabs */}
-        <div className="flex gap-2 flex-wrap mb-6">
-          {['all', ...STATUS_ORDER].map(s => (
-            <button
-              key={s}
-              onClick={() => setFilter(s)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                filter === s ? 'bg-white text-black' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
-            >
-              {s.toUpperCase()}
-            </button>
+      {/* Filters */}
+      <div style={{ padding: '20px 40px', borderBottom: '1px solid #1e1e1e', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <input
+          placeholder="Search by email, order ID…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ ...s.input, width: '280px' }}
+        />
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {['all', ...STATUS_FLOW].map(st => (
+            <button key={st} onClick={() => setStatusFilter(st)} style={{
+              ...s.btn(statusFilter === st ? '#e05c2e' : '#1a1a1a'),
+              border: `1px solid ${statusFilter === st ? '#e05c2e' : '#2a2a2a'}`,
+            }}>{st}</button>
           ))}
         </div>
+      </div>
 
-        {/* Table */}
+      {/* Orders */}
+      <div style={{ padding: '30px 40px' }}>
         {loading ? (
-          <div className="text-center py-24 text-gray-500">Loading orders...</div>
-        ) : orders.length === 0 ? (
-          <div className="text-center py-24 text-gray-500">
-            {search ? `No orders found for "${search}"` : `No ${filter !== 'all' ? filter : ''} orders found.`}
+          <div style={{ textAlign: 'center', padding: '60px', ...s.mono, color: '#555', fontSize: '13px', letterSpacing: '.1em' }}>Loading orders...</div>
+        ) : filtered.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '60px', color: '#555' }}>
+            <div style={{ fontSize: '40px', marginBottom: '16px' }}>📦</div>
+            <p style={{ ...s.mono, fontSize: '13px', letterSpacing: '.1em' }}>No orders found.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-gray-800">
-            <table className="w-full">
-              <thead className="bg-gray-900 border-b border-gray-800">
-                <tr>
-                  {['ORDER', 'CUSTOMER', 'ITEMS', 'REFERRAL', 'TOTAL', 'STATUS', 'DATE', 'ACTIONS'].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-400 tracking-wider">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-800/60">
-                {orders.map(order => {
-                  const items = Array.isArray(order.items) ? order.items : [];
-                  const itemSummary = items.map(i => `${i.name || i.product_name || 'Item'} x${i.quantity || 1}`).join(', ');
-                  const nextStatus = STATUS_ORDER[STATUS_ORDER.indexOf(order.status) + 1];
-                  return (
-                    <tr key={order.id} className="hover:bg-gray-900/50 transition-colors">
-                      <td className="px-4 py-4">
-                        <span className="font-mono text-sm">{order.order_number}</span>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="text-sm">{order.customer_name || '—'}</div>
-                        <div className="text-xs text-gray-500">{order.customer_email}</div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className="text-xs text-gray-400 max-w-[180px] block truncate">{itemSummary || '—'}</span>
-                      </td>
-                      <td className="px-4 py-4">
-                        {order.referral_code ? (
-                          <span className="px-2 py-0.5 bg-purple-900/40 text-purple-300 border border-purple-700 rounded text-xs font-mono">
-                            {order.referral_code}
-                          </span>
-                        ) : (
-                          <span className="text-gray-600 text-xs">—</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className="font-medium">${Number(order.total || 0).toFixed(2)}</span>
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className={`px-2.5 py-1 rounded-md text-xs font-semibold ${
-                          STATUS_STYLES[order.status] || STATUS_STYLES.pending
-                        }`}>
-                          {(order.status || 'pending').toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 text-xs text-gray-500">
-                        {new Date(order.created_at).toLocaleDateString('en-US', {
-                          month: 'short', day: 'numeric', year: 'numeric'
-                        })}
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex gap-2 items-center">
-                          <button
-                            onClick={() => openOrder(order)}
-                            className="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded transition-colors"
-                          >
-                            VIEW
-                          </button>
-                          {nextStatus && nextStatus !== 'cancelled' && (
-                            <button
-                              onClick={() => updateOrderStatus(order.id, nextStatus)}
-                              disabled={updating}
-                              className="text-xs bg-white text-black hover:bg-gray-200 px-3 py-1.5 rounded transition-colors disabled:opacity-50"
-                            >
-                              → {nextStatus.toUpperCase()}
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {filtered.map(order => {
+              const sc = STATUS_COLORS[order.status] || STATUS_COLORS.pending
+              const isExpanded = expandedId === order.id
+              const items = Array.isArray(order.items) ? order.items : []
+              return (
+                <div key={order.id} style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: '10px', overflow: 'hidden' }}>
+                  {/* Row */}
+                  <div
+                    onClick={() => setExpandedId(isExpanded ? null : order.id)}
+                    style={{ padding: '16px 20px', display: 'grid', gridTemplateColumns: '1fr 2fr 1fr 1fr 1fr auto', gap: '16px', alignItems: 'center', cursor: 'pointer' }}
+                  >
+                    <div style={{ ...s.mono, fontSize: '12px', color: '#888' }}>#{String(order.id).slice(-6).toUpperCase()}</div>
+                    <div>
+                      <div style={{ fontSize: '14px', marginBottom: '2px' }}>{order.customer_email}</div>
+                      {order.ambassador_code && <div style={{ ...s.mono, fontSize: '10px', color: '#e05c2e' }}>ref: {order.ambassador_code}</div>}
+                    </div>
+                    <div style={{ fontSize: '14px' }}>${(order.total || 0).toFixed(2)}</div>
+                    <div style={{ ...s.mono, fontSize: '11px', color: '#555' }}>{new Date(order.created_at).toLocaleDateString()}</div>
+                    <div>
+                      <span style={{ display: 'inline-block', padding: '4px 10px', borderRadius: '100px', fontSize: '11px', ...s.mono, letterSpacing: '.08em', textTransform: 'uppercase', background: sc.bg, border: `1px solid ${sc.border}`, color: sc.text }}>
+                        {order.status}
+                      </span>
+                    </div>
+                    <div style={{ ...s.mono, fontSize: '18px', color: '#555', userSelect: 'none' }}>{isExpanded ? '▲' : '▼'}</div>
+                  </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between mt-4 text-sm text-gray-400">
-            <span>Page {page + 1} of {totalPages} · {totalCount} orders</span>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setPage(p => Math.max(0, p - 1))}
-                disabled={page === 0}
-                className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded-lg disabled:opacity-40 transition-colors"
-              >
-                ← Prev
-              </button>
-              <button
-                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
-                disabled={page >= totalPages - 1}
-                className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded-lg disabled:opacity-40 transition-colors"
-              >
-                Next →
-              </button>
-            </div>
+                  {/* Expanded detail */}
+                  {isExpanded && (
+                    <div style={{ borderTop: '1px solid #1e1e1e', padding: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                      {/* Items */}
+                      <div>
+                        <p style={{ ...s.mono, fontSize: '10px', color: '#555', letterSpacing: '.15em', textTransform: 'uppercase', marginBottom: '12px' }}>Items</p>
+                        {items.length === 0 ? <p style={{ color: '#555', fontSize: '13px' }}>No item data</p> : items.map((item, i) => (
+                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #1a1a1a', fontSize: '14px' }}>
+                            <span>{item.name} {item.color && `· ${item.color}`} {item.size && `/ ${item.size}`} × {item.qty}</span>
+                            <span style={{ color: '#888' }}>${((item.price || 0) * (item.qty || 1)).toFixed(2)}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Controls */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        {/* Status change */}
+                        <div>
+                          <p style={{ ...s.mono, fontSize: '10px', color: '#555', letterSpacing: '.15em', textTransform: 'uppercase', marginBottom: '10px' }}>Update Status</p>
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                            {STATUS_FLOW.filter(st => st !== order.status).map(st => (
+                              <button
+                                key={st}
+                                onClick={() => updateStatus(order.id, st)}
+                                disabled={saving[order.id]}
+                                style={s.btn(STATUS_COLORS[st]?.text === '#22c55e' ? '#003a15' : STATUS_COLORS[st]?.bg || '#1a1a1a')}
+                              >
+                                → {st}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Tracking */}
+                        <div>
+                          <p style={{ ...s.mono, fontSize: '10px', color: '#555', letterSpacing: '.15em', textTransform: 'uppercase', marginBottom: '10px' }}>Tracking Number</p>
+                          {order.tracking_number && (
+                            <p style={{ ...s.mono, fontSize: '12px', color: '#60a5fa', marginBottom: '8px' }}>Current: {order.tracking_number}</p>
+                          )}
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <input
+                              placeholder="Enter tracking #"
+                              value={trackingInputs[order.id] || ''}
+                              onChange={e => setTrackingInputs(prev => ({ ...prev, [order.id]: e.target.value }))}
+                              style={{ ...s.input, flex: 1, fontSize: '13px', padding: '8px 12px' }}
+                            />
+                            <button
+                              onClick={() => saveTracking(order.id)}
+                              disabled={saving[`track_${order.id}`]}
+                              style={s.btn()}
+                            >
+                              {saving[`track_${order.id}`] ? '...' : 'Save'}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Commission info */}
+                        {order.ambassador_code && (
+                          <div style={{ background: '#0d0d0d', border: '1px solid #2a1a00', borderRadius: '6px', padding: '12px' }}>
+                            <p style={{ ...s.mono, fontSize: '10px', color: '#e05c2e', letterSpacing: '.15em', textTransform: 'uppercase', marginBottom: '6px' }}>Ambassador Commission</p>
+                            <p style={{ fontSize: '20px', ...s.anton }}>$ {(order.commission_amount || 0).toFixed(2)}</p>
+                            <p style={{ ...s.mono, fontSize: '11px', color: '#555', marginTop: '4px' }}>Code: {order.ambassador_code} · Status: {order.commission_status || 'pending'}</p>
+                          </div>
+                        )}
+
+                        {/* Shipping address */}
+                        {order.shipping_address && (
+                          <div>
+                            <p style={{ ...s.mono, fontSize: '10px', color: '#555', letterSpacing: '.15em', textTransform: 'uppercase', marginBottom: '8px' }}>Ship To</p>
+                            <p style={{ fontSize: '13px', color: '#aaa', lineHeight: '1.6' }}>
+                              {order.shipping_address.name}<br />
+                              {order.shipping_address.line1}<br />
+                              {order.shipping_address.city}, {order.shipping_address.state} {order.shipping_address.postal_code}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         )}
       </div>
-
-      {/* Order Detail Modal */}
-      {selected && (
-        <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-40"
-          onClick={() => setSelected(null)}
-        >
-          <div
-            className="bg-gray-900 border border-gray-700 rounded-2xl p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto"
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <h2 className="text-xl font-bold">{selected.order_number}</h2>
-                <p className="text-gray-300 text-sm mt-0.5">{selected.customer_name || selected.customer_email}</p>
-                {selected.customer_name && (
-                  <p className="text-gray-500 text-xs">{selected.customer_email}</p>
-                )}
-                {selected.referral_code && (
-                  <p className="text-xs mt-1">
-                    <span className="text-gray-500">Referred by </span>
-                    <span className="font-mono text-purple-400">{selected.referral_code}</span>
-                  </p>
-                )}
-              </div>
-              <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
-                STATUS_STYLES[selected.status] || STATUS_STYLES.pending
-              }`}>
-                {(selected.status || 'pending').toUpperCase()}
-              </span>
-            </div>
-
-            {/* Items */}
-            <div className="mb-5">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Items</h3>
-              <div className="space-y-2">
-                {(Array.isArray(selected.items) ? selected.items : []).map((item, i) => (
-                  <div key={i} className="flex justify-between text-sm bg-gray-800 rounded-lg px-3 py-2">
-                    <span>{item.name || item.product_name || 'Item'}{item.size ? ` (${item.size})` : ''} x{item.quantity || 1}</span>
-                    <span className="text-gray-400">${((item.price || 0) * (item.quantity || 1)).toFixed(2)}</span>
-                  </div>
-                ))}
-                <div className="flex justify-between text-sm font-bold pt-1 px-3">
-                  <span>Total</span>
-                  <span>${Number(selected.total || 0).toFixed(2)}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Shipping Address */}
-            {selected.shipping_address && (
-              <div className="mb-5">
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Ship To</h3>
-                <div className="text-sm text-gray-300 bg-gray-800 rounded-lg px-3 py-2 leading-6">
-                  {selected.shipping_address.name && <div>{selected.shipping_address.name}</div>}
-                  <div>{selected.shipping_address.line1 || selected.shipping_address.street}</div>
-                  {selected.shipping_address.line2 && <div>{selected.shipping_address.line2}</div>}
-                  <div>
-                    {selected.shipping_address.city}, {selected.shipping_address.state} {selected.shipping_address.postal_code || selected.shipping_address.zip}
-                  </div>
-                  {selected.shipping_address.country && <div>{selected.shipping_address.country}</div>}
-                </div>
-              </div>
-            )}
-
-            {/* Tracking Number */}
-            <div className="mb-4">
-              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
-                Tracking Number
-              </label>
-              <input
-                type="text"
-                value={trackingInput}
-                onChange={e => setTrackingInput(e.target.value)}
-                placeholder="e.g. 1Z999AA10123456784"
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-gray-500"
-              />
-              {selected.tracking_number && (
-                <p className="text-xs text-gray-500 mt-1">Current: {selected.tracking_number}</p>
-              )}
-              {trackingInput && selected.status === 'paid' && (
-                <p className="text-xs text-green-400 mt-1">Saving this will automatically mark the order as Shipped.</p>
-              )}
-            </div>
-
-            {/* Notes */}
-            <div className="mb-6">
-              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
-                Admin Notes
-              </label>
-              <textarea
-                value={notesInput}
-                onChange={e => setNotesInput(e.target.value)}
-                placeholder="Internal notes..."
-                rows={2}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-gray-500 resize-none"
-              />
-            </div>
-
-            {/* Status Controls */}
-            <div className="mb-6">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Change Status</h3>
-              <div className="flex flex-wrap gap-2">
-                {STATUS_ORDER.map(s => (
-                  <button
-                    key={s}
-                    disabled={selected.status === s || updating}
-                    onClick={() => updateOrderStatus(selected.id, s)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-40 ${
-                      selected.status === s
-                        ? 'bg-white text-black cursor-default'
-                        : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-                    }`}
-                  >
-                    {s.toUpperCase()}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-3">
-              <button
-                onClick={() => setSelected(null)}
-                className="flex-1 py-2.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-sm transition-colors"
-              >
-                CLOSE
-              </button>
-              <button
-                onClick={saveTrackingAndStatus}
-                disabled={updating}
-                className="flex-1 py-2.5 rounded-lg bg-white text-black hover:bg-gray-200 text-sm font-semibold transition-colors disabled:opacity-50"
-              >
-                {updating ? 'SAVING...' : 'SAVE CHANGES'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
-  );
+  )
 }

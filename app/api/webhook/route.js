@@ -5,9 +5,10 @@ export const runtime = 'nodejs'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
+// Use service role key — webhook runs server-side, needs to bypass RLS
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
 export async function POST(request) {
@@ -15,7 +16,6 @@ export async function POST(request) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 
   let event
-
   try {
     const rawBody = await request.text()
     event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret)
@@ -27,19 +27,42 @@ export async function POST(request) {
   try {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object
-
       const orderId = session.metadata?.orderId
+      const ambassadorCode = session.metadata?.ambassadorCode
       const email = session.customer_email
       const paymentId = session.payment_intent
+      const amountTotal = session.amount_total / 100 // convert cents to dollars
       const items = session.metadata?.items ? JSON.parse(session.metadata.items) : []
 
+      // Calculate commission if this order has an ambassador code
+      let commissionAmount = 0
+      if (ambassadorCode) {
+        const { data: ambassador } = await supabase
+          .from('ambassadors')
+          .select('commission_rate')
+          .eq('code', ambassadorCode)
+          .eq('status', 'approved')
+          .single()
+
+        const rate = ambassador?.commission_rate || 15
+        commissionAmount = parseFloat(((amountTotal * rate) / 100).toFixed(2))
+      }
+
+      // Update order: mark paid, store payment ID, set commission
       if (orderId) {
         await supabase
           .from('orders')
-          .update({ status: 'paid', stripe_payment_id: paymentId })
+          .update({
+            status: 'paid',
+            stripe_session_id: session.id,
+            total_amount: amountTotal,
+            commission_amount: commissionAmount > 0 ? commissionAmount : undefined,
+            commission_status: commissionAmount > 0 ? 'pending' : undefined,
+          })
           .eq('id', orderId)
       }
 
+      // Log notification
       await supabase
         .from('notifications')
         .insert({
@@ -51,7 +74,7 @@ export async function POST(request) {
           created_at: new Date().toISOString(),
         })
 
-      console.log(`✅ Order confirmed — payment: ${paymentId}, email: ${email}`)
+      console.log(`✅ Order ${orderId} confirmed — payment: ${paymentId}, ambassador: ${ambassadorCode || 'none'}, commission: $${commissionAmount}`)
       return Response.json({ received: true })
     }
 
