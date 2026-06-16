@@ -6,6 +6,9 @@ import styles from '../styles.css';
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'YOUR_PROJECT_URL_HERE';
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'YOUR_ANON_KEY_HERE';
 
+// Vibin Apparel logo tee mockup — generated asset
+const TEE_LOGO_MOCKUP = 'https://user-gen-media-assets.s3.amazonaws.com/gpt4o_images/4efb14ba-19a2-4b31-af17-c02f0244b7cd.png';
+
 export default function Drop01Page() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -118,6 +121,62 @@ export default function Drop01Page() {
     <>
       <style dangerouslySetInnerHTML={{ __html: styles }} />
 
+      {/* Extra styles for tee mockup card */}
+      <style>{`
+        .prev-img-card {
+          position: relative;
+          overflow: hidden;
+          border-radius: 16px;
+          background: #111;
+          aspect-ratio: 3 / 4;
+        }
+        .prev-img-card img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center top;
+          display: block;
+          transition: transform 0.4s ease;
+        }
+        .prev-img-card:hover img { transform: scale(1.04); }
+        .prev-img-overlay {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          padding: 1.25rem 1rem 1rem;
+          background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+        }
+        .prev-img-name {
+          font-family: 'Cabinet Grotesk', sans-serif;
+          font-weight: 800;
+          font-size: 1rem;
+          color: #f0eeea;
+          letter-spacing: 0.02em;
+        }
+        .prev-img-price {
+          font-size: 0.9rem;
+          font-weight: 700;
+          color: #01696f;
+        }
+        .prev-img-tag {
+          position: absolute;
+          top: 0.75rem;
+          left: 0.75rem;
+          background: rgba(1,105,111,0.9);
+          color: #fff;
+          font-size: 0.68rem;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          padding: 3px 9px;
+          border-radius: 20px;
+        }
+      `}</style>
+
       <div className="promo">
         ✦ Drop 01 launching soon · <strong>Sign up for 15% off + early access</strong> ✦
       </div>
@@ -208,11 +267,23 @@ export default function Drop01Page() {
         </p>
 
         <div className="preview-grid">
-          <div className="prev prev-1">
-            <div className="prev-tag">Coming Soon</div>
-            <div className="prev-graphic">VIBIN<em>different.</em></div>
-            <div className="prev-name"><span>Foundation Tee</span><span className="prev-price">$48</span></div>
+          {/* Foundation Tee — logo mockup */}
+          <div className="prev-img-card">
+            <div className="prev-img-tag">Coming Soon</div>
+            <img
+              src={TEE_LOGO_MOCKUP}
+              alt="Vibin Apparel Foundation Tee — black heavyweight cotton with teal VIBIN APPAREL logo graphic"
+              width="600"
+              height="800"
+              loading="lazy"
+              decoding="async"
+            />
+            <div className="prev-img-overlay">
+              <span className="prev-img-name">Foundation Tee</span>
+              <span className="prev-img-price">$48</span>
+            </div>
           </div>
+
           <div className="prev prev-2">
             <div className="prev-tag">Coming Soon</div>
             <div className="prev-graphic">VOL<em>01.</em></div>
