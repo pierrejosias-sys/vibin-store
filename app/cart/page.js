@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useCart } from '../lib/cart-context'
 
@@ -8,20 +8,25 @@ export default function CartPage() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const { cartCount, updateCart } = useCart()
+  const initialized = useRef(false)
 
+  // READ from localStorage once on mount
   useEffect(() => {
     const saved = localStorage.getItem('vibin_cart')
     if (saved) setItems(JSON.parse(saved))
     setLoading(false)
+    initialized.current = true
   }, [])
 
+  // WRITE to localStorage only after initial load
   useEffect(() => {
+    if (!initialized.current) return
     localStorage.setItem('vibin_cart', JSON.stringify(items))
     updateCart()
-  }, [items, updateCart])
+  }, [items])
 
   function updateQty(id, color, size, change) {
-    setItems(items.map(item =>
+    setItems(prev => prev.map(item =>
       item.id === id && item.color === color && item.size === size
         ? { ...item, qty: Math.max(1, item.qty + change) }
         : item
@@ -29,7 +34,9 @@ export default function CartPage() {
   }
 
   function removeItem(id, color, size) {
-    setItems(items.filter(item => !(item.id === id && item.color === color && item.size === size)))
+    setItems(prev => prev.filter(item =>
+      !(item.id === id && item.color === color && item.size === size)
+    ))
   }
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0)
@@ -69,14 +76,20 @@ export default function CartPage() {
 
       <div className="cart-page">
         <h1 className="cart-title">Your Bag
-          {items.length > 0 && <span style={{fontSize:'1rem',fontWeight:'400',color:'#888',marginLeft:'0.75rem'}}>({items.length} {items.length === 1 ? 'item' : 'items'})</span>}
+          {items.length > 0 && (
+            <span style={{fontSize:'1rem',fontWeight:'400',color:'#888',marginLeft:'0.75rem'}}>
+              ({items.length} {items.length === 1 ? 'item' : 'items'})
+            </span>
+          )}
         </h1>
 
         {items.length === 0 ? (
           <div className="cart-empty">
             <div style={{fontSize:'2.5rem',marginBottom:'1rem'}}>🛒</div>
             <p>Your bag is empty.</p>
-            <Link href="/shop" style={{color:'var(--coral)',marginTop:'1rem',display:'inline-block',fontWeight:'600'}}>Continue Shopping →</Link>
+            <Link href="/shop" style={{color:'var(--coral)',marginTop:'1rem',display:'inline-block',fontWeight:'600'}}>
+              Continue Shopping →
+            </Link>
           </div>
         ) : (
           <>
@@ -84,7 +97,7 @@ export default function CartPage() {
               {items.map(item => (
                 <div key={`${item.id}-${item.color}-${item.size}`} className="cart-item">
 
-                  {/* IMAGE OR INITIALS */}
+                  {/* IMAGE */}
                   <div className="cart-item-img" style={{overflow:'hidden',borderRadius:'8px',background:'#111'}}>
                     {item.image_url ? (
                       <img
@@ -104,7 +117,6 @@ export default function CartPage() {
                   <div className="cart-item-info">
                     <div className="cart-item-name">{item.name}</div>
                     <div className="cart-item-variant">{item.color} · {item.size}</div>
-                    {/* Remove link */}
                     <button
                       onClick={() => removeItem(item.id, item.color, item.size)}
                       style={{background:'none',border:'none',color:'#888',fontSize:'0.72rem',padding:'0',marginTop:'6px',cursor:'pointer',textDecoration:'underline',fontFamily:'inherit'}}
@@ -148,7 +160,9 @@ export default function CartPage() {
                 <span>${total.toFixed(2)}</span>
               </div>
               <Link href="/checkout" className="btn-checkout">Checkout →</Link>
-              <Link href="/shop" style={{display:'block',textAlign:'center',marginTop:'12px',fontSize:'0.8rem',color:'#888',textDecoration:'none'}}>← Continue Shopping</Link>
+              <Link href="/shop" style={{display:'block',textAlign:'center',marginTop:'12px',fontSize:'0.8rem',color:'#888',textDecoration:'none'}}>
+                ← Continue Shopping
+              </Link>
             </div>
           </>
         )}
