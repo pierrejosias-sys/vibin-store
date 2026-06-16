@@ -38,12 +38,7 @@ export default function AdminPage() {
     pendingOrders: 0,
     shippedOrders: 0,
     deliveredOrders: 0,
-    adSpend: 0,
-    adClicks: 0,
-    adConversions: 0,
-    revenuePotential: 0,
     avgOrderValue: 0,
-    conversionRate: 0
   })
   const [reviews, setReviews] = useState([])
   const [pendingVerifications, setPendingVerifications] = useState(0)
@@ -67,28 +62,42 @@ export default function AdminPage() {
   }
 
   async function fetchData() {
-    setOrders([
-      { id: 'ORD-001', guest_email: 'test@example.com', status: 'pending', total: 96, created_at: '2026-04-28', items: 2 },
-      { id: 'ORD-002', guest_email: 'john@email.com', status: 'shipped', total: 48, created_at: '2026-04-27', items: 1 },
-      { id: 'ORD-003', guest_email: 'jane@email.com', status: 'delivered', total: 146, created_at: '2026-04-26', items: 3 },
-      { id: 'ORD-004', guest_email: 'mike@email.com', status: 'pending', total: 72, created_at: '2026-04-29', items: 1 },
-      { id: 'ORD-005', guest_email: 'sarah@email.com', status: 'shipped', total: 218, created_at: '2026-04-29', items: 4 },
-    ])
-    
-    setStats({
-      totalOrders: 5,
-      totalRevenue: 580,
-      pendingOrders: 2,
-      shippedOrders: 2,
-      deliveredOrders: 1,
-      adSpend: 150,
-      adClicks: 1247,
-      adConversions: 23,
-      revenuePotential: 2400,
-      avgOrderValue: 116,
-      conversionRate: 3.2
-    })
+    setLoading(true)
+    try {
+      // Fetch all orders
+      const { data: allOrders, error } = await supabase
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: false })
 
+      if (error) throw error
+
+      const orderList = allOrders || []
+      setOrders(orderList)
+
+      // Compute stats from real data
+      const totalOrders = orderList.length
+      const totalRevenue = orderList
+        .filter(o => o.status !== 'cancelled')
+        .reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0)
+      const pendingOrders = orderList.filter(o => o.status === 'pending' || o.status === 'paid').length
+      const shippedOrders = orderList.filter(o => o.status === 'shipped').length
+      const deliveredOrders = orderList.filter(o => o.status === 'delivered').length
+      const avgOrderValue = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0
+
+      setStats({
+        totalOrders,
+        totalRevenue: Math.round(totalRevenue),
+        pendingOrders,
+        shippedOrders,
+        deliveredOrders,
+        avgOrderValue,
+      })
+    } catch (e) {
+      console.error('Error fetching orders:', e)
+    }
+
+    // Reviews are external (Instagram/TikTok/Google) — keep as curated display
     setReviews([
       { platform: 'instagram', user: '@streetwear_joe', rating: 5, text: 'Best tee quality hands down 🔥', time: '2h ago' },
       { platform: 'tiktok', user: '@fashiondave', rating: 5, text: 'VIBIN different frfr', time: '5h ago' },
@@ -97,6 +106,7 @@ export default function AdminPage() {
       { platform: 'tiktok', user: '@vibecheck', rating: 5, text: 'ambassador program is crazy 🔥', time: '3d ago' },
       { platform: 'google', user: 'Jaylen T.', rating: 5, text: 'Already got my second order. VIBIN different.', time: '4d ago' },
     ])
+
     setLoading(false)
   }
 
@@ -113,7 +123,8 @@ export default function AdminPage() {
     twitter: '🐦'
   }
 
-  const formatCurrency = (num) => '$' + num.toLocaleString()
+  const formatCurrency = (num) => '$' + Number(num).toLocaleString()
+  const formatDate = (str) => str ? new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
 
   return (
     <>
@@ -157,76 +168,87 @@ export default function AdminPage() {
             <>
               <div className="admin-header">
                 <h1 className="admin-title">Dashboard</h1>
-                <span style={{ color: '#888', fontSize: '14px' }}>Last updated: Just now</span>
+                <span style={{ color: '#888', fontSize: '14px' }}>Live data</span>
               </div>
 
-              <div className="admin-stats">
-                <div className="admin-stat">
-                  <div className="admin-stat-label">Total Orders</div>
-                  <div className="admin-stat-value">{stats.totalOrders}</div>
-                </div>
-                <div className="admin-stat">
-                  <div className="admin-stat-label">Revenue</div>
-                  <div className="admin-stat-value">{formatCurrency(stats.totalRevenue)}</div>
-                </div>
-                <div className="admin-stat" style={{ background: '#fff3cd' }}>
-                  <div className="admin-stat-label">Pending Fulfillment</div>
-                  <div className="admin-stat-value">{stats.pendingOrders}</div>
-                </div>
-                <div className="admin-stat">
-                  <div className="admin-stat-label">Shipped</div>
-                  <div className="admin-stat-value">{stats.shippedOrders}</div>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
-                <div className="admin-card">
-                  <h3 className="admin-card-title">Advertising</h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                    <div>
-                      <div style={{ fontSize: '12px', color: '#888', marginBottom: '5px' }}>Ad Spend</div>
-                      <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{formatCurrency(stats.adSpend)}</div>
+              {loading ? (
+                <div style={{ color: '#888', padding: '40px 0' }}>Loading...</div>
+              ) : (
+                <>
+                  <div className="admin-stats">
+                    <div className="admin-stat">
+                      <div className="admin-stat-label">Total Orders</div>
+                      <div className="admin-stat-value">{stats.totalOrders}</div>
                     </div>
-                    <div>
-                      <div style={{ fontSize: '12px', color: '#888', marginBottom: '5px' }}>Clicks</div>
-                      <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{stats.adClicks.toLocaleString()}</div>
+                    <div className="admin-stat">
+                      <div className="admin-stat-label">Revenue</div>
+                      <div className="admin-stat-value">{formatCurrency(stats.totalRevenue)}</div>
                     </div>
-                    <div>
-                      <div style={{ fontSize: '12px', color: '#888', marginBottom: '5px' }}>Conversions</div>
-                      <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{stats.adConversions}</div>
+                    <div className="admin-stat" style={{ background: '#fff3cd' }}>
+                      <div className="admin-stat-label">Pending Fulfillment</div>
+                      <div className="admin-stat-value">{stats.pendingOrders}</div>
                     </div>
-                    <div>
-                      <div style={{ fontSize: '12px', color: '#888', marginBottom: '5px' }}>Cost/Conversion</div>
-                      <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{formatCurrency(Math.round(stats.adSpend / stats.adConversions))}</div>
+                    <div className="admin-stat">
+                      <div className="admin-stat-label">Shipped</div>
+                      <div className="admin-stat-value">{stats.shippedOrders}</div>
                     </div>
                   </div>
-                </div>
 
-                <div className="admin-card">
-                  <h3 className="admin-card-title">Revenue Potential</h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                    <div>
-                      <div style={{ fontSize: '12px', color: '#888', marginBottom: '5px' }}>Revenue Potential</div>
-                      <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#22c55e' }}>{formatCurrency(stats.revenuePotential)}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '12px', color: '#888', marginBottom: '5px' }}>Avg Order Value</div>
-                      <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{formatCurrency(stats.avgOrderValue)}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '12px', color: '#888', marginBottom: '5px' }}>Conversion Rate</div>
-                      <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{stats.conversionRate}%</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '12px', color: '#888', marginBottom: '5px' }}>Customers</div>
-                      <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{stats.totalOrders}</div>
-                    </div>
+                  <div>
+                    <h2 style={{ fontFamily: "'Anton', sans-serif", fontSize: '24px', marginBottom: '20px', textTransform: 'uppercase' }}>Recent Orders</h2>
+                    {orders.length === 0 ? (
+                      <div style={{ color: '#888', padding: '40px 0', textAlign: 'center' }}>No orders yet. They'll show up here once customers check out.</div>
+                    ) : (
+                      <table className="admin-table">
+                        <thead>
+                          <tr>
+                            <th>Order</th>
+                            <th>Customer</th>
+                            <th>Items</th>
+                            <th>Date</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {orders.slice(0, 10).map(order => (
+                            <tr key={order.id}>
+                              <td>{order.order_number || order.id?.slice(0, 8).toUpperCase()}</td>
+                              <td>{order.customer_email || order.guest_email || '—'}</td>
+                              <td>{Array.isArray(order.items) ? order.items.length : (order.items || '—')}</td>
+                              <td>{formatDate(order.created_at)}</td>
+                              <td>{formatCurrency(order.total || 0)}</td>
+                              <td>
+                                <span style={{ 
+                                  padding: '4px 8px', 
+                                  background: order.status === 'pending' ? '#fff3cd' : order.status === 'paid' ? '#cce5ff' : order.status === 'shipped' ? '#d4edda' : order.status === 'delivered' ? '#d4edda' : '#e2e3e5',
+                                  fontSize: '11px',
+                                  textTransform: 'uppercase'
+                                }}>
+                                  {order.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
                   </div>
-                </div>
-              </div>
+                </>
+              )}
+            </>
+          )}
 
-              <div>
-                <h2 style={{ fontFamily: "'Anton', sans-serif", fontSize: '24px', marginBottom: '20px', textTransform: 'uppercase' }}>Recent Orders</h2>
+          {page === 'orders' && (
+            <>
+              <div className="admin-header">
+                <h1 className="admin-title">Orders</h1>
+              </div>
+              {loading ? (
+                <div style={{ color: '#888', padding: '40px 0' }}>Loading...</div>
+              ) : orders.length === 0 ? (
+                <div style={{ color: '#888', padding: '40px 0', textAlign: 'center' }}>No orders yet.</div>
+              ) : (
                 <table className="admin-table">
                   <thead>
                     <tr>
@@ -236,78 +258,37 @@ export default function AdminPage() {
                       <th>Date</th>
                       <th>Total</th>
                       <th>Status</th>
+                      <th>Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     {orders.map(order => (
                       <tr key={order.id}>
-                        <td>{order.id}</td>
-                        <td>{order.guest_email}</td>
-                        <td>{order.items}</td>
-                        <td>{order.created_at}</td>
-                        <td>${order.total}</td>
+                        <td>{order.order_number || order.id?.slice(0, 8).toUpperCase()}</td>
+                        <td>{order.customer_email || order.guest_email || '—'}</td>
+                        <td>{Array.isArray(order.items) ? order.items.length : (order.items || '—')}</td>
+                        <td>{formatDate(order.created_at)}</td>
+                        <td>{formatCurrency(order.total || 0)}</td>
                         <td>
                           <span style={{ 
                             padding: '4px 8px', 
-                            background: order.status === 'pending' ? '#fff3cd' : order.status === 'shipped' ? '#d4edda' : '#e2e3e5',
+                            background: order.status === 'pending' ? '#fff3cd' : order.status === 'paid' ? '#cce5ff' : order.status === 'shipped' ? '#d4edda' : order.status === 'delivered' ? '#d4edda' : '#e2e3e5',
                             fontSize: '11px',
                             textTransform: 'uppercase'
                           }}>
                             {order.status}
                           </span>
                         </td>
+                        <td>
+                          <Link href="/admin/orders" style={{ padding: '4px 12px', background: '#000', color: '#fff', textDecoration: 'none', fontSize: '12px' }}>
+                            {order.status === 'pending' || order.status === 'paid' ? 'Fulfill' : 'Manage'}
+                          </Link>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-              </div>
-            </>
-          )}
-
-          {page === 'orders' && (
-            <>
-              <div className="admin-header">
-                <h1 className="admin-title">Orders</h1>
-              </div>
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Order</th>
-                    <th>Customer</th>
-                    <th>Items</th>
-                    <th>Date</th>
-                    <th>Total</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.map(order => (
-                    <tr key={order.id}>
-                      <td>{order.id}</td>
-                      <td>{order.guest_email}</td>
-                      <td>{order.items}</td>
-                      <td>{order.created_at}</td>
-                      <td>${order.total}</td>
-                      <td>
-                        <span style={{ 
-                          padding: '4px 8px', 
-                          background: order.status === 'pending' ? '#fff3cd' : order.status === 'shipped' ? '#d4edda' : '#e2e3e5',
-                          fontSize: '11px',
-                          textTransform: 'uppercase'
-                        }}>
-                          {order.status}
-                        </span>
-                      </td>
-                      <td>
-                        <button style={{ padding: '4px 12px', background: '#000', color: '#fff', border: 'none', cursor: 'pointer' }}>
-                          {order.status === 'pending' ? 'Fulfill' : 'Track'}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              )}
             </>
           )}
 
@@ -322,37 +303,37 @@ export default function AdminPage() {
                   <div className="admin-stat-value">{formatCurrency(stats.totalRevenue)}</div>
                 </div>
                 <div className="admin-stat">
-                  <div className="admin-stat-label">Revenue Potential</div>
-                  <div className="admin-stat-value">{formatCurrency(stats.revenuePotential)}</div>
+                  <div className="admin-stat-label">Total Orders</div>
+                  <div className="admin-stat-value">{stats.totalOrders}</div>
                 </div>
                 <div className="admin-stat">
-                  <div className="admin-stat-label">Ad Spend</div>
-                  <div className="admin-stat-value">{formatCurrency(stats.adSpend)}</div>
+                  <div className="admin-stat-label">Avg Order Value</div>
+                  <div className="admin-stat-value">{formatCurrency(stats.avgOrderValue)}</div>
                 </div>
                 <div className="admin-stat">
-                  <div className="admin-stat-label">Conversion Rate</div>
-                  <div className="admin-stat-value">{stats.conversionRate}%</div>
+                  <div className="admin-stat-label">Delivered</div>
+                  <div className="admin-stat-value">{stats.deliveredOrders}</div>
+                </div>
+              </div>
+              <div className="admin-card" style={{ marginTop: '20px' }}>
+                <h3 className="admin-card-title">Order Status Breakdown</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '20px' }}>
+                  {['pending', 'paid', 'shipped', 'delivered'].map(status => {
+                    const count = orders.filter(o => o.status === status).length
+                    const pct = stats.totalOrders > 0 ? Math.round((count / stats.totalOrders) * 100) : 0
+                    return (
+                      <div key={status} style={{ padding: '15px', background: '#f5f5f5', borderRadius: '8px' }}>
+                        <div style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase', marginBottom: '5px' }}>{status}</div>
+                        <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{count}</div>
+                        <div style={{ fontSize: '12px', color: '#888' }}>{pct}% of orders</div>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
               <div className="admin-card" style={{ marginTop: '20px' }}>
                 <h3 className="admin-card-title">Traffic Sources</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
-                  <div style={{ padding: '15px', background: '#f5f5f5', borderRadius: '8px' }}>
-                    <div style={{ fontSize: '12px', color: '#888' }}>Instagram</div>
-                    <div style={{ fontSize: '20px', fontWeight: 'bold' }}>487 visits</div>
-                    <div style={{ fontSize: '12px', color: '#22c55e' }}>+12% this week</div>
-                  </div>
-                  <div style={{ padding: '15px', background: '#f5f5f5', borderRadius: '8px' }}>
-                    <div style={{ fontSize: '12px', color: '#888' }}>TikTok</div>
-                    <div style={{ fontSize: '20px', fontWeight: 'bold' }}>623 visits</div>
-                    <div style={{ fontSize: '12px', color: '#22c55e' }}>+28% this week</div>
-                  </div>
-                  <div style={{ padding: '15px', background: '#f5f5f5', borderRadius: '8px' }}>
-                    <div style={{ fontSize: '12px', color: '#888' }}>Google</div>
-                    <div style={{ fontSize: '20px', fontWeight: 'bold' }}>312 visits</div>
-                    <div style={{ fontSize: '12px', color: '#22c55e' }}>+5% this week</div>
-                  </div>
-                </div>
+                <p style={{ color: '#888', fontSize: '14px' }}>Connect Google Analytics or Meta Pixel to see live traffic data here.</p>
               </div>
             </>
           )}
