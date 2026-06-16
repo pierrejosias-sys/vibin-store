@@ -14,6 +14,7 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false)
   const [orderId, setOrderId] = useState(null)
   const [items, setItems] = useState([])
+  const [ambassadorCode, setAmbassadorCode] = useState(null)
   const [paymentStatus, setPaymentStatus] = useState(null)
   const { updateCart } = useCart()
   const router = useRouter()
@@ -23,63 +24,40 @@ export default function CheckoutPage() {
     address: '', city: '', state: '', zip: '', country: 'US'
   })
 
-  // Check if returning from Stripe
   useEffect(() => {
     const saved = localStorage.getItem('vibin_cart')
     if (saved) setItems(JSON.parse(saved))
 
+    // Read ambassador code from localStorage (set by cart page)
+    const ref = localStorage.getItem('vibin_ref')
+    if (ref) setAmbassadorCode(ref)
+
     const urlParams = new URLSearchParams(window.location.search)
     const success = urlParams.get('success')
-    const sessionId = urlParams.get('session_id')
-    if (success === 'true' && sessionId) {
-      verifyPayment(sessionId)
-    }
-  }, [])
-
-  async function verifyPayment(sessionId) {
-    try {
-      const stripe = await stripePromise
-      const { error, paymentIntent } = await stripe.retrievePaymentIntent(sessionId)
-      if (error) {
-        setPaymentStatus('error')
-      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-        setPaymentStatus('success')
-        setStep(3)
-        localStorage.removeItem('vibin_cart')
-        updateCart()
-      } else {
-        setPaymentStatus('pending')
-      }
-    } catch (e) {
-      // If Stripe verification fails, still show confirmation
+    const orderId = urlParams.get('order')
+    if (success === 'true' && orderId) {
+      setOrderId(orderId)
       setPaymentStatus('success')
       setStep(3)
       localStorage.removeItem('vibin_cart')
+      localStorage.removeItem('vibin_ref')
       updateCart()
     }
-  }
+  }, [])
 
   async function handleStripeCheckout() {
     setLoading(true)
 
-    const orderData = {
-      id: 'ORD-' + Date.now(),
-      items,
-      shipping,
-      guest_email: shipping.email,
-      subtotal: items.reduce((sum, i) => sum + i.price * i.qty, 0),
-      shipping_cost: items.reduce((sum, i) => sum + i.price * i.qty, 0) >= 75 ? 0 : 10,
-      total: items.reduce((sum, i) => sum + i.price * i.qty, 0) + (items.reduce((sum, i) => sum + i.price * i.qty, 0) >= 75 ? 0 : 10),
-      status: 'pending',
-      created_at: new Date().toISOString()
-    }
-
     try {
-      const stripe = await stripePromise
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items, email: shipping.email })
+        body: JSON.stringify({
+          items,
+          email: shipping.email,
+          ambassadorCode: ambassadorCode || null,
+          shippingAddress: shipping,
+        })
       })
 
       const { sessionId, url, error } = await response.json()
@@ -90,27 +68,15 @@ export default function CheckoutPage() {
         return
       }
 
-      // Save order to DB
-      try {
-        const { supabase } = await import('../lib/supabase')
-        await supabase.from('orders').insert({ ...orderData, stripe_session_id: sessionId })
-        setOrderId(orderData.id)
-      } catch (e) {
-        console.log('DB insert skipped')
-      }
-
-      // Redirect to Stripe
       if (url) {
         window.location.href = url
         return
       }
 
       if (sessionId) {
+        const stripe = await stripePromise
         const { error } = await stripe.redirectToCheckout({ sessionId })
-        if (error) {
-          console.error('Stripe redirect error:', error)
-        }
-        return
+        if (error) console.error('Stripe redirect error:', error)
       }
     } catch (e) {
       console.error('Checkout error:', e)
@@ -162,6 +128,13 @@ export default function CheckoutPage() {
         {step === 1 && (
           <div className="checkout-form">
             <h2>Shipping Address</h2>
+
+            {ambassadorCode && (
+              <div style={{background:'#f0faf9',border:'1px solid #01696f',borderRadius:'8px',padding:'10px 14px',marginBottom:'20px',fontSize:'0.78rem',color:'#01696f',textAlign:'center'}}>
+                🎉 Ambassador code <strong>{ambassadorCode}</strong> applied!
+              </div>
+            )}
+
             <div className="field-row">
               <div className="field">
                 <div className="field-label">First Name</div>
@@ -229,7 +202,7 @@ export default function CheckoutPage() {
             </button>
 
             <div style={{ marginTop: '16px', fontSize: '12px', color: 'var(--muted)', textAlign: 'center' }}>
-              <span>🔒 </span> SSL Secure · 256-bit encryption · Stripe protected
+              🔒 SSL Secure · 256-bit encryption · Stripe protected
             </div>
           </div>
         )}

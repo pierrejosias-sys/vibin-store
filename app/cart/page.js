@@ -7,11 +7,22 @@ import { useCart } from '../lib/cart-context'
 export default function CartPage() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
+  const [ambassadorCode, setAmbassadorCode] = useState(null)
   const { cartCount, updateCart } = useCart()
   const initialized = useRef(false)
 
-  // READ from localStorage once on mount
   useEffect(() => {
+    // Read ambassador code from URL ?ref= param and persist it
+    const params = new URLSearchParams(window.location.search)
+    const ref = params.get('ref')
+    if (ref) {
+      localStorage.setItem('vibin_ref', ref)
+      setAmbassadorCode(ref)
+    } else {
+      const saved = localStorage.getItem('vibin_ref')
+      if (saved) setAmbassadorCode(saved)
+    }
+
     try {
       const saved = localStorage.getItem('vibin_cart')
       if (saved) {
@@ -41,7 +52,6 @@ export default function CartPage() {
     setTimeout(() => { initialized.current = true }, 0)
   }, [])
 
-  // WRITE to localStorage only after initial load
   useEffect(() => {
     if (!initialized.current) return
     localStorage.setItem('vibin_cart', JSON.stringify(items))
@@ -53,7 +63,6 @@ export default function CartPage() {
       return prev.reduce((acc, item) => {
         if (item.id === id && item.color === color && item.size === size) {
           const newQty = item.qty + change
-          // If qty drops to 0 or below, remove the item
           if (newQty <= 0) return acc
           return [...acc, { ...item, qty: newQty }]
         }
@@ -112,6 +121,12 @@ export default function CartPage() {
           )}
         </h1>
 
+        {ambassadorCode && (
+          <div style={{background:'#f0faf9',border:'1px solid #01696f',borderRadius:'8px',padding:'10px 14px',marginBottom:'16px',fontSize:'0.78rem',color:'#01696f',textAlign:'center'}}>
+            🎉 Ambassador code <strong>{ambassadorCode}</strong> applied!
+          </div>
+        )}
+
         {items.length === 0 ? (
           <div className="cart-empty">
             <div style={{fontSize:'2.5rem',marginBottom:'1rem'}}>🛒</div>
@@ -126,7 +141,6 @@ export default function CartPage() {
               {items.map(item => (
                 <div key={`${item.id}-${item.color}-${item.size}`} className="cart-item">
 
-                  {/* IMAGE */}
                   <div className="cart-item-img" style={{overflow:'hidden',borderRadius:'8px',background:'#111'}}>
                     {item.image_url ? (
                       <img
@@ -142,7 +156,6 @@ export default function CartPage() {
                     )}
                   </div>
 
-                  {/* INFO */}
                   <div className="cart-item-info">
                     <div className="cart-item-name">{item.name}</div>
                     <div className="cart-item-variant">{item.color} · {item.size}</div>
@@ -154,14 +167,12 @@ export default function CartPage() {
                     </button>
                   </div>
 
-                  {/* QTY */}
                   <div className="cart-item-qty">
                     <button onClick={() => updateQty(item.id, item.color, item.size, -1)}>−</button>
                     <span>{item.qty}</span>
                     <button onClick={() => updateQty(item.id, item.color, item.size, 1)}>+</button>
                   </div>
 
-                  {/* PRICE */}
                   <div className="cart-item-price">${(item.price * item.qty).toFixed(2)}</div>
 
                 </div>
