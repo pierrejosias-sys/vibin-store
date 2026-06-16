@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { supabase } from '@/app/lib/supabase'
 
 // PASTE YOUR MAILCHIMP FORM ACTION URL BELOW
 // Get it from: Mailchimp → Audience → Signup Forms → Embedded Forms → copy the form action URL
@@ -17,8 +18,8 @@ export default function NewsletterForm() {
 
     if (!MAILCHIMP_URL) {
       // Dev fallback: save to Supabase signups table if Mailchimp not configured
+      setStatus('loading')
       try {
-        const { supabase } = await import('../lib/supabase')
         const { error } = await supabase.from('signups').insert([{ email, source: 'homepage-newsletter' }])
         if (error) throw error
         setStatus('success')
@@ -64,7 +65,7 @@ export default function NewsletterForm() {
           border: '1px solid #2a2a2a',
         }}
       >
-        You're on the list. Check your email for your 15% off code. ✦
+        You’re on the list. Check your email for your 15% off code. ✦
       </div>
     )
   }
