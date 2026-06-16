@@ -1,0 +1,24 @@
+{
+  "id": "lanyard-001",
+  "name": "Vibin Lanyard",
+  "category": "accessories",
+  "drop": "01",
+  "price": 18,
+  "width": "3/4 inch (19mm)",
+  "length": "18 inch drop",
+  "print_method": "full sublimation, both sides",
+  "hardware": "swivel metal clip + key ring",
+  "buckle": "safety breakaway",
+  "attachment": "branded badge card holder",
+  "colorways": [
+    { "name": "Black / Teal",   "strap": "#0d0d0d", "text": "#01696f" },
+    { "name": "Teal / Black",   "strap": "#01696f", "text": "#0d0d0d" },
+    { "name": "Forest / Cream", "strap": "#1a2e1a", "text": "#f5f0e8" },
+    { "name": "Sand / Black",   "strap": "#c8b89a", "text": "#0d0d0d" }
+  ],
+  "branding": {
+    "wordmark": "VIBIN repeated down both sides of strap",
+    "badge": "VIBIN APPAREL · JXV FL with decorative barcode"
+  },
+  "origin": "Designed in Jacksonville, FL"
+}
