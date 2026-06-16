@@ -2,20 +2,18 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { createBrowserClient } from '@supabase/ssr'
+
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+)
 
 export default function AmbassadorApply() {
-  const router = useRouter()
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    instagram: '',
-    tiktok: '',
-    why: '',
-    audience: ''
-  })
+  const [form, setForm] = useState({ name: '', email: '', instagram: '', tiktok: '', why: '', audience: '' })
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState('')
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -24,44 +22,48 @@ export default function AmbassadorApply() {
   async function handleSubmit(e) {
     e.preventDefault()
     setLoading(true)
+    setError('')
 
     try {
-      const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
-      const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      // Check for duplicate application
+      const { data: existing } = await supabase
+        .from('ambassadors')
+        .select('id, status')
+        .eq('email', form.email)
+        .single()
 
-      if (SUPABASE_URL && SUPABASE_ANON_KEY && SUPABASE_URL !== 'YOUR_PROJECT_URL_HERE') {
-        const { createClient } = require('@supabase/supabase-js')
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+      if (existing) {
+        if (existing.status === 'pending') {
+          setError('An application with this email is already under review.')
+        } else if (existing.status === 'approved') {
+          setError('This email is already an approved ambassador. Please log in.')
+        } else {
+          setError('A previous application from this email was declined. Contact ambassador@vibinapparel.com.')
+        }
+        setLoading(false)
+        return
+      }
 
-        const code = 'AMB' + Math.random().toString(36).substring(2, 6).toUpperCase()
-
-        await supabase
-          .from('ambassadors')
-          .insert({
-            code,
-            name: form.name,
-            email: form.email,
-            instagram_handle: form.instagram,
-            tiktok_handle: form.tiktok,
-            status: 'pending',
-            commission_rate: 15,
-            created_at: new Date().toISOString()
-          })
-
-        // Save to localStorage for immediate access
-        localStorage.setItem('vibin_ambassador', JSON.stringify({
-          code,
+      const { error: insertError } = await supabase
+        .from('ambassadors')
+        .insert({
           name: form.name,
           email: form.email,
-          status: 'pending'
-        }))
-      }
+          instagram_handle: form.instagram,
+          tiktok_handle: form.tiktok,
+          audience_size: form.audience,
+          why: form.why,
+          status: 'pending',
+          commission_rate: 15,
+          created_at: new Date().toISOString()
+        })
+
+      if (insertError) throw insertError
 
       setSubmitted(true)
     } catch (err) {
-      console.error('Application error:', err)
-      // Still show success for demo
-      setSubmitted(true)
+      console.error(err)
+      setError('Something went wrong. Please try again.')
     }
 
     setLoading(false)
@@ -75,13 +77,20 @@ export default function AmbassadorApply() {
         </header>
         <div style={{maxWidth:'600px',margin:'0 auto',padding:'100px 20px',textAlign:'center'}}>
           <div style={{fontSize:'64px',marginBottom:'24px'}}>✦</div>
-          <h1 style={{fontFamily:'Anton, sans-serif',fontSize:'48px',textTransform:'uppercase',marginBottom:'16px'}}>Application Received!</h1>
-          <p style={{color:'#888',fontSize:'16px',marginBottom:'40px',lineHeight:'1.6'}}>
-            We've received your ambassador application. Our team will review it within 48 hours.
-            You'll receive an email at <strong>{form.email}</strong> with next steps.
+          <h1 style={{fontFamily:'Anton, sans-serif',fontSize:'48px',textTransform:'uppercase',marginBottom:'16px'}}>Application Received</h1>
+          <p style={{color:'#888',fontSize:'16px',marginBottom:'16px',lineHeight:'1.6'}}>
+            We've received your application and will review it within <strong style={{color:'#f0ede6'}}>48 hours</strong>.
           </p>
-          <Link href="/ambassador" style={{display:'inline-block',padding:'16px 32px',background:'#e05c2e',color:'#fff',textDecoration:'none',borderRadius:'4px',fontWeight:'bold'}}>
-            Go to Ambassador Hub →
+          <p style={{color:'#555',fontSize:'14px',marginBottom:'40px'}}>
+            You'll receive an email at <strong style={{color:'#888'}}>{form.email}</strong> once a decision has been made.
+            Do not attempt to access the ambassador dashboard until you receive your approval email.
+          </p>
+          <div style={{padding:'20px',background:'#111',border:'1px solid #1e1e1e',borderRadius:'8px',marginBottom:'40px'}}>
+            <p style={{fontFamily:'JetBrains Mono, monospace',fontSize:'11px',color:'#555',letterSpacing:'.1em',textTransform:'uppercase',marginBottom:'8px'}}>Application Status</p>
+            <p style={{fontFamily:'Anton, sans-serif',fontSize:'24px',color:'#e05c2e'}}>PENDING REVIEW</p>
+          </div>
+          <Link href="/" style={{display:'inline-block',padding:'16px 32px',background:'#1e1e1e',color:'#f0ede6',textDecoration:'none',borderRadius:'4px',fontWeight:'bold',fontSize:'14px'}}>
+            ← Back to Store
           </Link>
         </div>
       </div>
@@ -97,116 +106,73 @@ export default function AmbassadorApply() {
 
       <div style={{maxWidth:'600px',margin:'0 auto',padding:'60px 20px'}}>
         <div style={{textAlign:'center',marginBottom:'40px'}}>
-          <h1 style={{fontFamily:'Anton, sans-serif',fontSize:'48px',textTransform:'uppercase',marginBottom:'12px'}}>Become an Ambassador ✦</h1>
-          <p style={{color:'#888',fontSize:'16px'}}>Earn 15-25% commission by sharing Vibin with your audience</p>
+          <h1 style={{fontFamily:'Anton, sans-serif',fontSize:'48px',textTransform:'uppercase',marginBottom:'12px'}}>Apply to Become an Ambassador ✦</h1>
+          <p style={{color:'#888',fontSize:'16px'}}>Applications are reviewed manually. Not everyone is approved.</p>
         </div>
+
+        {error && (
+          <div style={{padding:'16px',background:'#1a0a0a',border:'1px solid #5c1e1e',borderRadius:'4px',marginBottom:'24px',color:'#ff6b6b',fontSize:'14px'}}>
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} style={{background:'#111',padding:'40px',borderRadius:'8px'}}>
           <div style={{marginBottom:'20px'}}>
             <label style={{display:'block',fontSize:'12px',color:'#888',marginBottom:'8px',letterSpacing:'.1em',textTransform:'uppercase'}}>Full Name *</label>
-            <input
-              name="name"
-              type="text"
-              required
-              value={form.name}
-              onChange={handleChange}
-              style={{width:'100%',padding:'12px',background:'#0a0a0a',border:'1px solid #3a3a3a',color:'#f0ede6',fontSize:'14px'}}
-            />
+            <input name="name" type="text" required value={form.name} onChange={handleChange}
+              style={{width:'100%',padding:'12px',background:'#0a0a0a',border:'1px solid #3a3a3a',color:'#f0ede6',fontSize:'14px',borderRadius:'4px'}} />
           </div>
 
           <div style={{marginBottom:'20px'}}>
             <label style={{display:'block',fontSize:'12px',color:'#888',marginBottom:'8px',letterSpacing:'.1em',textTransform:'uppercase'}}>Email *</label>
-            <input
-              name="email"
-              type="email"
-              required
-              value={form.email}
-              onChange={handleChange}
-              style={{width:'100%',padding:'12px',background:'#0a0a0a',border:'1px solid #3a3a3a',color:'#f0ede6',fontSize:'14px'}}
-            />
+            <input name="email" type="email" required value={form.email} onChange={handleChange}
+              style={{width:'100%',padding:'12px',background:'#0a0a0a',border:'1px solid #3a3a3a',color:'#f0ede6',fontSize:'14px',borderRadius:'4px'}} />
           </div>
 
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'20px',marginBottom:'20px'}}>
             <div>
-              <label style={{display:'block',fontSize:'12px',color:'#888',marginBottom:'8px',letterSpacing:'.1em',textTransform:'uppercase'}}>Instagram Handle</label>
-              <input
-                name="instagram"
-                type="text"
-                value={form.instagram}
-                onChange={handleChange}
-                placeholder="@yourhandle"
-                style={{width:'100%',padding:'12px',background:'#0a0a0a',border:'1px solid #3a3a3a',color:'#f0ede6',fontSize:'14px'}}
-              />
+              <label style={{display:'block',fontSize:'12px',color:'#888',marginBottom:'8px',letterSpacing:'.1em',textTransform:'uppercase'}}>Instagram</label>
+              <input name="instagram" type="text" value={form.instagram} onChange={handleChange} placeholder="@yourhandle"
+                style={{width:'100%',padding:'12px',background:'#0a0a0a',border:'1px solid #3a3a3a',color:'#f0ede6',fontSize:'14px',borderRadius:'4px'}} />
             </div>
             <div>
-              <label style={{display:'block',fontSize:'12px',color:'#888',marginBottom:'8px',letterSpacing:'.1em',textTransform:'uppercase'}}>TikTok Handle</label>
-              <input
-                name="tiktok"
-                type="text"
-                value={form.tiktok}
-                onChange={handleChange}
-                placeholder="@yourhandle"
-                style={{width:'100%',padding:'12px',background:'#0a0a0a',border:'1px solid #3a3a3a',color:'#f0ede6',fontSize:'14px'}}
-              />
+              <label style={{display:'block',fontSize:'12px',color:'#888',marginBottom:'8px',letterSpacing:'.1em',textTransform:'uppercase'}}>TikTok</label>
+              <input name="tiktok" type="text" value={form.tiktok} onChange={handleChange} placeholder="@yourhandle"
+                style={{width:'100%',padding:'12px',background:'#0a0a0a',border:'1px solid #3a3a3a',color:'#f0ede6',fontSize:'14px',borderRadius:'4px'}} />
             </div>
           </div>
 
           <div style={{marginBottom:'20px'}}>
             <label style={{display:'block',fontSize:'12px',color:'#888',marginBottom:'8px',letterSpacing:'.1em',textTransform:'uppercase'}}>Audience Size</label>
-            <select
-              name="audience"
-              value={form.audience}
-              onChange={handleChange}
-              style={{width:'100%',padding:'12px',background:'#0a0a0a',border:'1px solid #3a3a3a',color:'#f0ede6',fontSize:'14px'}}
-            >
+            <select name="audience" value={form.audience} onChange={handleChange}
+              style={{width:'100%',padding:'12px',background:'#0a0a0a',border:'1px solid #3a3a3a',color:'#f0ede6',fontSize:'14px',borderRadius:'4px'}}>
               <option value="">Select...</option>
-              <option value="1-5K">1,000 - 5,000</option>
-              <option value="5-10K">5,000 - 10,000</option>
-              <option value="10-50K">10,000 - 50,000</option>
+              <option value="1-5K">1,000 – 5,000</option>
+              <option value="5-10K">5,000 – 10,000</option>
+              <option value="10-50K">10,000 – 50,000</option>
               <option value="50K+">50,000+</option>
             </select>
           </div>
 
           <div style={{marginBottom:'30px'}}>
             <label style={{display:'block',fontSize:'12px',color:'#888',marginBottom:'8px',letterSpacing:'.1em',textTransform:'uppercase'}}>Why do you want to join? *</label>
-            <textarea
-              name="why"
-              required
-              value={form.why}
-              onChange={handleChange}
-              rows="4"
+            <textarea name="why" required value={form.why} onChange={handleChange} rows="4"
               placeholder="Tell us why you'd be a great Vibin ambassador..."
-              style={{width:'100%',padding:'12px',background:'#0a0a0a',border:'1px solid #3a3a3a',color:'#f0ede6',fontSize:'14px',fontFamily:'Manrope, sans-serif',resize:'vertical'}}
-            />
+              style={{width:'100%',padding:'12px',background:'#0a0a0a',border:'1px solid #3a3a3a',color:'#f0ede6',fontSize:'14px',fontFamily:'Manrope, sans-serif',resize:'vertical',borderRadius:'4px'}} />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width:'100%',
-              padding:'16px',
-              background: loading ? '#3a3a3a' : '#e05c2e',
-              color:'#fff',
-              border:'none',
-              borderRadius:'4px',
-              fontSize:'14px',
-              fontWeight:'bold',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              textTransform:'uppercase',
-              letterSpacing:'.1em'
-            }}
-          >
+          <button type="submit" disabled={loading}
+            style={{width:'100%',padding:'16px',background:loading?'#3a3a3a':'#e05c2e',color:'#fff',border:'none',borderRadius:'4px',fontSize:'14px',fontWeight:'bold',cursor:loading?'not-allowed':'pointer',textTransform:'uppercase',letterSpacing:'.1em'}}>
             {loading ? 'Submitting...' : 'Submit Application →'}
           </button>
         </form>
 
-        <div style={{marginTop:'30px',padding:'20px',background:'#111',borderRadius:'4px',fontSize:'13px',color:'#888',lineHeight:'1.6'}}>
-          <strong style={{color:'#f0ede6'}}>What happens next?</strong><br />
-          1. We review your application (48 hours)<br />
-          2. Approved ambassadors get a unique referral code<br />
-          3. Start earning 15% commission on every sale<br />
-          4. Upgrade to 20-25% with more referrals
+        <div style={{marginTop:'30px',padding:'20px',background:'#111',border:'1px solid #1e1e1e',borderRadius:'4px',fontSize:'13px',color:'#888',lineHeight:'1.8'}}>
+          <strong style={{color:'#f0ede6',display:'block',marginBottom:'8px'}}>How it works</strong>
+          1. Submit your application below<br />
+          2. Our team reviews it within 48 hours<br />
+          3. If approved, you'll receive a unique referral code via email<br />
+          4. Earn 15–25% commission on every referred sale
         </div>
       </div>
     </div>

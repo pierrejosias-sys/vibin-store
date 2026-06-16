@@ -1,70 +1,69 @@
-
 'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { createBrowserClient } from '@supabase/ssr'
+
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+)
 
 export default function AmbassadorHub() {
+  const router = useRouter()
   const [ambassador, setAmbassador] = useState(null)
-  const [stats, setStats] = useState({ earned: 0, clicks: 0, orders: 0, rate: '15%' })
+  const [authState, setAuthState] = useState('loading') // loading | unauthenticated | pending | approved
   const [refCopied, setRefCopied] = useState(false)
   const [capCopied, setCapCopied] = useState(null)
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const saved = localStorage.getItem('vibin_ambassador')
-    if (saved) {
-      const amb = JSON.parse(saved)
-      setAmbassador(amb)
+    async function checkAccess() {
+      const { data: { session } } = await supabase.auth.getSession()
+
+      if (!session) {
+        setAuthState('unauthenticated')
+        return
+      }
+
+      // Check if approved ambassador
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_ambassador')
+        .eq('id', session.user.id)
+        .single()
+
+      if (!profile?.is_ambassador) {
+        // Check if they have a pending application
+        const { data: application } = await supabase
+          .from('ambassadors')
+          .select('status, name, email')
+          .eq('email', session.user.email)
+          .single()
+
+        if (application?.status === 'pending') {
+          setAuthState('pending')
+        } else {
+          setAuthState('unauthenticated')
+        }
+        return
+      }
+
+      // Approved — load ambassador record
+      const { data: ambData } = await supabase
+        .from('ambassadors')
+        .select('*')
+        .eq('email', session.user.email)
+        .single()
+
+      setAmbassador(ambData)
+      setAuthState('approved')
     }
-    setLoading(false)
+
+    checkAccess()
   }, [])
 
-  // Save ambassador to Supabase if not already saved
-  useEffect(() => {
-    if (ambassador && ambassador.email) {
-      const saveToSupabase = async () => {
-        try {
-          const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
-          const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-          if (SUPABASE_URL && SUPABASE_ANON_KEY && SUPABASE_URL !== 'YOUR_PROJECT_URL_HERE') {
-            const { createClient } = require('@supabase/supabase-js')
-            const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-            // Upsert ambassador data
-            await supabase
-              .from('ambassadors')
-              .upsert({
-                code: ambassador.code,
-                name: ambassador.name || 'Ambassador',
-                email: ambassador.email,
-                status: 'approved', // Auto-approve for now
-                referral_link: `https://vibinapparel.com/?ref=${ambassador.code}`,
-                commission_rate: 15,
-                approved_at: new Date().toISOString()
-              }, { onConflict: 'code' })
-          }
-        } catch (err) {
-          console.warn('Could not save ambassador to Supabase:', err)
-        }
-      }
-      saveToSupabase()
-    }
-  }, [ambassador])
-
-  useEffect(() => {
-    if (ambassador) {
-      const refs = JSON.parse(localStorage.getItem('vibin_referrals') || '[]')
-      const ambRefs = refs.filter(r => r.ambassadorCode === ambassador.code)
-      const orders = ambRefs.filter(r => r.purchased).length
-      const earned = Math.round(orders * 48 * 0.15 * 100) / 100
-      let rate = '15%'
-      if (orders >= 15) rate = '25%'
-      else if (orders >= 5) rate = '20%'
-      setStats({ earned, clicks: ambRefs.length, orders, rate })
-    }
-  }, [ambassador])
-
-  const shareLink = ambassador 
+  const shareLink = ambassador
     ? `https://vibinapparel.com/?ref=${ambassador.code}`
     : 'https://vibinapparel.com/?ref=YOURCODE'
 
@@ -93,33 +92,66 @@ export default function AmbassadorHub() {
   const captions = [
     'Move different. Vibin Apparel SS26 is live. Heavyweight cotton built to last past the season. Use my code [YOURCODE] for 15% off. ✦ #VibinDifferent',
     'Coral Vol 01 hoodie was MADE for these temps. Last pieces — once gone, gone. Code [YOURCODE] = 15% off. Link in bio. @vibinapparel',
-    'Vibin different isn\'t a tagline. It\'s a posture. Confident. Calm. Community. Wear yours — code [YOURCODE]. ✦',
+    "Vibin different isn't a tagline. It's a posture. Confident. Calm. Community. Wear yours — code [YOURCODE]. ✦",
   ]
-
   const captionLabels = ['Drop 01 · Foundation Tee', 'Drop 01 · Vol 01 Hoodie', 'General · Community']
 
-  if (loading) {
+  // ─── LOADING ───
+  if (authState === 'loading') {
     return (
-      <div style={{background:'#0a0a0a',minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',color:'#f0ede6'}}>Loading...</div>
+      <div style={{background:'#0a0a0a',minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',color:'#f0ede6',fontFamily:'Manrope, sans-serif'}}>
+        <p style={{color:'#555',fontFamily:'JetBrains Mono, monospace',letterSpacing:'.1em',fontSize:'12px',textTransform:'uppercase'}}>Checking access...</p>
+      </div>
     )
   }
 
-  if (!ambassador) {
+  // ─── NOT LOGGED IN ───
+  if (authState === 'unauthenticated') {
     return (
       <div style={{background:'#0a0a0a',minHeight:'100vh',color:'#f0ede6',fontFamily:'Manrope, sans-serif'}}>
         <header style={{padding:'20px 40px',borderBottom:'1px solid #1e1e1e'}}>
           <Link href="/" style={{fontFamily:'Anton, sans-serif',fontSize:'32px',color:'#f0ede6',textDecoration:'none'}}>VIBIN</Link>
         </header>
-        <div style={{maxWidth:'600px',margin:'0 auto',padding:'80px 20px',textAlign:'center'}}>
-          <h1 style={{fontFamily:'Anton, sans-serif',fontSize:'48px',textTransform:'uppercase',marginBottom:'20px'}}>Ambassador Hub ✦</h1>
-          <p style={{color:'#888',marginBottom:'40px'}}>Your dashboard. Your commissions. Your community.</p>
-          <p style={{color:'#555',marginBottom:'40px'}}>Vibin Apparel · Ambassador Program · SS26</p>
-          <Link href="/login?role=ambassador" style={{display:'inline-block',padding:'16px 32px',background:'#e05c2e',color:'#fff',textDecoration:'none',borderRadius:'4px',fontWeight:'bold'}}>Login →</Link>
+        <div style={{maxWidth:'560px',margin:'0 auto',padding:'100px 20px',textAlign:'center'}}>
+          <div style={{fontSize:'48px',marginBottom:'24px'}}>✦</div>
+          <h1 style={{fontFamily:'Anton, sans-serif',fontSize:'42px',textTransform:'uppercase',marginBottom:'16px'}}>Ambassador Hub</h1>
+          <p style={{color:'#888',fontSize:'15px',marginBottom:'40px',lineHeight:'1.6'}}>
+            This area is for approved Vibin ambassadors only. Apply to join the program or log in if you've already been approved.
+          </p>
+          <div style={{display:'flex',gap:'16px',justifyContent:'center',flexWrap:'wrap'}}>
+            <Link href="/login" style={{display:'inline-block',padding:'14px 28px',background:'#e05c2e',color:'#fff',textDecoration:'none',borderRadius:'4px',fontWeight:'bold',fontSize:'14px'}}>Log In →</Link>
+            <Link href="/ambassador/apply" style={{display:'inline-block',padding:'14px 28px',background:'transparent',color:'#f0ede6',textDecoration:'none',borderRadius:'4px',fontWeight:'bold',fontSize:'14px',border:'1px solid #3a3a3a'}}>Apply to Join</Link>
+          </div>
         </div>
       </div>
     )
   }
 
+  // ─── PENDING APPROVAL ───
+  if (authState === 'pending') {
+    return (
+      <div style={{background:'#0a0a0a',minHeight:'100vh',color:'#f0ede6',fontFamily:'Manrope, sans-serif'}}>
+        <header style={{padding:'20px 40px',borderBottom:'1px solid #1e1e1e'}}>
+          <Link href="/" style={{fontFamily:'Anton, sans-serif',fontSize:'32px',color:'#f0ede6',textDecoration:'none'}}>VIBIN</Link>
+        </header>
+        <div style={{maxWidth:'560px',margin:'0 auto',padding:'100px 20px',textAlign:'center'}}>
+          <div style={{width:'64px',height:'64px',background:'#1a1500',border:'1px solid #3d3000',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 24px',fontSize:'28px'}}>⏳</div>
+          <h1 style={{fontFamily:'Anton, sans-serif',fontSize:'42px',textTransform:'uppercase',marginBottom:'16px'}}>Application Under Review</h1>
+          <p style={{color:'#888',fontSize:'15px',marginBottom:'16px',lineHeight:'1.6'}}>
+            Your application has been received and is being reviewed by our team.
+            You'll get an email once a decision has been made — typically within 48 hours.
+          </p>
+          <div style={{padding:'20px',background:'#111',border:'1px solid #2a2000',borderRadius:'8px',marginBottom:'40px'}}>
+            <p style={{fontFamily:'JetBrains Mono, monospace',fontSize:'10px',color:'#555',letterSpacing:'.15em',textTransform:'uppercase',marginBottom:'8px'}}>Status</p>
+            <p style={{fontFamily:'Anton, sans-serif',fontSize:'28px',color:'#d4a017',textTransform:'uppercase'}}>Pending Review</p>
+          </div>
+          <Link href="/" style={{color:'#888',textDecoration:'none',fontSize:'14px'}}>← Back to Store</Link>
+        </div>
+      </div>
+    )
+  }
+
+  // ─── APPROVED DASHBOARD ───
   return (
     <div style={{background:'#0a0a0a',minHeight:'100vh',color:'#f0ede6',fontFamily:'Manrope, sans-serif'}}>
       <header style={{padding:'20px 40px',borderBottom:'1px solid #1e1e1e',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
@@ -127,65 +159,56 @@ export default function AmbassadorHub() {
         <span style={{fontFamily:'JetBrains Mono, monospace',fontSize:'11px',letterSpacing:'.15em',textTransform:'uppercase',color:'#e05c2e'}}>Ambassador Hub</span>
       </header>
 
-      {/* HERO */}
       <section style={{padding:'60px 40px',textAlign:'center',borderBottom:'1px solid #1e1e1e'}}>
-        <h1 style={{fontFamily:'Anton, sans-serif',fontSize:'clamp(36px,6vw,64px)',textTransform:'uppercase',marginBottom:'12px'}}>Ambassador Hub ✦</h1>
+        <h1 style={{fontFamily:'Anton, sans-serif',fontSize:'clamp(36px,6vw,64px)',textTransform:'uppercase',marginBottom:'12px'}}>Welcome, {ambassador?.name?.split(' ')[0]} ✦</h1>
         <p style={{color:'#888',fontSize:'16px'}}>Your dashboard. Your commissions. Your community.</p>
         <p style={{fontFamily:'JetBrains Mono, monospace',fontSize:'10px',color:'#555',marginTop:'8px',letterSpacing:'.15em'}}>VIBIN APPAREL · AMBASSADOR PROGRAM · SS26</p>
       </section>
 
-      {/* STATS */}
       <section style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'1px',background:'#1e1e1e',borderBottom:'1px solid #1e1e1e'}}>
         {[
-          { label: 'TOTAL EARNED', value: `$${stats.earned.toFixed(2)}` },
-          { label: 'LINK CLICKS', value: stats.clicks },
-          { label: 'ORDERS REFERRED', value: stats.orders },
-          { label: 'COMMISSION RATE', value: stats.rate },
+          { label: 'COMMISSION RATE', value: `${ambassador?.commission_rate || 15}%` },
+          { label: 'TOTAL EARNED', value: '$0.00' },
+          { label: 'ORDERS REFERRED', value: '0' },
+          { label: 'STATUS', value: 'ACTIVE' },
         ].map((stat, i) => (
           <div key={i} style={{background:'#111',padding:'30px',textAlign:'center'}}>
             <div style={{fontFamily:'JetBrains Mono, monospace',fontSize:'10px',letterSpacing:'.15em',textTransform:'uppercase',color:'#555',marginBottom:'8px'}}>{stat.label}</div>
-            <div style={{fontFamily:'Anton, sans-serif',fontSize:'36px',textTransform:'uppercase'}}>{stat.value}</div>
+            <div style={{fontFamily:'Anton, sans-serif',fontSize:'32px',textTransform:'uppercase',color: stat.label === 'STATUS' ? '#22c55e' : 'inherit'}}>{stat.value}</div>
           </div>
         ))}
       </section>
 
-      {/* REFERRAL LINK + QR CODE */}
       <section style={{padding:'60px 40px',borderBottom:'1px solid #1e1e1e'}}>
         <h2 style={{fontFamily:'Anton, sans-serif',fontSize:'24px',textTransform:'uppercase',marginBottom:'30px',textAlign:'center'}}>Your Referral Link</h2>
         <div style={{display:'flex',maxWidth:'700px',margin:'0 auto',gap:'30px',alignItems:'center',flexWrap:'wrap',justifyContent:'center'}}>
           <div style={{flex:'1 1 300px'}}>
             <div style={{display:'flex',gap:'10px',marginBottom:'20px'}}>
-              <input value={shareLink} readOnly style={{flex:1,padding:'16px',background:'#111',border:'1px solid #1e1e1e',borderRadius:'4px',color:'#f0ede6',fontFamily:'JetBrains Mono, monospace',fontSize:'14px'}} />
+              <input value={shareLink} readOnly style={{flex:1,padding:'16px',background:'#111',border:'1px solid #1e1e1e',borderRadius:'4px',color:'#f0ede6',fontFamily:'JetBrains Mono, monospace',fontSize:'13px'}} />
               <button onClick={copyRef} style={{padding:'16px 24px',background:'#e05c2e',border:'none',borderRadius:'4px',color:'#fff',fontWeight:'bold',cursor:'pointer'}}>
-                {refCopied ? 'Copied ✓' : 'Copy Link'}
+                {refCopied ? 'Copied ✓' : 'Copy'}
               </button>
             </div>
             <p style={{color:'#888',fontSize:'13px',textAlign:'center'}}>Share this link on social media, emails, or messages</p>
           </div>
           <div style={{textAlign:'center'}}>
             <div style={{background:'#fff',padding:'20px',borderRadius:'8px',display:'inline-block',marginBottom:'12px'}}>
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareLink)}`}
-                alt="QR Code"
-                style={{width:'200px',height:'200px',display:'block'}}
-              />
+              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(shareLink)}`} alt="QR Code" style={{width:'160px',height:'160px',display:'block'}} />
             </div>
-            <p style={{color:'#888',fontSize:'12px',fontFamily:'JetBrains Mono, monospace'}}>{ambassador.code}</p>
-            <p style={{color:'#666',fontSize:'11px',marginTop:'4px'}}>Scan to shop with your code</p>
+            <p style={{color:'#888',fontSize:'12px',fontFamily:'JetBrains Mono, monospace'}}>{ambassador?.code}</p>
           </div>
         </div>
       </section>
 
-      {/* COMMISSION TIERS */}
       <section style={{padding:'60px 40px',borderBottom:'1px solid #1e1e1e'}}>
-        <h2 style={{fontFamily:'Anton, sans-serif',fontSize:'24px',textTransform:'uppercase',marginBottom:'30px',textAlign:'center'}}>Commission Structure</h2>
+        <h2 style={{fontFamily:'Anton, sans-serif',fontSize:'24px',textTransform:'uppercase',marginBottom:'30px',textAlign:'center'}}>Commission Tiers</h2>
         <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'20px',maxWidth:'800px',margin:'0 auto'}}>
           {[
             { tier: 'STARTER', range: '0–4 sales', rate: '15%' },
             { tier: 'RISING', range: '5–14 sales', rate: '20%' },
-            { tier: 'ELITE', range: '15+ sales', rate: '25% + early access', current: true },
+            { tier: 'ELITE', range: '15+ sales', rate: '25% + early access' },
           ].map((t, i) => (
-            <div key={i} style={{background:'#111',border:'1px solid #1e1e1e',borderRadius:'10px',padding:'30px',textAlign:'center',borderColor:t.current ? '#e05c2e' : '#1e1e1e'}}>
+            <div key={i} style={{background:'#111',border:'1px solid #1e1e1e',borderRadius:'10px',padding:'30px',textAlign:'center'}}>
               <div style={{fontFamily:'JetBrains Mono, monospace',fontSize:'10px',letterSpacing:'.15em',textTransform:'uppercase',color:'#555',marginBottom:'8px'}}>{t.tier}</div>
               <div style={{fontFamily:'Anton, sans-serif',fontSize:'32px',textTransform:'uppercase',marginBottom:'8px'}}>{t.rate}</div>
               <div style={{fontFamily:'JetBrains Mono, monospace',fontSize:'11px',color:'#888'}}>{t.range}</div>
@@ -194,32 +217,14 @@ export default function AmbassadorHub() {
         </div>
       </section>
 
-      {/* CONTENT LIBRARY */}
-      <section style={{padding:'60px 40px',borderBottom:'1px solid #1e1e1e'}}>
-        <h2 style={{fontFamily:'Anton, sans-serif',fontSize:'24px',textTransform:'uppercase',marginBottom:'30px',textAlign:'center'}}>Content Library</h2>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'20px'}}>
-          {assets.map((asset, i) => (
-            <div key={i} style={{background:'#111',border:'1px solid #1e1e1e',borderRadius:'10px',padding:'20px'}}>
-              <div style={{fontFamily:'JetBrains Mono, monospace',fontSize:'9px',letterSpacing:'.15em',textTransform:'uppercase',color:'#e05c2e',marginBottom:'12px'}}>{asset.type}</div>
-              <div style={{background:'#0a0a0a',height:'100px',display:'flex',alignItems:'center',justifyContent:'center',marginBottom:'16px',borderRadius:'4px'}}>
-                <span style={{fontSize:'32px',color:'#333'}}>✦</span>
-              </div>
-              <div style={{fontSize:'14px',marginBottom:'12px'}}>{asset.name}</div>
-              <button style={{width:'100%',padding:'10px',background:'transparent',border:'1px solid #1e1e1e',borderRadius:'4px',color:'#888',cursor:'pointer',fontSize:'12px'}}>↓ Download</button>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* CAPTION LIBRARY */}
       <section style={{padding:'60px 40px',borderBottom:'1px solid #1e1e1e'}}>
         <h2 style={{fontFamily:'Anton, sans-serif',fontSize:'24px',textTransform:'uppercase',marginBottom:'30px',textAlign:'center'}}>Caption Library</h2>
         <div style={{display:'grid',gap:'20px',maxWidth:'700px',margin:'0 auto'}}>
           {captions.map((cap, i) => (
             <div key={i} style={{background:'#111',border:'1px solid #1e1e1e',borderRadius:'10px',padding:'24px'}}>
               <div style={{fontFamily:'JetBrains Mono, monospace',fontSize:'10px',letterSpacing:'.15em',textTransform:'uppercase',color:'#e05c2e',marginBottom:'12px'}}>{captionLabels[i]}</div>
-              <div style={{fontSize:'14px',lineHeight:'1.6',marginBottom:'16px',color:'#ccc'}}>{cap}</div>
-              <button onClick={() => copyCaption(cap)} style={{padding:'10px 20px',background:'#e05c2e',border:'none',borderRadius:'4px',color:'#fff',fontWeight:'bold',cursor:'pointer'}}>
+              <div style={{fontSize:'14px',lineHeight:'1.6',marginBottom:'16px',color:'#ccc'}}>{cap.replace('[YOURCODE]', ambassador?.code || 'YOURCODE')}</div>
+              <button onClick={() => copyCaption(cap)} style={{padding:'10px 20px',background:'#e05c2e',border:'none',borderRadius:'4px',color:'#fff',fontWeight:'bold',cursor:'pointer',fontSize:'13px'}}>
                 {capCopied === cap ? 'Copied ✓' : 'Copy Caption'}
               </button>
             </div>
@@ -227,7 +232,6 @@ export default function AmbassadorHub() {
         </div>
       </section>
 
-      {/* FOOTER NOTE */}
       <footer style={{padding:'40px',textAlign:'center'}}>
         <p style={{fontFamily:'JetBrains Mono, monospace',fontSize:'11px',color:'#555',letterSpacing:'.1em'}}>
           Questions? Email ambassador@vibinapparel.com · Vibin Apparel Ambassador Program · HVD Holdings, LLC
@@ -236,4 +240,3 @@ export default function AmbassadorHub() {
     </div>
   )
 }
-
