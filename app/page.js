@@ -1,17 +1,18 @@
-
 'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from './lib/supabase'
 import { useCart } from './lib/cart-context'
+import CountdownTimer from './components/CountdownTimer'
+import NewsletterForm from './components/NewsletterForm'
 import styles from './styles.css'
 
 export default function HomePage() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [addedId, setAddedId] = useState(null)
-  const { cartCount } = useCart()
+  const { cartCount, updateCart } = useCart()
 
   useEffect(() => {
     fetchProducts()
@@ -65,11 +66,6 @@ export default function HomePage() {
     setTimeout(() => setAddedId(null), 1800)
   }
 
-  const colorMap = {
-    'ink': '', 'cream2': 'cream', 'coral': 'coral', 'violet': 'violet',
-    'acid': 'acid', 'teal': 'teal', 'sun': 'sun', 'ink2': 'ink2'
-  }
-
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: styles }} />
@@ -86,24 +82,24 @@ export default function HomePage() {
         </div>
       </div>
 
-       {/* NAV */}
-       <nav>
-         <a href="/" className="logo">VIBIN</a>
-         <div className="nav-links">
-           <a href="/shop">Shop</a>
-           <a href="/drop-01" className="new" style={{color:'var(--coral)'}}>Drop 01 ★</a>
-           <a href="/lookbook">Lookbook</a>
-           <a href="/about">About</a>
-           <a href="/returns">Returns</a>
-         </div>
-         <div className="nav-actions">
-           <Link href="/qa" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>🔍</Link>
-           <a href="/login" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>👤</a>
-           <a href="/cart" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>
-             🛒{cartCount > 0 && <span className="cart-dot">{cartCount}</span>}
-           </a>
-         </div>
-       </nav>
+      {/* NAV */}
+      <nav>
+        <Link href="/" className="logo">VIBIN</Link>
+        <div className="nav-links">
+          <Link href="/shop">Shop</Link>
+          <Link href="/drop-01" className="new" style={{color:'var(--coral)'}}>Drop 01 ★</Link>
+          <Link href="/lookbook">Lookbook</Link>
+          <Link href="/about">About</Link>
+          <Link href="/returns">Returns</Link>
+        </div>
+        <div className="nav-actions">
+          <Link href="/qa" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>🔍</Link>
+          <Link href="/login" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>👤</Link>
+          <Link href="/cart" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>
+            🛒{cartCount > 0 && <span className="cart-dot">{cartCount}</span>}
+          </Link>
+        </div>
+      </nav>
 
       {/* HERO */}
       <section className="hero">
@@ -129,8 +125,8 @@ export default function HomePage() {
               Apparel for those who move with purpose, dress with intention, and vibe louder than the noise. Quality first, hype second.
             </div>
             <div className="hero-cta">
-              <a href="/shop" className="btn primary">Shop The Drop <span className="arrow">→</span></a>
-              <a href="/lookbook" className="btn">Lookbook</a>
+              <Link href="/shop" className="btn primary">Shop The Drop <span className="arrow">→</span></Link>
+              <Link href="/lookbook" className="btn">Lookbook</Link>
             </div>
           </div>
         </div>
@@ -156,7 +152,7 @@ export default function HomePage() {
           <div className="sec-eye">SS26 · Drop 01</div>
           <h2 className="sec-title">The <em>Foundation</em></h2>
         </div>
-        <a href="/shop" className="sec-link">View All Products →</a>
+        <Link href="/shop" className="sec-link">View All Products →</Link>
       </div>
 
       <div className="products">
@@ -183,7 +179,7 @@ export default function HomePage() {
                 </div>
                 <div
                   className="prod-quick"
-                  onClick={() => handleQuickAdd(prod.id)}
+                  onClick={() => handleQuickAdd(prod.id, prod.name, prod.price, prod.color)}
                 >
                   {addedId === prod.id ? '✓ Added' : '+ Quick Add'}
                 </div>
@@ -206,7 +202,7 @@ export default function HomePage() {
           <div className="sec-eye">Shop By</div>
           <h2 className="sec-title">Cate<em>gory</em></h2>
         </div>
-        <a href="/shop" className="sec-link">All Categories →</a>
+        <Link href="/shop" className="sec-link">All Categories →</Link>
       </div>
 
       <div className="categories">
@@ -217,7 +213,7 @@ export default function HomePage() {
             <div className="cat-foot">
               <div className="cat-name">Tees</div>
               <div className="cat-count">2 Pieces</div>
-              <a href="/shop" className="cat-cta">Shop Tees →</a>
+              <Link href="/shop?cat=Tee" className="cat-cta">Shop Tees →</Link>
             </div>
           </div>
         </div>
@@ -228,7 +224,7 @@ export default function HomePage() {
             <div className="cat-foot">
               <div className="cat-name">Hoodies<br/>+ Crews</div>
               <div className="cat-count">1 Piece</div>
-              <a href="/shop" className="cat-cta">Shop Hoodies →</a>
+              <Link href="/shop?cat=Hoodie" className="cat-cta">Shop Hoodies →</Link>
             </div>
           </div>
         </div>
@@ -239,7 +235,7 @@ export default function HomePage() {
             <div className="cat-foot">
               <div className="cat-name">Bottoms</div>
               <div className="cat-count">1 Piece</div>
-              <a href="/shop" className="cat-cta">Shop Bottoms →</a>
+              <Link href="/shop?cat=Pants" className="cat-cta">Shop Bottoms →</Link>
             </div>
           </div>
         </div>
@@ -250,7 +246,7 @@ export default function HomePage() {
             <div className="cat-foot">
               <div className="cat-name">Headwear<br/>+ Acc.</div>
               <div className="cat-count">1 Piece</div>
-              <a href="/shop" className="cat-cta">Shop Accessories →</a>
+              <Link href="/shop?cat=Accessories" className="cat-cta">Shop Accessories →</Link>
             </div>
           </div>
         </div>
@@ -265,7 +261,7 @@ export default function HomePage() {
           <p className="lb-body">
             Vibin isn't loud about itself. It moves with intention. Every piece in The Foundation drop was designed for the people who don't need to announce who they are — they show it. Heavyweight cotton. Pre-shrunk. Built to last past the season.
           </p>
-          <a href="#editorial" className="btn">View Editorial →</a>
+          <Link href="/lookbook" className="btn">View Editorial →</Link>
         </div>
       </section>
 
@@ -287,12 +283,8 @@ export default function HomePage() {
           </p>
           <a href="#email-signup" className="btn" style={{borderColor:'var(--cream)',color:'var(--cream)'}}>Get Early Access →</a>
         </div>
-        <div className="countdown" id="countdown">
-          <div className="cd"><div className="cd-num" id="cd-d">--</div><div className="cd-lbl">Days</div></div>
-          <div className="cd"><div className="cd-num" id="cd-h">--</div><div className="cd-lbl">Hours</div></div>
-          <div className="cd"><div className="cd-num" id="cd-m">--</div><div className="cd-lbl">Minutes</div></div>
-          <div className="cd"><div className="cd-num" id="cd-s">--</div><div className="cd-lbl">Seconds</div></div>
-        </div>
+        {/* FIX #1: Dynamic countdown component — replaces hardcoded static HTML */}
+        <CountdownTimer />
       </section>
 
       {/* NEWSLETTER */}
@@ -302,32 +294,8 @@ export default function HomePage() {
         <p className="nl-body">
           Be the first to know when drops go live. Early access, exclusive pieces, and 15% off your first order. No spam — just the good stuff.
         </p>
-        <form className="nl-form" onSubmit={async (e) => {
-            e.preventDefault();
-            const form = e.target;
-            const btn = form.querySelector('.nl-btn');
-            const email = form.querySelector('.nl-input').value;
-            btn.textContent = 'Sending...';
-            btn.disabled = true;
-            try {
-              // REPLACE THIS URL WITH YOUR MAILCHIMP FORM ACTION URL FROM YOUR AUDIENCE DASHBOARD
-              const MAILCHIMP_URL = 'YOUR_MAILCHIMP_FORM_ACTION_URL';
-              await fetch(MAILCHIMP_URL, {
-                method: 'POST',
-                body: new FormData(form),
-                mode: 'no-cors'
-              });
-              btn.textContent = '✓ Subscribed';
-              form.insertAdjacentHTML('afterend', '<div className="nl-success" style="background:#0a0a0a;color:#f6f1e7;padding:16px;margin-top:16px;font-family:Manrope,sans-serif;">You\'re on the list. Check your email for your 15% off code. ✦</div>');
-            } catch (err) {
-              btn.textContent = 'Subscribe';
-              btn.disabled = false;
-              form.insertAdjacentHTML('afterend', '<div className="nl-error" style="background:#ff4a3d;color:#fff;padding:16px;margin-top:16px;font-family:Manrope,sans-serif;">Something went wrong. Try again or contact us at hello@vibinapparel.com</div>');
-            }
-          }}>
-            <input type="email" className="nl-input" placeholder="your@email.com" required />
-            <button type="submit" className="nl-btn">Subscribe</button>
-          </form>
+        {/* FIX #2: Connected newsletter form component */}
+        <NewsletterForm />
         <div className="nl-disclaim">No spam. Unsubscribe anytime.</div>
       </section>
 
@@ -346,23 +314,23 @@ export default function HomePage() {
           <div className="foot-col">
             <h4>Shop</h4>
             <ul>
-              <li><a href="/shop">All Products</a></li>
-              <li><a href="/shop">Tees</a></li>
-              <li><a href="/shop">Hoodies</a></li>
-              <li><a href="/shop">Accessories</a></li>
-              <li><a href="/lookbook">Lookbook</a></li>
-              <li><a href="/print">Print</a></li>
+              <li><Link href="/shop">All Products</Link></li>
+              <li><Link href="/shop?cat=Tee">Tees</Link></li>
+              <li><Link href="/shop?cat=Hoodie">Hoodies</Link></li>
+              <li><Link href="/shop?cat=Accessories">Accessories</Link></li>
+              <li><Link href="/lookbook">Lookbook</Link></li>
+              <li><Link href="/print">Print</Link></li>
             </ul>
           </div>
           <div className="foot-col">
             <h4>Help</h4>
             <ul>
-              <li><a href="/shipping">Shipping</a></li>
-              <li><a href="/returns">Returns</a></li>
-              <li><a href="/qa">FAQ</a></li>
-              <li><a href="/support-agent" style={{color:'var(--coral)'}}>Support Agent</a></li>
-              <li><a href="/login">Account</a></li>
-              <li><a href="/ambassador">Ambassador</a></li>
+              <li><Link href="/shipping">Shipping</Link></li>
+              <li><Link href="/returns">Returns</Link></li>
+              <li><Link href="/qa">FAQ</Link></li>
+              <li><Link href="/support-agent" style={{color:'var(--coral)'}}>Support Agent</Link></li>
+              <li><Link href="/login">Account</Link></li>
+              <li><Link href="/ambassador">Ambassador</Link></li>
             </ul>
           </div>
           <div className="foot-col">
@@ -371,9 +339,9 @@ export default function HomePage() {
               <li><a href="https://instagram.com/vibinapparel" target="_blank" rel="noopener">Instagram</a></li>
               <li><a href="https://tiktok.com/@vibinapparel" target="_blank" rel="noopener">TikTok</a></li>
               <li><a href="https://twitter.com/vibinapparel" target="_blank" rel="noopener">Twitter / X</a></li>
-              <li><a href="/lookbook">Lookbook</a></li>
-              <li>Stockists</li>
-              <li>Wholesale</li>
+              <li><Link href="/lookbook">Lookbook</Link></li>
+              <li><Link href="/about">Stockists</Link></li>
+              <li><Link href="/about">Wholesale</Link></li>
             </ul>
           </div>
         </div>
@@ -389,42 +357,13 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {/* COUNTDOWN SCRIPT */}
-      <script dangerouslySetInnerHTML={{ __html: `
-        const DROP02_TARGET = new Date();
-        DROP02_TARGET.setDate(DROP02_TARGET.getDate() + 30);
-        
-        function updateCountdown() {
-          const now = new Date().getTime();
-          const diff = DROP02_TARGET.getTime() - now;
-          
-          if (diff <= 0) {
-            document.getElementById('countdown').innerHTML = '<a href="/shop" style="color:#f6f1e7;font-size:24px;font-family:Anton,sans-serif;text-transform:uppercase;">Drop 02 is LIVE. Shop Now →</a>';
-            return;
-          }
-          
-          const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-          const secs = Math.floor((diff % (1000 * 60)) / 1000);
-          
-          document.getElementById('cd-d').textContent = String(days).padStart(2, '0');
-          document.getElementById('cd-h').textContent = String(hours).padStart(2, '0');
-          document.getElementById('cd-m').textContent = String(mins).padStart(2, '0');
-          document.getElementById('cd-s').textContent = String(secs).padStart(2, '0');
-        }
-        
-        updateCountdown();
-        setInterval(updateCountdown, 1000);
-        `}} />
-
-      {/* Footer with Legal Links */}
+      {/* Legal Footer */}
       <footer style={{background:'#0a0a0a',borderTop:'1px solid #1e1e1e',padding:'40px',textAlign:'center'}}>
         <div style={{maxWidth:'1200px',margin:'0 auto'}}>
           <div style={{marginBottom:'20px'}}>
-            <a href="/legal/privacy" style={{color:'#888',textDecoration:'none',fontSize:'13px',marginRight:'20px',fontFamily:'JetBrains Mono, monospace'}}>Privacy Policy</a>
-            <a href="/legal/terms" style={{color:'#888',textDecoration:'none',fontSize:'13px',marginRight:'20px',fontFamily:'JetBrains Mono, monospace'}}>Terms of Service</a>
-            <a href="/returns" style={{color:'#888',textDecoration:'none',fontSize:'13px',fontFamily:'JetBrains Mono, monospace'}}>Returns</a>
+            <Link href="/legal/privacy" style={{color:'#888',textDecoration:'none',fontSize:'13px',marginRight:'20px',fontFamily:'JetBrains Mono, monospace'}}>Privacy Policy</Link>
+            <Link href="/legal/terms" style={{color:'#888',textDecoration:'none',fontSize:'13px',marginRight:'20px',fontFamily:'JetBrains Mono, monospace'}}>Terms of Service</Link>
+            <Link href="/returns" style={{color:'#888',textDecoration:'none',fontSize:'13px',fontFamily:'JetBrains Mono, monospace'}}>Returns</Link>
           </div>
           <p style={{fontSize:'11px',color:'#555',fontFamily:'JetBrains Mono, monospace',letterSpacing:'.15em',textTransform:'uppercase'}}>
             Vibin Apparel, LLC · A Subsidiary of HVD Holdings, LLC · Florida
@@ -432,5 +371,5 @@ export default function HomePage() {
         </div>
       </footer>
     </>
-   )
+  )
 }
