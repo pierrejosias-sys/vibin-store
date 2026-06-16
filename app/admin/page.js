@@ -113,6 +113,7 @@ export default function AdminPage() {
              <a href="#" className={`admin-nav-link ${page === 'orders' ? 'on' : ''}`} onClick={() => setPage('orders')}>Orders</a>
              <a href="#" className={`admin-nav-link ${page === 'analytics' ? 'on' : ''}`} onClick={() => setPage('analytics')}>Analytics</a>
              <a href="#" className={`admin-nav-link ${page === 'reviews' ? 'on' : ''}`} onClick={() => setPage('reviews')}>Reviews</a>
+             <Link href="/admin/payouts" className="admin-nav-link">Payouts</Link>
              <Link href="/admin/support" className="admin-nav-link" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                Support Verification
                {pendingVerifications > 0 && (
