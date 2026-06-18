@@ -1,8 +1,13 @@
-
 import './styles.css'
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { CartProvider } from './lib/cart-context'
 import SupporChat from './components/SupporChat'
+
+// #26: Root-level metadata — individual pages override with their own export
+export const metadata = {
+  title: 'Vibin Apparel',
+  description: 'Vibin Apparel — streetwear for those who move different. Based in Jacksonville, FL. A subsidiary of HVD Holdings.',
+}
 
 export default function RootLayout({ children }) {
   return (
@@ -24,4 +29,3 @@ export default function RootLayout({ children }) {
     </html>
   )
 }
-

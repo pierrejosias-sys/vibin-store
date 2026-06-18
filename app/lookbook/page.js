@@ -28,7 +28,7 @@ export default function LookbookPage() {
           <a href="/shop" className="new">New Drop</a>
           <a href="/lookbook">Lookbook</a>
           <a href="/about">About</a>
-          <a href="#">Stockists</a>
+          <a href="/contact">Contact</a>
         </div>
         <div className="nav-actions">
           <a href="/qa" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>🔍</a>
@@ -67,7 +67,8 @@ export default function LookbookPage() {
           </div>
         </div>
         <div className="editorial-item">
-          <div className="editorial-img" style={{backgroundImage:"linear-gradient(180deg, rgba(0,0,0,.1) 0%, rgba(0,0,0,.5) 100%), url('https://images.unsplash.com/photo-1556905055-8f358a47b2?w=800&q=80')"}}>
+          {/* Fixed: was a broken Unsplash URL — replaced with valid image */}
+          <div className="editorial-img" style={{backgroundImage:"linear-gradient(180deg, rgba(0,0,0,.1) 0%, rgba(0,0,0,.5) 100%), url('https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=800&q=80')"}}>
             <div className="editorial-caption">
               <div className="editorial-num">03</div>
               <div className="editorial-title">Heavyweight</div>
@@ -79,7 +80,7 @@ export default function LookbookPage() {
             <div className="editorial-caption">
               <div className="editorial-num">04</div>
               <div className="editorial-title">The Details</div>
-              <div className="editorial-desc">Miami roots, Jacksonville grit</div>
+              <div className="editorial-desc">Jacksonville grit</div>
             </div>
           </div>
         </div>
@@ -113,7 +114,8 @@ export default function LookbookPage() {
         <div className="foot-cols">
           <div className="foot-brand">
             <div className="foot-logo">VIBIN</div>
-            <div className="foot-tagline">A lifestyle streetwear brand from Miami, FL. Now based in Jacksonville. A subsidiary of HVD Holdings. Apparel for those who move different.</div>
+            {/* #20 fix: removed Miami, FL reference — Jacksonville, FL only */}
+            <div className="foot-tagline">A lifestyle streetwear brand based in Jacksonville, FL. A subsidiary of HVD Holdings. Apparel for those who move different.</div>
           </div>
           <div className="foot-col">
             <h4>Shop</h4>
@@ -132,7 +134,7 @@ export default function LookbookPage() {
               <li><a href="/shipping">Shipping</a></li>
               <li><a href="/returns">Returns</a></li>
               <li><a href="/qa">FAQ</a></li>
-              <li><a href="/returns">Contact</a></li>
+              <li><a href="/contact">Contact</a></li>
               <li><a href="/login">Account</a></li>
               <li><a href="/ambassador">Ambassador</a></li>
             </ul>
@@ -144,8 +146,7 @@ export default function LookbookPage() {
               <li><a href="https://tiktok.com/@vibinapparel" target="_blank" rel="noopener">TikTok</a></li>
               <li><a href="https://twitter.com/vibinapparel" target="_blank" rel="noopener">Twitter / X</a></li>
               <li><a href="/lookbook">Lookbook</a></li>
-              <li><a href="/returns">Stockists</a></li>
-              <li><a href="/returns">Wholesale</a></li>
+              {/* #23 fix: Stockists + Wholesale links removed until pages are built */}
             </ul>
           </div>
         </div>
