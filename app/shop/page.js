@@ -1,158 +1,168 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '../lib/supabase'
 import { useCart } from '../lib/cart-context'
 
-export default function ShopPage() {
+// Canonical always points to /shop — ?cat= params are UI filters, not separate indexable pages
+export const metadata = {
+  title: 'Shop SS26 Drop 01 — Vibin Apparel',
+  description: 'Shop Vibin Apparel\'s SS26 Drop 01: The Foundation. Heavyweight cotton tees, hoodies, crewnecks, and headwear. Jacksonville streetwear. Free shipping on orders $75+.',
+  alternates: { canonical: 'https://vibinapparel.com/shop' },
+  openGraph: {
+    title: 'Shop SS26 Drop 01 — Vibin Apparel',
+    description: 'Shop heavyweight cotton tees, hoodies, and accessories from Vibin Apparel\'s SS26 Drop 01: The Foundation. Jacksonville streetwear. Free shipping $75+.',
+    url: 'https://vibinapparel.com/shop',
+    images: [{ url: '/og-shop.jpg', width: 1200, height: 630, alt: 'Vibin Apparel SS26 Shop — Drop 01 The Foundation Collection' }]
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@vibinapparel',
+    title: 'Shop SS26 Drop 01 — Vibin Apparel',
+    description: 'Heavyweight cotton tees, hoodies, crewnecks, and headwear. Jacksonville streetwear. Free shipping $75+.',
+    images: ['/og-shop.jpg']
+  }
+}
+
+const CATEGORY_MAP = {
+  tees: 'Tee',
+  hoodies: 'Hoodie',
+  crewnecks: 'Sweatshirt',
+  accessories: 'Headwear',
+  bottoms: 'Bottom',
+}
+
+function ShopContent() {
+  const searchParams = useSearchParams()
+  const catParam = searchParams.get('cat')
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('all')
-  const { cartCount, updateCart } = useCart()
+  const [activeFilter, setActiveFilter] = useState(catParam || 'all')
+  const [addedId, setAddedId] = useState(null)
+  const { cartCount } = useCart()
 
-  useEffect(() => {
-    async function fetchProducts() {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('in_stock', true)
-        .order('created_at', { ascending: false })
+  useEffect(() => { fetchProducts() }, [])
+  useEffect(() => { if (catParam) setActiveFilter(catParam) }, [catParam])
 
-      if (!error && data) setProducts(data)
-      setLoading(false)
-    }
-    fetchProducts()
-  }, [])
-
-  function addToCart(e, product) {
-    e.preventDefault()
-    e.stopPropagation()
-    const cart = JSON.parse(localStorage.getItem('vibin_cart') || '[]')
-    const existing = cart.find(item => item.id === product.id)
-    if (existing) {
-      existing.qty += 1
+  async function fetchProducts() {
+    const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false })
+    if (data && data.length > 0) {
+      setProducts(data)
     } else {
-      cart.push({ ...product, size: 'M', qty: 1 })
+      setProducts([
+        { id: 1, name: 'Foundation Tee — Black', price: 48, category: 'Tee · Heavyweight', color: 'Black' },
+        { id: 2, name: 'Move Different Tee — Cream', price: 48, category: 'Tee · Heavyweight', color: 'Cream' },
+        { id: 3, name: 'Vol 01 Hoodie — Coral', price: 98, category: 'Hoodie · Heavyweight Fleece', color: 'Coral' },
+        { id: 4, name: 'Mark Hoodie — Onyx', price: 98, category: 'Hoodie · Heavyweight Fleece', color: 'Onyx' },
+        { id: 5, name: 'Different Crewneck — Violet', price: 78, category: 'Sweatshirt · Cotton Blend', color: 'Violet' },
+        { id: 6, name: 'Louder Cap — Acid', price: 38, category: 'Headwear · 6-Panel', color: 'Acid' },
+        { id: 7, name: 'VBN Heavyweight Tee — Forest', price: 48, category: 'Tee · Heavyweight', color: 'Forest' },
+        { id: 8, name: 'Sunup Beanie — Sun', price: 32, category: 'Headwear · Knit', color: 'Sun' },
+      ])
     }
-    localStorage.setItem('vibin_cart', JSON.stringify(cart))
-    updateCart()
+    setLoading(false)
   }
 
-  const categories = ['all', ...new Set(products.map(p => p.category).filter(Boolean))]
-  const filteredProducts = filter === 'all' ? products : products.filter(p => p.category === filter)
-
-  // Resolve the correct link: prefer slug, fall back to id
-  function productHref(product) {
-    return `/product/${product.slug || product.id}`
+  function handleQuickAdd(id, name, price, color) {
+    try {
+      const cart = JSON.parse(localStorage.getItem('vibin_cart') || '[]')
+      const existing = cart.find(item => item.id === id)
+      if (existing) { existing.qty += 1 } else { cart.push({ id, name, price, color, size: 'M', qty: 1 }) }
+      localStorage.setItem('vibin_cart', JSON.stringify(cart))
+      window.dispatchEvent(new Event('storage'))
+    } catch (e) {}
+    setAddedId(id)
+    setTimeout(() => setAddedId(null), 1800)
   }
+
+  const filtered = activeFilter === 'all'
+    ? products
+    : products.filter(p => {
+        const key = CATEGORY_MAP[activeFilter] || activeFilter
+        return p.category?.toLowerCase().includes(key.toLowerCase())
+      })
+
+  const FILTERS = ['all', 'tees', 'hoodies', 'crewnecks', 'accessories', 'bottoms']
 
   return (
-    <>
-      <div className="promo">
-        <div className="promo-track">
-          <span>Free shipping over $75</span><span>SS26 Drop is live</span><span>15% off your first order</span>
-          <span>Free shipping over $75</span><span>SS26 Drop is live</span><span>15% off your first order</span>
+    <div style={{background:'#0a0a0a',minHeight:'100vh',color:'#f6f1e7',fontFamily:'Manrope,sans-serif'}}>
+      <nav style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'20px 40px',borderBottom:'1px solid #1a1a1a',position:'sticky',top:0,background:'rgba(10,10,10,0.95)',backdropFilter:'blur(12px)',zIndex:100}}>
+        <a href="/" style={{fontFamily:'Anton,sans-serif',fontSize:'24px',color:'#f6f1e7',textDecoration:'none',letterSpacing:'0.05em'}}>VIBIN</a>
+        <div style={{display:'flex',gap:'32px',fontSize:'14px'}}>
+          <a href="/shop" style={{color:'#ff6b4a',textDecoration:'none',fontWeight:600}}>Shop</a>
+          <a href="/drop-01" style={{color:'#f6f1e7',textDecoration:'none'}}>Drop 01</a>
+          <a href="/lookbook" style={{color:'#f6f1e7',textDecoration:'none'}}>Lookbook</a>
+          <a href="/about" style={{color:'#f6f1e7',textDecoration:'none'}}>About</a>
         </div>
-      </div>
-
-      <nav>
-        <Link href="/" className="logo">VIBIN</Link>
-        <div className="nav-links">
-          <Link href="/shop">Shop</Link>
-          <Link href="/shop">New Drop</Link>
-          <Link href="/lookbook">Lookbook</Link>
-          <Link href="/about">About</Link>
-        </div>
-        <div className="nav-actions">
-          <a href="/qa" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>🔍</a>
-          <Link href="/login" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>👤</Link>
-          <Link href="/cart" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>
-            🛒{cartCount > 0 && <span className="cart-dot">{cartCount}</span>}
-          </Link>
-        </div>
+        <a href="/cart" style={{color:'#f6f1e7',textDecoration:'none',fontSize:'20px'}}>
+          🛒{cartCount > 0 && <span style={{background:'#ff6b4a',color:'#fff',borderRadius:'50%',fontSize:'10px',padding:'2px 5px',marginLeft:'4px'}}>{cartCount}</span>}
+        </a>
       </nav>
-
-      <div className="shop-hero">
-        <div className="shop-hero-content">
-          <div className="shop-eye">SS26 Collection</div>
-          <h1 className="shop-title">Move <em>different.</em></h1>
-          <p className="shop-desc">The foundation of everything we build on. Premium materials, intentional design, and pieces that actually last.</p>
+      <div style={{padding:'48px 40px 24px'}}>
+        <div style={{marginBottom:'8px',fontSize:'12px',color:'#888',letterSpacing:'0.1em',textTransform:'uppercase',fontFamily:'JetBrains Mono,monospace'}}>SS26 · Drop 01</div>
+        <h1 style={{fontFamily:'Anton,sans-serif',fontSize:'clamp(36px,6vw,72px)',letterSpacing:'0.02em',textTransform:'uppercase',marginBottom:'32px'}}>The Foundation</h1>
+        <div style={{display:'flex',gap:'12px',flexWrap:'wrap',marginBottom:'40px'}}>
+          {FILTERS.map(f => (
+            <button key={f} onClick={() => setActiveFilter(f)} style={{padding:'8px 20px',fontSize:'13px',fontFamily:'Manrope,sans-serif',fontWeight:600,textTransform:'capitalize',letterSpacing:'0.05em',cursor:'pointer',border:'1px solid',borderRadius:'2px',transition:'all 0.18s',background:activeFilter===f?'#f6f1e7':'transparent',color:activeFilter===f?'#0a0a0a':'#f6f1e7',borderColor:activeFilter===f?'#f6f1e7':'#333'}}>
+              {f === 'all' ? 'All Pieces' : f}
+            </button>
+          ))}
+          <span style={{marginLeft:'auto',fontSize:'13px',color:'#666',alignSelf:'center'}}>{filtered.length} {filtered.length === 1 ? 'piece' : 'pieces'}</span>
         </div>
       </div>
-
-      <div className="shop-filters">
-        {categories.map(f => (
-          <button key={f} className={`filter-btn ${filter === f ? 'on' : ''}`} onClick={() => setFilter(f)}>
-            {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
-          </button>
-        ))}
-      </div>
-
-      <div className="shop-grid">
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:'2px',padding:'0 40px 80px'}}>
         {loading ? (
-          <div className="shop-loading">Loading...</div>
-        ) : filteredProducts.length === 0 ? (
-          <div className="shop-empty">No products found</div>
+          Array(8).fill(0).map((_,i) => <div key={i} style={{background:'#111',aspectRatio:'3/4'}} />)
+        ) : filtered.length === 0 ? (
+          <div style={{gridColumn:'1/-1',textAlign:'center',padding:'80px',color:'#666'}}>
+            <div style={{fontSize:'48px',marginBottom:'16px'}}>∅</div>
+            <div style={{fontSize:'16px'}}>No pieces in this category yet.</div>
+            <button onClick={() => setActiveFilter('all')} style={{marginTop:'24px',padding:'12px 32px',background:'transparent',border:'1px solid #f6f1e7',color:'#f6f1e7',cursor:'pointer',fontFamily:'Manrope,sans-serif',fontSize:'14px'}}>View All</button>
+          </div>
         ) : (
-          filteredProducts.map(product => (
-            <Link key={product.id} href={productHref(product)} className="shop-card" style={{textDecoration:'none',color:'inherit',display:'block'}}>
-              <div className="shop-img" style={{position:'relative',overflow:'hidden'}}>
-                {product.image_url ? (
-                  <img
-                    src={product.image_url}
-                    alt={product.name}
-                    loading="lazy"
-                    style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}
-                  />
-                ) : (
-                  product.name.split(' ').slice(0, 3).map((w, i) => (
-                    <span key={i}>{w}{i < Math.min(product.name.split(' ').length, 3) - 1 && <br/>}</span>
-                  ))
-                )}
-                {product.tags?.includes('new') && (
-                  <div style={{position:'absolute',top:'10px',left:'10px',background:'#01696f',color:'#fff',fontSize:'0.65rem',fontWeight:'700',letterSpacing:'0.1em',padding:'3px 8px',borderRadius:'20px'}}>NEW</div>
-                )}
-                {/* Quick add button */}
-                <button
-                  className="shop-quick-add"
-                  onClick={(e) => addToCart(e, product)}
-                  style={{
-                    position:'absolute',bottom:'10px',left:'50%',transform:'translateX(-50%)',
-                    background:'#fff',color:'#111',border:'none',borderRadius:'20px',
-                    padding:'6px 16px',fontSize:'0.7rem',fontWeight:'700',letterSpacing:'0.08em',
-                    cursor:'pointer',opacity:0,transition:'opacity 0.2s',whiteSpace:'nowrap'
-                  }}
-                >
-                  + Quick Add
-                </button>
-              </div>
-              <div className="shop-info">
-                <div className="shop-name">{product.name}</div>
-                <div className="shop-meta">
-                  <span className="shop-cat">
-                    {product.color ? product.color.charAt(0).toUpperCase() + product.color.slice(1) : 'In Stock'}
-                  </span>
-                  <span className="shop-price">${Number(product.price).toFixed(2)}</span>
+          filtered.map((prod) => (
+            <div key={prod.id} style={{background:'#111',position:'relative',cursor:'pointer',overflow:'hidden',aspectRatio:'3/4',display:'flex',flexDirection:'column'}}>
+              <div
+                style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',padding:'40px 24px'}}
+                role="img"
+                aria-label={`${prod.name} — ${prod.color || ''} colorway, Vibin Apparel SS26 Drop 01 Jacksonville streetwear heavyweight cotton`}
+              >
+                <div style={{textAlign:'center',lineHeight:1}}>
+                  <div style={{fontFamily:'Anton,sans-serif',fontSize:'clamp(28px,4vw,48px)',letterSpacing:'0.05em',color:'#f6f1e7',textTransform:'uppercase'}}>{prod.name?.split('—')[0]?.trim()}</div>
+                  <div style={{fontFamily:'Anton,sans-serif',fontSize:'clamp(18px,3vw,32px)',color:'#ff6b4a',fontStyle:'italic',textTransform:'uppercase'}}>{prod.color}</div>
                 </div>
               </div>
-            </Link>
+              <div style={{padding:'16px 20px',borderTop:'1px solid #1a1a1a',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                <div>
+                  <div style={{fontSize:'14px',fontWeight:600,marginBottom:'2px'}}>{prod.name}</div>
+                  <div style={{fontSize:'12px',color:'#888',fontFamily:'JetBrains Mono,monospace'}}>{prod.category}</div>
+                </div>
+                <div style={{fontSize:'16px',fontWeight:700}}>${prod.price}</div>
+              </div>
+              <button
+                onClick={() => handleQuickAdd(prod.id, prod.name, prod.price, prod.color)}
+                style={{position:'absolute',bottom:'60px',left:0,right:0,background:addedId===prod.id?'#2a5c2a':'rgba(0,0,0,0.85)',color:'#f6f1e7',border:'none',padding:'12px',fontSize:'13px',fontFamily:'Manrope,sans-serif',fontWeight:700,cursor:'pointer',letterSpacing:'0.05em',opacity:0,transition:'opacity 0.2s'}}
+                onMouseEnter={e => e.currentTarget.style.opacity='1'}
+                onMouseLeave={e => e.currentTarget.style.opacity='0'}
+                aria-label={`Quick add ${prod.name} to cart`}
+              >
+                {addedId === prod.id ? '✓ Added to Cart' : '+ Quick Add'}
+              </button>
+              <Link href={`/product/${prod.id}`} style={{position:'absolute',inset:0}} aria-label={`View ${prod.name} details`} />
+            </div>
           ))
         )}
       </div>
+    </div>
+  )
+}
 
-      <footer style={{background:'#0a0a0a',borderTop:'1px solid #1e1e1e',padding:'40px',textAlign:'center'}}>
-        <div style={{maxWidth:'1200px',margin:'0 auto'}}>
-          <div style={{marginBottom:'20px'}}>
-            <a href="/legal/privacy" style={{color:'#888',textDecoration:'none',fontSize:'13px',marginRight:'20px',fontFamily:'JetBrains Mono, monospace'}}>Privacy Policy</a>
-            <a href="/legal/terms" style={{color:'#888',textDecoration:'none',fontSize:'13px',marginRight:'20px',fontFamily:'JetBrains Mono, monospace'}}>Terms of Service</a>
-            <a href="/returns" style={{color:'#888',textDecoration:'none',fontSize:'13px',fontFamily:'JetBrains Mono, monospace'}}>Returns</a>
-          </div>
-          <p style={{fontSize:'11px',color:'#555',fontFamily:'JetBrains Mono, monospace',letterSpacing:'.15em',textTransform:'uppercase'}}>
-            Vibin Apparel, LLC · A Subsidiary of HVD Holdings, LLC · Florida
-          </p>
-        </div>
-      </footer>
-    </>
+export default function ShopPage() {
+  return (
+    <Suspense fallback={<div style={{background:'#0a0a0a',minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',color:'#f6f1e7'}}>Loading...</div>}>
+      <ShopContent />
+    </Suspense>
   )
 }
