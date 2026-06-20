@@ -18,7 +18,6 @@
     "stripe": "^22.1.0"
   },
   "devDependencies": {
-    "surge": "^0.27.3",
     "vercel": "^52.0.0"
   }
 }
