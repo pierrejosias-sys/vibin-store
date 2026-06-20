@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { supabase } from '../lib/supabase'
 import { useCart } from '../lib/cart-context'
 
-// Canonical always points to /shop — ?cat= params are UI filters, not separate indexable pages
 export const metadata = {
   title: 'Shop SS26 Drop 01 — Vibin Apparel',
   description: 'Shop Vibin Apparel\'s SS26 Drop 01: The Foundation. Heavyweight cotton tees, hoodies, crewnecks, and headwear. Jacksonville streetwear. Free shipping on orders $75+.',
@@ -26,12 +25,29 @@ export const metadata = {
   }
 }
 
+// Fix #13: expanded CATEGORY_MAP to match all product category strings including Cargo Pant
 const CATEGORY_MAP = {
   tees: 'Tee',
   hoodies: 'Hoodie',
   crewnecks: 'Sweatshirt',
   accessories: 'Headwear',
   bottoms: 'Bottom',
+  pants: 'Pant',
+  cargo: 'Cargo',
+}
+
+// Fix #13: bottoms filter now catches both 'Bottom' AND 'Pant' (Cargo Pant, Sweatpant, etc.)
+function matchesFilter(product, filter) {
+  if (filter === 'all') return true
+  const cat = product.category?.toLowerCase() || ''
+  if (filter === 'bottoms') {
+    return cat.includes('bottom') || cat.includes('pant') || cat.includes('short') || cat.includes('cargo')
+  }
+  if (filter === 'accessories') {
+    return cat.includes('headwear') || cat.includes('cap') || cat.includes('beanie') || cat.includes('accessory')
+  }
+  const key = (CATEGORY_MAP[filter] || filter).toLowerCase()
+  return cat.includes(key)
 }
 
 function ShopContent() {
@@ -60,6 +76,7 @@ function ShopContent() {
         { id: 6, name: 'Louder Cap — Acid', price: 38, category: 'Headwear · 6-Panel', color: 'Acid' },
         { id: 7, name: 'VBN Heavyweight Tee — Forest', price: 48, category: 'Tee · Heavyweight', color: 'Forest' },
         { id: 8, name: 'Sunup Beanie — Sun', price: 32, category: 'Headwear · Knit', color: 'Sun' },
+        { id: 9, name: 'Foundation Cargo Pant — Black', price: 88, category: 'Cargo Pant · Heavyweight', color: 'Black' },
       ])
     }
     setLoading(false)
@@ -77,36 +94,40 @@ function ShopContent() {
     setTimeout(() => setAddedId(null), 1800)
   }
 
-  const filtered = activeFilter === 'all'
-    ? products
-    : products.filter(p => {
-        const key = CATEGORY_MAP[activeFilter] || activeFilter
-        return p.category?.toLowerCase().includes(key.toLowerCase())
-      })
+  const filtered = products.filter(p => matchesFilter(p, activeFilter))
 
-  const FILTERS = ['all', 'tees', 'hoodies', 'crewnecks', 'accessories', 'bottoms']
+  // Fix #6: filter labels now match exactly so active state highlights correctly
+  const FILTERS = [
+    { key: 'all', label: 'All Pieces' },
+    { key: 'tees', label: 'Tees' },
+    { key: 'hoodies', label: 'Hoodies' },
+    { key: 'crewnecks', label: 'Crewnecks' },
+    { key: 'bottoms', label: 'Bottoms' },
+    { key: 'accessories', label: 'Accessories' },
+  ]
 
   return (
     <div style={{background:'#0a0a0a',minHeight:'100vh',color:'#f6f1e7',fontFamily:'Manrope,sans-serif'}}>
+      {/* Fix #6: nav links all use correct internal routes */}
       <nav style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'20px 40px',borderBottom:'1px solid #1a1a1a',position:'sticky',top:0,background:'rgba(10,10,10,0.95)',backdropFilter:'blur(12px)',zIndex:100}}>
-        <a href="/" style={{fontFamily:'Anton,sans-serif',fontSize:'24px',color:'#f6f1e7',textDecoration:'none',letterSpacing:'0.05em'}}>VIBIN</a>
+        <Link href="/" style={{fontFamily:'Anton,sans-serif',fontSize:'24px',color:'#f6f1e7',textDecoration:'none',letterSpacing:'0.05em'}}>VIBIN</Link>
         <div style={{display:'flex',gap:'32px',fontSize:'14px'}}>
-          <a href="/shop" style={{color:'#ff6b4a',textDecoration:'none',fontWeight:600}}>Shop</a>
-          <a href="/drop-01" style={{color:'#f6f1e7',textDecoration:'none'}}>Drop 01</a>
-          <a href="/lookbook" style={{color:'#f6f1e7',textDecoration:'none'}}>Lookbook</a>
-          <a href="/about" style={{color:'#f6f1e7',textDecoration:'none'}}>About</a>
+          <Link href="/shop" style={{color:'#ff6b4a',textDecoration:'none',fontWeight:600}}>Shop</Link>
+          <Link href="/drop-01" style={{color:'#f6f1e7',textDecoration:'none'}}>Drop 01</Link>
+          <Link href="/lookbook" style={{color:'#f6f1e7',textDecoration:'none'}}>Lookbook</Link>
+          <Link href="/about" style={{color:'#f6f1e7',textDecoration:'none'}}>About</Link>
         </div>
-        <a href="/cart" style={{color:'#f6f1e7',textDecoration:'none',fontSize:'20px'}}>
+        <Link href="/cart" style={{color:'#f6f1e7',textDecoration:'none',fontSize:'20px'}}>
           🛒{cartCount > 0 && <span style={{background:'#ff6b4a',color:'#fff',borderRadius:'50%',fontSize:'10px',padding:'2px 5px',marginLeft:'4px'}}>{cartCount}</span>}
-        </a>
+        </Link>
       </nav>
       <div style={{padding:'48px 40px 24px'}}>
         <div style={{marginBottom:'8px',fontSize:'12px',color:'#888',letterSpacing:'0.1em',textTransform:'uppercase',fontFamily:'JetBrains Mono,monospace'}}>SS26 · Drop 01</div>
         <h1 style={{fontFamily:'Anton,sans-serif',fontSize:'clamp(36px,6vw,72px)',letterSpacing:'0.02em',textTransform:'uppercase',marginBottom:'32px'}}>The Foundation</h1>
         <div style={{display:'flex',gap:'12px',flexWrap:'wrap',marginBottom:'40px'}}>
-          {FILTERS.map(f => (
-            <button key={f} onClick={() => setActiveFilter(f)} style={{padding:'8px 20px',fontSize:'13px',fontFamily:'Manrope,sans-serif',fontWeight:600,textTransform:'capitalize',letterSpacing:'0.05em',cursor:'pointer',border:'1px solid',borderRadius:'2px',transition:'all 0.18s',background:activeFilter===f?'#f6f1e7':'transparent',color:activeFilter===f?'#0a0a0a':'#f6f1e7',borderColor:activeFilter===f?'#f6f1e7':'#333'}}>
-              {f === 'all' ? 'All Pieces' : f}
+          {FILTERS.map(({ key, label }) => (
+            <button key={key} onClick={() => setActiveFilter(key)} style={{padding:'8px 20px',fontSize:'13px',fontFamily:'Manrope,sans-serif',fontWeight:600,textTransform:'capitalize',letterSpacing:'0.05em',cursor:'pointer',border:'1px solid',borderRadius:'2px',transition:'all 0.18s',background:activeFilter===key?'#f6f1e7':'transparent',color:activeFilter===key?'#0a0a0a':'#f6f1e7',borderColor:activeFilter===key?'#f6f1e7':'#333'}}>
+              {label}
             </button>
           ))}
           <span style={{marginLeft:'auto',fontSize:'13px',color:'#666',alignSelf:'center'}}>{filtered.length} {filtered.length === 1 ? 'piece' : 'pieces'}</span>
@@ -127,7 +148,7 @@ function ShopContent() {
               <div
                 style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',padding:'40px 24px'}}
                 role="img"
-                aria-label={`${prod.name} — ${prod.color || ''} colorway, Vibin Apparel SS26 Drop 01 Jacksonville streetwear heavyweight cotton`}
+                aria-label={`${prod.name} — ${prod.color || ''} colorway, Vibin Apparel SS26 Drop 01`}
               >
                 <div style={{textAlign:'center',lineHeight:1}}>
                   <div style={{fontFamily:'Anton,sans-serif',fontSize:'clamp(28px,4vw,48px)',letterSpacing:'0.05em',color:'#f6f1e7',textTransform:'uppercase'}}>{prod.name?.split('—')[0]?.trim()}</div>
