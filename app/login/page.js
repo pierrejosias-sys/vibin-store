@@ -5,12 +5,13 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 
-const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
-
 export default function LoginPage() {
+  // Supabase client created inside component to avoid cross-user session sharing
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  )
+
   const [isRegister, setIsRegister] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -21,7 +22,6 @@ export default function LoginPage() {
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState('')
   const [ambassadorMode, setAmbassadorMode] = useState(false)
-  const [ambCode, setAmbCode] = useState('')
   const [showUnsubscribe, setShowUnsubscribe] = useState(false)
   const router = useRouter()
 
@@ -30,6 +30,10 @@ export default function LoginPage() {
     if (params.get('role') === 'ambassador') setAmbassadorMode(true)
     if (params.get('error') === 'auth_failed') {
       setMessage('Sign-in failed. Please try again.')
+      setMessageType('error')
+    }
+    if (params.get('error') === 'unauthorized') {
+      setMessage('You do not have permission to access that page.')
       setMessageType('error')
     }
 
@@ -71,17 +75,31 @@ export default function LoginPage() {
     setMessage('')
 
     if (ambassadorMode) {
-      setTimeout(() => {
-        if (ambCode.length >= 4) {
-          setMessage('Ambassador logged in!')
-          setMessageType('success')
-          setTimeout(() => router.push('/ambassador'), 1000)
-        } else {
-          setMessage('Invalid ambassador code')
-          setMessageType('error')
-        }
+      // Real Supabase auth for ambassadors — email + password same as regular login
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
+        setMessage(error.message)
+        setMessageType('error')
         setLoading(false)
-      }, 500)
+        return
+      }
+      // Verify they actually have ambassador or admin role
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin, is_ambassador')
+        .eq('id', data.user.id)
+        .single()
+      if (!profile?.is_ambassador && !profile?.is_admin) {
+        await supabase.auth.signOut()
+        setMessage('This account does not have ambassador access. Apply at vibinapparel.com/ambassador')
+        setMessageType('error')
+        setLoading(false)
+        return
+      }
+      setMessage('Welcome back! Redirecting...')
+      setMessageType('success')
+      router.push('/ambassador')
+      setLoading(false)
       return
     }
 
@@ -117,15 +135,25 @@ export default function LoginPage() {
     setLoading(false)
   }
 
-  function handleUnsubscribe(e) {
+  async function handleUnsubscribe(e) {
     e.preventDefault()
     setLoading(true)
-    setTimeout(() => {
-      setMessage('You have been unsubscribed from the newsletter.')
+    try {
+      const res = await fetch('/api/mailchimp/unsubscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      })
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error || 'Unsubscribe failed')
+      setMessage('You have been unsubscribed from the Vibin newsletter.')
       setMessageType('success')
       setShowUnsubscribe(false)
-      setLoading(false)
-    }, 500)
+    } catch (err) {
+      setMessage(err.message)
+      setMessageType('error')
+    }
+    setLoading(false)
   }
 
   return (
@@ -182,14 +210,21 @@ export default function LoginPage() {
               <div className="panel on">
                 <div className="form-eye">Ambassador Portal</div>
                 <h2 className="form-title">Ambassador<br/><em>Login</em></h2>
-                <p className="form-sub">Enter your ambassador code to access your dashboard.</p>
+                <p className="form-sub">Sign in with your Vibin account to access your ambassador dashboard.</p>
                 <form onSubmit={handleSubmit}>
                   <div className="field">
-                    <div className="field-label">Ambassador Code</div>
-                    <input className="field-input" type="text" placeholder="e.g., VIBIN-JOE-2024" value={ambCode} onChange={e => setAmbCode(e.target.value.toUpperCase())} required />
+                    <div className="field-label">Email</div>
+                    <input className="field-input" type="email" placeholder="your@email.com" value={email} onChange={e => setEmail(e.target.value)} required />
+                  </div>
+                  <div className="field">
+                    <div className="field-label">
+                      <span>Password</span>
+                      <a href="/forgot-password">Forgot?</a>
+                    </div>
+                    <input className="field-input" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
                   </div>
                   <button type="submit" className="btn-submit" disabled={loading}>
-                    {loading ? 'Verifying...' : 'Access Dashboard →'}
+                    {loading ? 'Signing in...' : 'Access Dashboard →'}
                   </button>
                 </form>
                 <div className="alt-link">Not an ambassador? <a href="/ambassador">Apply here</a></div>
@@ -200,7 +235,7 @@ export default function LoginPage() {
               <div className="panel on">
                 <div className="form-eye">Newsletter</div>
                 <h2 className="form-title">Unsubscribe</h2>
-                <p className="form-sub">We'll miss you! Enter your email to unsubscribe.</p>
+                <p className="form-sub">We'll miss you. Enter your email to unsubscribe.</p>
                 <form onSubmit={handleUnsubscribe}>
                   <div className="field">
                     <div className="field-label">Email</div>
