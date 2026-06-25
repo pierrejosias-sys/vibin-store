@@ -158,6 +158,9 @@ export default function AdminPage() {
                  </span>
                )}
              </Link>
+             <Link href="https://vibin-arsenal.vercel.app" target="_blank" className="admin-nav-link" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+               <span style={{ fontSize: '14px' }}>⚡</span> Arsenal
+             </Link>
              <Link href="/" className="admin-nav-link">View Store</Link>
              <a href="#" className="admin-nav-link" onClick={handleSignOut} style={{ marginTop: 'auto', color: 'var(--coral)' }}>Sign Out</a>
            </nav>
