@@ -53,6 +53,7 @@ export default function AmbassadorApply() {
           tiktok_handle: form.tiktok,
           audience_size: form.audience,
           why: form.why,
+          code: '',
           status: 'pending',
           commission_rate: 15,
           created_at: new Date().toISOString()
