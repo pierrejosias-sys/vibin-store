@@ -1,47 +1,71 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { createBrowserClient } from '@supabase/ssr'
 
 export default function AmbassadorLoginPage() {
+  const supabase = useMemo(() => createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ), [])
+
   const router = useRouter()
   const [ambCode, setAmbCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
 
   useEffect(() => {
-    // Check if already logged in as ambassador
-    const saved = localStorage.getItem('vibin_ambassador')
-    if (saved) {
-      const amb = JSON.parse(saved)
-      if (amb.code) {
-        router.push('/ambassador')
-      }
+    // If already logged in as an approved ambassador, go straight to dashboard
+    async function checkSession() {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_ambassador')
+        .eq('id', session.user.id)
+        .single()
+      if (profile?.is_ambassador) router.push('/ambassador')
     }
-  }, [router])
+    checkSession()
+  }, [supabase, router])
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     setLoading(true)
     setMessage('')
 
-    setTimeout(() => {
-      if (ambCode.length >= 4) {
-        const ambData = {
-          code: ambCode.toUpperCase(),
-          name: 'Ambassador',
-          status: 'active',
-          createdAt: new Date().toISOString()
-        }
-        localStorage.setItem('vibin_ambassador', JSON.stringify(ambData))
-        setMessage('Ambassador verified! Redirecting...')
-        setTimeout(() => router.push('/ambassador'), 1000)
-      } else {
-        setMessage('Invalid ambassador code. Must be at least 4 characters.')
-      }
+    const code = ambCode.trim().toUpperCase()
+
+    // Look up the ambassador by their unique referral code
+    const { data: ambassador, error } = await supabase
+      .from('ambassadors')
+      .select('id, name, email, status, code')
+      .eq('code', code)
+      .single()
+
+    if (error || !ambassador) {
+      setMessage('Invalid ambassador code. Please check and try again.')
       setLoading(false)
-    }, 500)
+      return
+    }
+
+    if (ambassador.status !== 'approved') {
+      setMessage(
+        ambassador.status === 'pending'
+          ? 'Your application is still under review. Check back after approval.'
+          : 'Your ambassador account is not active. Contact ambassador@vibinapparel.com.'
+      )
+      setLoading(false)
+      return
+    }
+
+    // Valid approved ambassador — redirect to sign in with their Supabase account
+    // (middleware will enforce is_ambassador check server-side)
+    setMessage('Code verified! Please sign in with your email to access the dashboard.')
+    setTimeout(() => router.push('/login?role=ambassador'), 1500)
+    setLoading(false)
   }
 
   return (
@@ -82,7 +106,8 @@ export default function AmbassadorLoginPage() {
                 fontSize:'14px',
                 fontFamily:'JetBrains Mono, monospace',
                 letterSpacing:'.05em',
-                boxSizing:'border-box'
+                boxSizing:'border-box',
+                borderRadius:'4px'
               }}
             />
             <p style={{fontSize:'12px', color:'#666', marginTop:'8px'}}>
@@ -93,9 +118,9 @@ export default function AmbassadorLoginPage() {
           {message && (
             <div style={{
               padding:'12px 16px',
-              background: message.includes('Invalid') ? '#3a1a1a' : '#1a3a1a',
-              border: `1px solid ${message.includes('Invalid') ? '#ff0000' : '#00ff00'}`,
-              color: message.includes('Invalid') ? '#ff6666' : '#00ff00',
+              background: message.includes('Invalid') || message.includes('not active') || message.includes('under review') ? '#3a1a1a' : '#1a3a1a',
+              border: `1px solid ${message.includes('Invalid') || message.includes('not active') || message.includes('under review') ? '#5a2a2a' : '#2a5a2a'}`,
+              color: message.includes('Invalid') || message.includes('not active') || message.includes('under review') ? '#ff8888' : '#88cc88',
               fontSize:'13px',
               marginBottom:'20px',
               borderRadius:'4px'

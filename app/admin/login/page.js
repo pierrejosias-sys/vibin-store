@@ -3,8 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import supabase from '../../lib/supabase-public';
-import styles from '../../styles.css';
-
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -49,8 +47,6 @@ export default function AdminLoginPage() {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles }} />
-
       <nav>
         <a href="/" className="logo">VIBIN ADMIN</a>
       </nav>

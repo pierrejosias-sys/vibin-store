@@ -1,9 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import { createBrowserClient } from '@supabase/ssr'
 
 export default function ForgotPasswordPage() {
+  const supabase = useMemo(() => createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ), [])
+
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -14,15 +20,15 @@ export default function ForgotPasswordPage() {
     setLoading(true)
     setMessage('')
 
-    try {
-      // In production, this would call Supabase Auth API
-      // For now, simulate sending reset email
-      await new Promise(resolve => setTimeout(resolve, 1000))
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+    })
 
-      setSent(true)
-      setMessage(`If an account with ${email} exists, you'll receive a password reset link.`)
-    } catch (err) {
+    if (error) {
       setMessage('Something went wrong. Please try again.')
+    } else {
+      setSent(true)
+      setMessage(`If an account with ${email} exists, you'll receive a password reset link shortly.`)
     }
 
     setLoading(false)
@@ -45,9 +51,9 @@ export default function ForgotPasswordPage() {
         </div>
 
         {sent ? (
-          <div style={{background:'#1a3a1a', border:'1px solid #00ff00', padding:'24px', borderRadius:'8px', textAlign:'center'}}>
+          <div style={{background:'#1a3a1a', border:'1px solid #2a5a2a', padding:'24px', borderRadius:'8px', textAlign:'center'}}>
             <div style={{fontSize:'32px', marginBottom:'12px'}}>✉️</div>
-            <p style={{color:'#00ff00', fontSize:'14px', lineHeight:'1.6'}}>{message}</p>
+            <p style={{color:'#88cc88', fontSize:'14px', lineHeight:'1.6'}}>{message}</p>
             <Link href="/login" style={{display:'inline-block', marginTop:'20px', color:'#e05c2e', textDecoration:'none', fontSize:'14px'}}>
               ← Back to Sign In
             </Link>
@@ -71,7 +77,8 @@ export default function ForgotPasswordPage() {
                   border:'1px solid #3a3a3a',
                   color:'#f6f1e7',
                   fontSize:'14px',
-                  boxSizing:'border-box'
+                  boxSizing:'border-box',
+                  borderRadius:'4px'
                 }}
               />
             </div>
@@ -80,8 +87,8 @@ export default function ForgotPasswordPage() {
               <div style={{
                 padding:'12px',
                 background:'#3a1a1a',
-                border:'1px solid #ff0000',
-                color:'#ff6666',
+                border:'1px solid #5a2a2a',
+                color:'#ff8888',
                 fontSize:'13px',
                 marginBottom:'20px',
                 borderRadius:'4px'
