@@ -108,3 +108,12 @@ test('safeEqual', () => {
   assert.equal(safeEqual('', ''), false)
   assert.equal(safeEqual(null, 'x'), false)
 })
+
+test('hoodie Printful payload carries no insert / packing-slip / QR data', () => {
+  const map = defaultVariantMap({})
+  const { podLines } = splitCart([{ drop: 'd01', style: 'hd', id: 'd01-hd', size: 'M', qty: 1, price: 195 }], map)
+  const p = buildOrderPayload({ orderId: 7, recipient: { name: 'x' }, podLines })
+  assert.deepEqual(Object.keys(p).sort(), ['external_id', 'items', 'recipient', 'shipping'])
+  assert.doesNotMatch(JSON.stringify(p), /packing|gift|insert|qr|certificate/i)
+  assert.deepEqual(p.items[0].files.map(f => f.type), ['front_dtf'])
+})

@@ -125,7 +125,10 @@ export function externalIdFor(orderId) {
   return `vibin-${orderId}`
 }
 
-/** Printful v1 POST /orders body. */
+/**
+ * Printful v1 POST /orders body. Deliberately sends no packing_slip, gift message,
+ * insert or QR: the hoodie ships with no certificate/QR insert (Printful default slip only).
+ */
 export function buildOrderPayload({ orderId, recipient, podLines }) {
   return {
     external_id: externalIdFor(orderId),

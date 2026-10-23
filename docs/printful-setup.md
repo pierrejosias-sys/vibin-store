@@ -52,6 +52,18 @@ Without a `position`, Printful scales the file to fill the front print area. For
 Get the numbers from Printful's design maker. The simpler route is to build the product in Printful's dashboard and
 put its **sync variant ids** in `PRINTFUL_VARIANT_MAP` (`{"hd:S":<sync id>,…}`). That overrides the default entirely.
 
+### Print areas (NOT yet retrieved)
+`GET https://api.printful.com/mockup-generator/printfiles/1540` (and the v2 catalog endpoints) need a token. Without one they return 401.
+The public v1 catalog lists these placements: `front_dtf`, `back_dtf`, `long_sleeve_left_dtf`, `long_sleeve_right_dtf`, `label_inside_dtf`,
+plus embroidery-only `embroidery_chest_left/right/center` and `embroidery_wrist_left/right`.
+**There is no DTF chest-left placement.** A DTF chest mark has to go in `front_dtf` with a `position` (PRINTFUL_HOODIE_FILE_POSITION).
+After creating the token, run:
+`curl -s https://api.printful.com/mockup-generator/printfiles/1540 -H "Authorization: Bearer <token>"`
+In the response, `printfiles[]` gives width/height px and dpi, and `variant_printfiles` maps placements to printfile ids.
+
+### No inserts
+The hoodie ships with no certificate or QR insert. The order payload sends no packing_slip, gift or insert data (covered by a test).
+
 ## Checklist for Josias
 
 

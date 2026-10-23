@@ -192,7 +192,7 @@ export default function DropClient({ drop: dropProp, phase, serverNow }) {
         <div style={S.eyebrow}>Vibin Apparel · SS26</div>
         <h1 style={S.h1}>{drop.name}</h1>
         <p style={{ maxWidth: 640, opacity: 0.8 }}>{drop.story}</p>
-        <p style={{ opacity: 0.6, fontSize: 14 }}>Every piece is numbered 1–{drop.piecesPerStyle} with a scannable authenticity tag.</p>
+        <p style={{ opacity: 0.6, fontSize: 14 }}>Every piece is numbered 1–{drop.piecesPerStyle}.</p>
         {drop.shipsBy && <p style={{ fontSize: 16, fontWeight: 700 }}>Numbered pre-order · Ships by {drop.shipsBy}</p>}
 
         {(phase === 'upcoming' || phase === 'tba') && (
