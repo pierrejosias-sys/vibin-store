@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from './lib/supabase'
+import ComingSoonSignup from './components/ComingSoonSignup'
 import { useCart } from './lib/cart-context'
 import styles from './styles.css'
 
@@ -42,12 +43,12 @@ export default function HomePage() {
     } else {
       setProducts([
         { id: 1, name: 'Foundation Tee — Black', price: 48, category: 'Tee · Heavyweight', color: 'Black', image_color: 'ink' },
-        { id: 2, name: 'Move Different Tee — Cream', price: 48, category: 'Tee · Heavyweight', color: 'Cream', image_color: 'cream2' },
-        { id: 3, name: 'Vol 01 Hoodie — Coral', price: 98, category: 'Hoodie · Heavyweight Fleece', color: 'Coral', image_color: 'coral' },
+        { id: 2, name: 'Move Different Tee — Cream', slug: 'move-different-tee', comingSoon: true, price: 48, category: 'Tee · Heavyweight', color: 'Cream', image_color: 'cream2' },
+        { id: 3, name: 'Vol 01 Hoodie — Coral', slug: 'vol-01-hoodie', comingSoon: true, price: 98, category: 'Hoodie · Heavyweight Fleece', color: 'Coral', image_color: 'coral' },
         { id: 4, name: 'Mark Hoodie — Onyx', price: 98, category: 'Hoodie · Heavyweight Fleece', color: 'Onyx', image_color: 'ink2' },
-        { id: 5, name: 'Different Crewneck — Violet', price: 78, category: 'Sweatshirt · Cotton Blend', color: 'Violet', image_color: 'violet' },
+        { id: 5, name: 'Different Crewneck — Violet', slug: 'different-crewneck', comingSoon: true, price: 78, category: 'Sweatshirt · Cotton Blend', color: 'Violet', image_color: 'violet' },
         { id: 6, name: 'Louder Cap — Acid', price: 38, category: 'Headwear · 6-Panel', color: 'Acid', image_color: 'acid' },
-        { id: 7, name: 'VBN Heavyweight Tee — Forest', price: 48, category: 'Tee · Heavyweight', color: 'Forest', image_color: 'teal' },
+        { id: 7, name: 'VBN Heavyweight Tee — Forest', slug: 'vbn-heavyweight-tee', comingSoon: true, price: 48, category: 'Tee · Heavyweight', color: 'Forest', image_color: 'teal' },
         { id: 8, name: 'Sunup Beanie — Sun', price: 32, category: 'Headwear · Knit', color: 'Sun', image_color: 'sun' },
       ])
     }
@@ -186,12 +187,19 @@ export default function HomePage() {
                   </div>
                 </div>
                 {/* Fix: pass name, price, color to handleQuickAdd */}
+                {prod.comingSoon ? (
+                  // Not produced yet — waitlist instead of add-to-cart
+                  <div style={{position:'absolute',left:0,right:0,bottom:0}}>
+                    <ComingSoonSignup slug={prod.slug} name={prod.name} />
+                  </div>
+                ) : (
                 <div
                   className="prod-quick"
                   onClick={() => handleQuickAdd(prod.id, prod.name, prod.price, prod.color)}
                 >
                   {addedId === prod.id ? '✓ Added' : '+ Quick Add'}
                 </div>
+                )}
               </div>
               <div className="prod-info">
                 <div>

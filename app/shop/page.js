@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '../lib/supabase'
+import ComingSoonSignup from '../components/ComingSoonSignup'
 import { useCart } from '../lib/cart-context'
 
 
@@ -51,14 +52,14 @@ function ShopContent() {
     } else {
       setProducts([
         { id: 1, name: 'Foundation Tee — Black', price: 48, category: 'Tee · Heavyweight', color: 'Black' },
-        { id: 2, name: 'Move Different Tee — Cream', price: 48, category: 'Tee · Heavyweight', color: 'Cream' },
-        { id: 3, name: 'Vol 01 Hoodie — Coral', price: 98, category: 'Hoodie · Heavyweight Fleece', color: 'Coral' },
+        { id: 2, name: 'Move Different Tee — Cream', slug: 'move-different-tee', comingSoon: true, price: 48, category: 'Tee · Heavyweight', color: 'Cream' },
+        { id: 3, name: 'Vol 01 Hoodie — Coral', slug: 'vol-01-hoodie', comingSoon: true, price: 98, category: 'Hoodie · Heavyweight Fleece', color: 'Coral' },
         { id: 4, name: 'Mark Hoodie — Onyx', price: 98, category: 'Hoodie · Heavyweight Fleece', color: 'Onyx' },
-        { id: 5, name: 'Different Crewneck — Violet', price: 78, category: 'Sweatshirt · Cotton Blend', color: 'Violet' },
+        { id: 5, name: 'Different Crewneck — Violet', slug: 'different-crewneck', comingSoon: true, price: 78, category: 'Sweatshirt · Cotton Blend', color: 'Violet' },
         { id: 6, name: 'Louder Cap — Acid', price: 38, category: 'Headwear · 6-Panel', color: 'Acid' },
-        { id: 7, name: 'VBN Heavyweight Tee — Forest', price: 48, category: 'Tee · Heavyweight', color: 'Forest' },
+        { id: 7, name: 'VBN Heavyweight Tee — Forest', slug: 'vbn-heavyweight-tee', comingSoon: true, price: 48, category: 'Tee · Heavyweight', color: 'Forest' },
         { id: 8, name: 'Sunup Beanie — Sun', price: 32, category: 'Headwear · Knit', color: 'Sun' },
-        { id: 9, name: 'Foundation Cargo Pant — Black', price: 88, category: 'Cargo Pant · Heavyweight', color: 'Black' },
+        { id: 9, name: 'Foundation Cargo Pant — Black', slug: 'foundation-cargo-pant', comingSoon: true, price: 88, category: 'Cargo Pant · Heavyweight', color: 'Black' },
       ])
     }
     setLoading(false)
@@ -144,6 +145,13 @@ function ShopContent() {
                 </div>
                 <div style={{fontSize:'16px',fontWeight:700}}>${prod.price}</div>
               </div>
+              {prod.comingSoon ? (
+                // Not produced yet — waitlist instead of add-to-cart / product link
+                <div style={{position:'absolute',left:0,right:0,bottom:'60px',zIndex:2}}>
+                  <ComingSoonSignup slug={prod.slug} name={prod.name} />
+                </div>
+              ) : (
+                <>
               <button
                 onClick={() => handleQuickAdd(prod.id, prod.name, prod.price, prod.color)}
                 style={{position:'absolute',bottom:'60px',left:0,right:0,background:addedId===prod.id?'#2a5c2a':'rgba(0,0,0,0.85)',color:'#f6f1e7',border:'none',padding:'12px',fontSize:'13px',fontFamily:'Manrope,sans-serif',fontWeight:700,cursor:'pointer',letterSpacing:'0.05em',opacity:0,transition:'opacity 0.2s'}}
@@ -153,7 +161,9 @@ function ShopContent() {
               >
                 {addedId === prod.id ? '✓ Added to Cart' : '+ Quick Add'}
               </button>
-              <Link href={`/product/${prod.id}`} style={{position:'absolute',inset:0}} aria-label={`View ${prod.name} details`} />
+                <Link href={`/product/${prod.id}`} style={{position:'absolute',inset:0}} aria-label={`View ${prod.name} details`} />
+                </>
+              )}
             </div>
           ))
         )}
