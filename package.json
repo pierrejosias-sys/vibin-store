@@ -9,6 +9,8 @@
     "generate-tags": "node scripts/generate-tags.mjs"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.2",
     "@stripe/stripe-js": "^9.3.1",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.105.1",
@@ -16,7 +18,8 @@
     "next": "^16.2.4",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "stripe": "^22.1.0"
+    "stripe": "^22.1.0",
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "qrcode": "^1.5.4",

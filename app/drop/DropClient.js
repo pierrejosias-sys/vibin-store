@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import supabase from '../lib/supabase-public'
 import { useCart } from '../lib/cart-context'
 import { SIZES } from '../lib/drops'
+import DropHero from './DropHero'
 
 const S = {
   page: { background: '#0a0a0a', color: '#f5f5f5', minHeight: '100vh', padding: '64px 20px', fontFamily: 'inherit' },
@@ -139,10 +140,14 @@ export default function DropClient({ drop, released: releasedAtRender, serverNow
   }, [countdown?.done, released, router])
 
   return (
-    <main style={S.page}>
-      <div style={S.wrap}>
+    <main style={{ ...S.page, paddingTop: 0, paddingLeft: 0, paddingRight: 0 }}>
+      <DropHero piecesPerStyle={drop.piecesPerStyle}>
+        <div style={{ marginBottom: 20 }}>
+          <a href="#styles" className="drop-hero-pill">View styles</a>
+          <a href="/lookbook" className="drop-hero-pill">Lookbook</a>
+        </div>
         <div style={S.eyebrow}>Vibin Apparel · SS26</div>
-        <h1 style={S.h1}>{drop.name}</h1>
+        <h1 style={{ ...S.h1, fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 'clamp(44px, 9vw, 112px)', letterSpacing: -1, color: '#f3ead7' }}>{drop.name}</h1>
         <p style={{ maxWidth: 640, opacity: 0.8 }}>{drop.story}</p>
         <p style={{ opacity: 0.6, fontSize: 14 }}>Every piece is numbered 1–{drop.piecesPerStyle} with a scannable authenticity tag.</p>
 
@@ -163,12 +168,15 @@ export default function DropClient({ drop, released: releasedAtRender, serverNow
             <Waitlist dropId={drop.id} />
           </section>
         )}
+        <div className="drop-hero-hint" aria-hidden="true">Drag the cube ↻</div>
+      </DropHero>
+      <div style={{ ...S.wrap, padding: '0 20px' }}>
 
         {released && !drop.inventoryAvailable && (
           <p style={{ marginTop: 24, color: '#fc6' }}>Live inventory is temporarily unavailable — checkout will confirm availability.</p>
         )}
 
-        <div style={S.grid}>
+        <div id="styles" style={S.grid}>
           {drop.styles.map(style => (
             <StyleCard key={style.code} drop={drop} style={style} released={released} />
           ))}
