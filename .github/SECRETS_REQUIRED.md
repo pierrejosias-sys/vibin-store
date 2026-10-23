@@ -31,13 +31,10 @@ No additional secrets required if using `peaceiris/actions-gh-pages` - it uses t
 
 ---
 
-## EMAIL / MAILCHIMP
+## EMAIL / BREVO (Vercel env, not GitHub)
 
-- **MAILCHIMP_API_KEY** → Your Mailchimp API key  
-  Get it from: Mailchimp → Account → Extras → API keys
-  
-- **MAILCHIMP_AUDIENCE_ID** → Your Mailchimp audience/list ID  
-  Get it from: Mailchimp → Audience → Settings → Audience ID
+Every sign-up form posts to `/api/waitlist`, and opt-out goes to `/api/waitlist/unsubscribe`. Mailchimp has been removed.
+- **BREVO_API_KEY**, **BREVO_WAITLIST_LIST_ID**, **BREVO_SENDER_EMAIL**: see docs/brevo-setup.md
 
 ---
 
@@ -82,7 +79,7 @@ After adding secrets, verify they're working by checking:
 
 Rotate these secrets every 90 days:
 - Netlify/Vercel tokens
-- Mailchimp API key
+- Brevo API key
 - Stripe keys
 
 ---

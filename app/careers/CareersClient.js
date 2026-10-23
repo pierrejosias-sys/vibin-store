@@ -230,9 +230,9 @@ export default function CareersPage() {
         <footer>
         <div className="foot-logo">VIBIN</div>
         <div className="foot-social">
-          <a href="#">Instagram</a>
-          <a href="#">TikTok</a>
-          <a href="#">Twitter / X</a>
+          <a href="https://instagram.com/vibinapparel" target="_blank" rel="noopener noreferrer">Instagram</a>
+          <a href="https://tiktok.com/@vibinapparel" target="_blank" rel="noopener noreferrer">TikTok</a>
+          <a href="https://twitter.com/vibinapparel" target="_blank" rel="noopener noreferrer">Twitter / X</a>
         </div>
         <div className="foot-tag">© 2026 Vibin Apparel · Jacksonville, FL · A subsidiary of HVD Holdings</div>
       </footer>

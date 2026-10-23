@@ -96,7 +96,7 @@ function buildEmailHtml(type, data = {}) {
     support_resolved: () => base(`
       <p>Your support request has been resolved.</p>
       ${data.resolution ? `<p>${data.resolution}</p>` : ''}
-      <a href="https://vibinapparel.com/support" class="btn">Contact Us Again →</a>
+      <a href="https://vibinapparel.com/contact" class="btn">Contact Us Again →</a>
     `),
   }
 

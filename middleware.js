@@ -26,6 +26,10 @@ export async function middleware(request) {
   const adminRoutes = ['/admin']
   const ambassadorRoutes = ['/ambassador']
 
+  // Public ambassador hub: /ambassador (program page; the client shows the dashboard only to approved
+  // ambassadors, data is RLS-scoped), /ambassador/apply and /ambassador/login must be reachable logged out.
+  const publicRoutes = ['/ambassador', '/ambassador/apply', '/ambassador/login']
+  if (publicRoutes.includes(pathname.replace(/\/$/, '') || '/')) return NextResponse.next()
   const isProtected = protectedRoutes.some(r => pathname.startsWith(r))
   if (!isProtected) return NextResponse.next()
 
