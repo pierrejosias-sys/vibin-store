@@ -2,12 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { createBrowserClient } from '@supabase/ssr'
-
-const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
 
 export default function AmbassadorApply() {
   const [form, setForm] = useState({ name: '', email: '', instagram: '', tiktok: '', why: '', audience: '' })
@@ -25,41 +19,26 @@ export default function AmbassadorApply() {
     setError('')
 
     try {
-      // Check for duplicate application
-      const { data: existing } = await supabase
-        .from('ambassadors')
-        .select('id, status')
-        .eq('email', form.email)
-        .single()
-
-      if (existing) {
-        if (existing.status === 'pending') {
-          setError('An application with this email is already under review.')
-        } else if (existing.status === 'approved') {
-          setError('This email is already an approved ambassador. Please log in.')
-        } else {
-          setError('A previous application from this email was declined. Contact ambassador@vibinapparel.com.')
-        }
+      // Duplicate check + insert run on the server (service role); the browser can't read this table.
+      const check = await fetch('/api/ambassador/check-email', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: form.email }),
+      }).then(r => r.json())
+      if (check.exists) {
+        setError('An application with this email already exists. If you were approved, log in; questions: ambassador@vibinapparel.com.')
         setLoading(false)
         return
       }
 
-      const { error: insertError } = await supabase
-        .from('ambassadors')
-        .insert({
-          name: form.name,
-          email: form.email,
-          instagram_handle: form.instagram,
-          tiktok_handle: form.tiktok,
-          audience_size: form.audience,
-          why: form.why,
-          code: '',
-          status: 'pending',
-          commission_rate: 15,
-          created_at: new Date().toISOString()
-        })
-
-      if (insertError) throw insertError
+      const res = await fetch('/api/ambassador/apply', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form),
+      })
+      const result = await res.json().catch(() => ({}))
+      if (res.status === 409 || result.exists) {
+        setError('An application with this email already exists. If you were approved, log in; questions: ambassador@vibinapparel.com.')
+        setLoading(false)
+        return
+      }
+      if (!res.ok) throw new Error(result.error || 'Apply failed')
 
       setSubmitted(true)
     } catch (err) {
