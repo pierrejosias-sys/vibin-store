@@ -5,6 +5,7 @@ import {
   resolveDropItems, claimDropPieces, releasePieces,
   pieceIdsToMetadata,
 } from '../../lib/pieces'
+import { resolveCatalogItems, sanitizeItem } from '../../lib/pricing'
 
 // Clients are created per request so the build doesn't need secrets
 // (preview environments may not have Stripe/Supabase keys configured).
@@ -21,11 +22,16 @@ export async function POST(request) {
   let pieceIds = []
   try {
     const body = await request.json()
-    const { items, email, ambassadorCode, userId } = body
+    const { email, ambassadorCode, userId } = body
 
-    if (!Array.isArray(items) || items.length === 0) {
+    if (!Array.isArray(body.items) || body.items.length === 0 || body.items.length > 50) {
       return Response.json({ error: 'Your cart is empty.' }, { status: 400 })
     }
+    // Client prices/names are discarded; resolve*Items() fill them from the DB.
+    const items = body.items.map(sanitizeItem)
+
+    const { error: catalogError, status: catalogStatus } = await resolveCatalogItems(supabase, items)
+    if (catalogError) return Response.json({ error: catalogError }, { status: catalogStatus || 400 })
 
     // Numbered drop items: validate, price server-side, and hold pieces before payment.
     const { dropItems, error: dropError } = await resolveDropItems(supabase, items)
