@@ -6,32 +6,8 @@ import Link from 'next/link'
 import { supabase } from '../lib/supabase'
 import ComingSoonSignup from '../components/ComingSoonSignup'
 import { useCart } from '../lib/cart-context'
+import { matchesFilter } from '../lib/shop-filter.mjs'
 
-
-// Fix #13: expanded CATEGORY_MAP to match all product category strings including Cargo Pant
-const CATEGORY_MAP = {
-  tees: 'Tee',
-  hoodies: 'Hoodie',
-  crewnecks: 'Sweatshirt',
-  accessories: 'Headwear',
-  bottoms: 'Bottom',
-  pants: 'Pant',
-  cargo: 'Cargo',
-}
-
-// Fix #13: bottoms filter now catches both 'Bottom' AND 'Pant' (Cargo Pant, Sweatpant, etc.)
-function matchesFilter(product, filter) {
-  if (filter === 'all') return true
-  const cat = product.category?.toLowerCase() || ''
-  if (filter === 'bottoms') {
-    return cat.includes('bottom') || cat.includes('pant') || cat.includes('short') || cat.includes('cargo')
-  }
-  if (filter === 'accessories') {
-    return cat.includes('headwear') || cat.includes('cap') || cat.includes('beanie') || cat.includes('accessory')
-  }
-  const key = (CATEGORY_MAP[filter] || filter).toLowerCase()
-  return cat.includes(key)
-}
 
 function ShopContent() {
   const searchParams = useSearchParams()

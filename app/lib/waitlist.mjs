@@ -146,3 +146,11 @@ export async function maybeSendLinkEmail(supabase, row, { now = Date.now(), env 
   }
   return res
 }
+
+/** Newsletter opt-out: consent off in waitlist_signups (row kept so the early-access link still works). */
+export async function unsubscribeSignup(supabase, email) {
+  const { error } = await supabase.from('waitlist_signups')
+    .update({ consent_email: false, consent_at: null, updated_at: new Date().toISOString() })
+    .ilike('email', likeExact(email))
+  if (error) throw new Error(error.message)
+}
