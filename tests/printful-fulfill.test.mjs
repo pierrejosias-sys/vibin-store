@@ -46,7 +46,7 @@ function setup(row) {
 }
 
 test('creates one draft Printful order with only POD lines; retries do not duplicate', async () => {
-  const { calls, db, client } = setup({ id: 42, items: [{ id: 1, size: 'M', qty: 1, price: 48 }, { id: 'lanyard-001', qty: 1 }], printful_order_id: null, fulfillment_status: null, printful_claimed_at: null })
+  const { calls, db, client } = setup({ id: 42, items: [{ id: 1, size: 'M', qty: 1, price: 85 }, { id: 'lanyard-001', qty: 1 }], printful_order_id: null, fulfillment_status: null, printful_claimed_at: null })
   const r1 = await fulfillWithPrintful(client, session)
   assert.equal(r1.printfulOrderId, 9001)
   assert.equal(db.row.printful_order_id, 9001)
