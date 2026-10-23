@@ -141,10 +141,10 @@ export default function ProductPage() {
         {/* GALLERY */}
         <div className="gallery">
           {/* Main image */}
-          <div className="main-img" style={{background:'#111',borderRadius:'16px',overflow:'hidden',aspectRatio:'1/1',display:'flex',alignItems:'center',justifyContent:'center',position:'relative'}}>
-            {product.image_url ? (
+          <div className="main-img" style={{background:'#111',borderRadius:'16px',overflow:'hidden',aspectRatio: heroImage(product) ? '3/4' : '1/1',display:'flex',alignItems:'center',justifyContent:'center',position:'relative'}}>
+            {(heroImage(product) || product.image_url) ? (
               <img
-                src={product.image_url}
+                src={heroImage(product) || product.image_url}
                 alt={product.name}
                 style={{width:'100%',height:'100%',objectFit:'cover'}}
               />
@@ -284,4 +284,10 @@ export default function ProductPage() {
       </footer>
     </>
   )
+}
+
+// 3:4 hero from the images JSONB ({url, kind:'hero'}); image_url stays the square (grid/cart).
+function heroImage(product) {
+  const list = Array.isArray(product?.images) ? product.images : []
+  return list.find(i => i && i.kind === 'hero' && i.url)?.url || null
 }
