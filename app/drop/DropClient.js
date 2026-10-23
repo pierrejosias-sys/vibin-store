@@ -7,11 +7,13 @@ import { useRouter } from 'next/navigation'
 async function joinWaitlist(payload) {
   try {
     const res = await fetch('/api/waitlist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-    return res.ok ? 'done' : 'error'
-  } catch { return 'error' }
+    if (!res.ok) return { status: 'error' }
+    return { status: 'done', result: await res.json() }
+  } catch { return { status: 'error' } }
 }
 import { useCart } from '../lib/cart-context'
-import { SIZES } from '../lib/drops'
+import WaitlistThanks from '../components/WaitlistThanks'
+import { sizesForStyle } from '../lib/drops'
 import { countdownTarget, formatET } from '../lib/drop-window.mjs'
 
 const S = {
@@ -50,15 +52,17 @@ function useCountdown(releaseAt, serverNow) {
 function Waitlist({ dropId }) {
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState('idle')
+  const [result, setResult] = useState(null)
 
   async function submit(e) {
     e.preventDefault()
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setStatus('invalid'); return }
     setStatus('loading')
-    setStatus(await joinWaitlist({ email, source: `${dropId}-waitlist` }))
+    const r = await joinWaitlist({ email, source: `${dropId}-waitlist` })
+    setResult(r.result); setStatus(r.status)
   }
 
-  if (status === 'done') return <p style={{ marginTop: 24 }}>You&apos;re on the list. We&apos;ll email you the second it drops.</p>
+  if (status === 'done') return <div style={{ marginTop: 24 }}><WaitlistThanks result={result} /></div>
   return (
     <form onSubmit={submit} style={{ marginTop: 32, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
       <input style={S.input} type="email" placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} aria-label="Email" required />
@@ -72,24 +76,72 @@ function Waitlist({ dropId }) {
 function ComingSoonCard({ drop, style }) {
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState('idle')
+  const [result, setResult] = useState(null)
   async function submit(e) {
     e.preventDefault()
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setStatus('invalid'); return }
     setStatus('loading')
-    setStatus(await joinWaitlist({ email, source: `coming-soon-${drop.id}`, style: style.code }))
+    const r = await joinWaitlist({ email, source: `coming-soon-${drop.id}`, style: style.code })
+    setResult(r.result); setStatus(r.status)
   }
   return (
     <div style={S.card}>
       <div style={S.eyebrow}>{drop.id.toUpperCase()}-{style.code.toUpperCase()}</div>
       <h3 style={{ margin: '8px 0' }}>{style.name}</h3>
       <div style={{ margin: '12px 0', fontSize: 14 }}><strong>Coming soon</strong> · not available to order yet</div>
-      {status === 'done' ? <p style={{ fontSize: 14 }}>✓ You&apos;re on the list — we&apos;ll email you when it&apos;s ready.</p> : (
+      {status === 'done' ? <WaitlistThanks result={result} /> : (
         <form onSubmit={submit} style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <input style={S.input} type="email" placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} aria-label={`Email for ${style.name} waitlist`} required />
           <button style={S.btn} disabled={status === 'loading'}>{status === 'loading' ? 'Joining…' : 'Join the waitlist'}</button>
           {status === 'invalid' && <p style={{ width: '100%', color: '#f66' }}>Enter a valid email.</p>}
           {status === 'error' && <p style={{ width: '100%', color: '#f66' }}>Something went wrong. Try again.</p>}
         </form>
+      )}
+    </div>
+  )
+}
+
+function CatalogCard({ drop, item, released }) {
+  const { updateCart } = useCart() || {}
+  const [size, setSize] = useState(item.sizes.length === 1 ? item.sizes[0] : null)
+  const [added, setAdded] = useState(false)
+  const canBuy = released && item.inStock && size
+
+  function addToCart() {
+    if (!canBuy) return
+    const cart = JSON.parse(localStorage.getItem('vibin_cart') || '[]')
+    const existing = cart.find(i => String(i.id) === String(item.productId) && i.size === size)
+    if (existing) existing.qty += 1
+    else cart.push({ id: item.productId, slug: item.slug, name: item.name, price: item.price, color: item.color || 'Black', size, qty: 1, image_url: null, preorder: drop.id })
+    localStorage.setItem('vibin_cart', JSON.stringify(cart))
+    updateCart?.()
+    setAdded(true)
+    setTimeout(() => setAdded(false), 2000)
+  }
+
+  return (
+    <div style={S.card}>
+      <div style={S.eyebrow}>{drop.id.toUpperCase()} · Made in-house</div>
+      <h3 style={{ margin: '8px 0' }}>{item.name}</h3>
+      <div style={{ opacity: 0.8 }}>${item.price}</div>
+      {drop.shipsBy && <div style={{ fontSize: 13, opacity: 0.8, marginTop: 4 }}>Pre-order · Ships by {drop.shipsBy}</div>}
+      <div style={{ margin: '12px 0', fontSize: 14 }}>
+        {!released && <span>🔒 {drop.phase === 'closed' ? 'Pre-order closed' : `Pre-order opens ${formatET(drop.releaseAt)}`}</span>}
+        {released && !item.inStock && <strong style={{ color: '#f66' }}>SOLD OUT</strong>}
+      </div>
+      {released && item.inStock && (
+        <>
+          {item.sizes.length > 1 ? (
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+              {item.sizes.map(sz => (
+                <button key={sz} onClick={() => setSize(sz)} style={{ ...S.size, ...(size === sz ? { background: '#f5f5f5', color: '#0a0a0a' } : {}) }}>{sz}</button>
+              ))}
+            </div>
+          ) : <div style={{ fontSize: 13, opacity: 0.7, marginBottom: 12 }}>One size</div>}
+          <button style={{ ...S.btn, ...(canBuy ? {} : S.btnOff) }} disabled={!canBuy} onClick={addToCart}>
+            {added ? 'Added ✓' : size ? 'Add to cart' : 'Pick a size'}
+          </button>
+        </>
       )}
     </div>
   )
@@ -120,6 +172,7 @@ function StyleCard({ drop, style, released }) {
     <div style={{ ...S.card, opacity: soldOut ? 0.5 : 1 }}>
       <div style={S.eyebrow}>{drop.id.toUpperCase()}-{style.code.toUpperCase()}</div>
       <h3 style={{ margin: '8px 0' }}>{style.name}</h3>
+      {style.description && <p style={{ fontSize: 14, opacity: 0.8, margin: '0 0 8px' }}>{style.description}</p>}
       <div style={{ opacity: 0.8 }}>{style.price != null ? `$${style.price}` : 'Price TBA'}</div>
       {drop.shipsBy && <div style={{ fontSize: 13, opacity: 0.8, marginTop: 4 }}>Pre-order · Ships by {drop.shipsBy}</div>}
       <div style={{ margin: '12px 0', fontSize: 14 }}>
@@ -130,7 +183,7 @@ function StyleCard({ drop, style, released }) {
       {released && !soldOut && (
         <>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
-            {SIZES.map(sz => {
+            {sizesForStyle(style.code).map(sz => {
               const left = sizeLeft(sz)
               const out = left === 0
               return (
@@ -184,7 +237,7 @@ export default function DropClient({ drop: dropProp, phase, earlyAccess, serverN
         <div style={S.eyebrow}>Vibin Apparel · SS26</div>
         <h1 style={S.h1}>{drop.name}</h1>
         <p style={{ maxWidth: 640, opacity: 0.8 }}>{drop.story}</p>
-        <p style={{ opacity: 0.6, fontSize: 14 }}>Every piece is numbered 1–{drop.piecesPerStyle} with a scannable authenticity tag.</p>
+        <p style={{ opacity: 0.6, fontSize: 14 }}>Every piece is numbered 1–{drop.piecesPerStyle}.</p>
         {drop.shipsBy && <p style={{ fontSize: 16, fontWeight: 700 }}>Numbered pre-order · Ships by {drop.shipsBy}</p>}
 
         {(phase === 'upcoming' || phase === 'tba') && (
@@ -225,10 +278,13 @@ export default function DropClient({ drop: dropProp, phase, earlyAccess, serverN
         )}
 
         <div style={S.grid}>
-          {drop.styles.map(style => (
-            style.availability === 'coming-soon'
-              ? <ComingSoonCard key={style.code} drop={drop} style={style} />
-              : <StyleCard key={style.code} drop={drop} style={style} released={released} />
+          {(drop.catalog || []).filter(c => c.slug === 'vibin-classic-tee').map(c => <CatalogCard key={c.slug} drop={drop} item={c} released={released} />)}
+          {drop.styles.filter(s => s.availability !== 'coming-soon').map(style => (
+            <StyleCard key={style.code} drop={drop} style={style} released={released} />
+          ))}
+          {(drop.catalog || []).filter(c => c.slug !== 'vibin-classic-tee').map(c => <CatalogCard key={c.slug} drop={drop} item={c} released={released} />)}
+          {drop.styles.filter(s => s.availability === 'coming-soon').map(style => (
+            <ComingSoonCard key={style.code} drop={drop} style={style} />
           ))}
         </div>
       </div>

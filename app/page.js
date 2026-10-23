@@ -45,7 +45,7 @@ export default function HomePage() {
       setProducts([
         { id: 1, name: 'Foundation Tee — Black', price: 85, category: 'Tee · Heavyweight', color: 'Black', image_color: 'ink' },
         { id: 2, name: 'Move Different Tee — Cream', slug: 'move-different-tee', comingSoon: true, price: 48, category: 'Tee · Heavyweight', color: 'Cream', image_color: 'cream2' },
-        { id: 3, name: 'Vol 01 Hoodie — Coral', slug: 'vol-01-hoodie', comingSoon: true, price: 195, category: 'Hoodie · Heavyweight Fleece', color: 'Coral', image_color: 'coral' },
+        { id: 3, name: 'VOL 01 Hoodie', slug: 'vol-01-hoodie', comingSoon: true, price: 195, category: 'Hoodie · Lane Seven Heavyweight · DTF Print', color: 'Black', image_color: 'ink' },
         { id: 4, name: 'Mark Hoodie — Onyx', price: 98, category: 'Hoodie · Heavyweight Fleece', color: 'Onyx', image_color: 'ink2' },
         { id: 5, name: 'Different Crewneck — Violet', slug: 'different-crewneck', comingSoon: true, price: 78, category: 'Sweatshirt · Cotton Blend', color: 'Violet', image_color: 'violet' },
         { id: 6, name: 'Louder Cap — Acid', price: 38, category: 'Headwear · 6-Panel', color: 'Acid', image_color: 'acid' },
@@ -331,8 +331,24 @@ export default function HomePage() {
                 body: JSON.stringify({ email, source: 'homepage-newsletter' }),
               });
               if (!res.ok) throw new Error('subscribe failed');
+              const data = await res.json();
               btn.textContent = '✓ Subscribed';
-              form.insertAdjacentHTML('afterend', '<div style="background:#0a0a0a;color:#f6f1e7;padding:16px;margin-top:16px;font-family:Manrope,sans-serif;">You\'re on the list. Check your email for your 15% off code. ✦</div>');
+              // Private link is only returned for NEW sign-ups; existing emails get it by email.
+              const box = document.createElement('div');
+              box.style.cssText = 'background:#0a0a0a;color:#f6f1e7;padding:16px;margin-top:16px;font-family:Manrope,sans-serif;';
+              if (data.created && data.earlyAccessLink) {
+                const p1 = document.createElement('p'); p1.textContent = "You're on the list. Your private Drop 01 early-access link:";
+                const inp = document.createElement('input'); inp.readOnly = true; inp.value = data.earlyAccessLink;
+                inp.style.cssText = 'width:100%;max-width:520px;padding:8px;margin:8px 0;background:transparent;color:#f6f1e7;border:1px solid #f6f1e7;';
+                const b = document.createElement('button'); b.type = 'button'; b.textContent = 'Copy link';
+                b.style.cssText = 'padding:8px 12px;margin-left:8px;font-weight:700;cursor:pointer;';
+                b.onclick = async () => { try { await navigator.clipboard.writeText(data.earlyAccessLink); b.textContent = 'Copied ✓'; } catch {} };
+                const p2 = document.createElement('p'); p2.textContent = 'It works Thu Nov 12, 6:00–7:00 PM ET for one checkout. Keep it private.';
+                box.append(p1, inp, b, p2);
+              } else {
+                box.textContent = "You're already on the list. Your link is in your email.";
+              }
+              form.after(box);
             } catch (err) {
               btn.textContent = 'Subscribe';
               btn.disabled = false;

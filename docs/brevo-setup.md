@@ -5,7 +5,8 @@ After saving, the server syncs each sign-up to a Brevo list.
 
 Brevo is optional. If its env vars are unset, sign-ups still save, the sync is skipped quietly, and `synced_at` stays null until the backfill script runs.
 
-Brevo is used only to email the waitlist. Order receipts stay in Stripe, and this integration sends no transactional email.
+Brevo is used only for the waitlist. Order receipts stay in Stripe.
+The site sends exactly one kind of transactional email: the "here's your link" resend described in section 4b.
 
 ## 1. Create the attributes and the list
 1. Go to **Contacts → Settings → Contact attributes**. Create two **Text** attributes named exactly
@@ -23,6 +24,7 @@ Add these to project `vibin-store`, for Production and Preview:
 |---|---|
 | `BREVO_API_KEY` | the API key (mark it **Sensitive**) |
 | `BREVO_WAITLIST_LIST_ID` | the numeric list ID |
+| `BREVO_SENDER_EMAIL` | `hello@vibinapparel.com` (the sender must be verified in Brevo under **Senders, Domains & Dedicated IPs**, ideally with the domain authenticated) |
 
 Redeploy after adding them.
 
@@ -39,6 +41,21 @@ Redeploy after adding them.
    ```
 3. On success it sets `synced_to='brevo'` and `synced_at`.
    On failure it stores `sync_error`, and the sign-up itself still succeeds.
+
+## 4b. Re-signup: link by email (never on the page)
+- **New sign-up:** the thank-you state shows the private link with a copy button. That's safe because the person just created it.
+- **Email already on the list:** the page only says "You're already on the list. Your link is in your email." It never shows the link, because anyone can type someone else's email.
+- **The resend:** the server sends **one** email to that address via `POST https://api.brevo.com/v3/smtp/email` (header `api-key`, sender `BREVO_SENDER_EMAIL`).
+  - Rate limit: at most once per email per 24h, tracked in `last_link_email_at` and claimed atomically.
+  - Never bulk: one recipient per request.
+  - Skipped quietly when `BREVO_API_KEY` is unset.
+
+## 4c. One checkout per link
+- **Lock:** during 6–7 PM ET, `/api/checkout` atomically locks the link (`locked_at`, `locked_session_id`). The lock only succeeds if the link is unused and either unlocked or locked more than ~35 min ago (the Stripe session lives 30 min).
+- **One attempt at a time:** a second simultaneous checkout with the same link is rejected.
+- **`checkout.session.expired`:** releases the lock.
+- **`checkout.session.completed`:** marks the link used (`token_used_at`) and clears the lock.
+- **Webhook events:** add `checkout.session.expired` to the Stripe webhook.
 
 ## 5. Backfill / retry
 ```

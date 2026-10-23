@@ -30,7 +30,7 @@ const session = {
 
 function setup(row) {
   process.env.PRINTFUL_API_TOKEN = 'test'
-  process.env.PRINTFUL_VARIANT_MAP = JSON.stringify({ '1:M': 102 })
+  process.env.PRINTFUL_VARIANT_MAP = JSON.stringify({ 'hd:M': 102 })
   delete process.env.PRINTFUL_CONFIRM
   const calls = []
   let existing = null
@@ -46,7 +46,7 @@ function setup(row) {
 }
 
 test('creates one draft Printful order with only POD lines; retries do not duplicate', async () => {
-  const { calls, db, client } = setup({ id: 42, items: [{ id: 1, size: 'M', qty: 1, price: 85 }, { id: 'lanyard-001', qty: 1 }], printful_order_id: null, fulfillment_status: null, printful_claimed_at: null })
+  const { calls, db, client } = setup({ id: 42, items: [{ id: 'd01-hd', drop: 'd01', style: 'hd', size: 'M', qty: 1, price: 195 }, { id: 1, size: 'M', qty: 1, price: 85 }], printful_order_id: null, fulfillment_status: null, printful_claimed_at: null })
   const r1 = await fulfillWithPrintful(client, session)
   assert.equal(r1.printfulOrderId, 9001)
   assert.equal(db.row.printful_order_id, 9001)
@@ -63,7 +63,7 @@ test('creates one draft Printful order with only POD lines; retries do not dupli
 })
 
 test('recovers existing Printful order instead of re-creating after a failed save', async () => {
-  const { calls, db, client } = setup({ id: 42, items: [{ id: 1, size: 'M', qty: 1 }], printful_order_id: null, fulfillment_status: 'printful_failed', printful_claimed_at: null })
+  const { calls, db, client } = setup({ id: 42, items: [{ id: 'd01-hd', drop: 'd01', style: 'hd', size: 'M', qty: 1 }], printful_order_id: null, fulfillment_status: 'printful_failed', printful_claimed_at: null })
   await fulfillWithPrintful(client, session) // creates
   db.row.printful_order_id = null; db.row.fulfillment_status = 'printful_failed' // simulate lost write
   await fulfillWithPrintful(client, session)
@@ -72,7 +72,7 @@ test('recovers existing Printful order instead of re-creating after a failed sav
 })
 
 test('PRINTFUL_CONFIRM=true auto-confirms; unpaid sessions are ignored', async () => {
-  const { calls, client } = setup({ id: 42, items: [{ id: 1, size: 'M', qty: 1 }], printful_order_id: null, fulfillment_status: null, printful_claimed_at: null })
+  const { calls, client } = setup({ id: 42, items: [{ id: 'd01-hd', drop: 'd01', style: 'hd', size: 'M', qty: 1 }], printful_order_id: null, fulfillment_status: null, printful_claimed_at: null })
   assert.ok((await fulfillWithPrintful(client, { ...session, payment_status: 'unpaid' })).skipped)
   process.env.PRINTFUL_CONFIRM = 'true'
   await fulfillWithPrintful(client, session)
@@ -80,9 +80,27 @@ test('PRINTFUL_CONFIRM=true auto-confirms; unpaid sessions are ignored', async (
 })
 
 test('unmapped size flags needs_mapping and sends nothing', async () => {
-  const { calls, db, client } = setup({ id: 42, items: [{ id: 1, size: 'S', qty: 1 }], printful_order_id: null, fulfillment_status: null, printful_claimed_at: null })
-  process.env.PRINTFUL_VARIANT_MAP = JSON.stringify({ '1:S': 0 })
+  const { calls, db, client } = setup({ id: 42, items: [{ id: 'd01-hd', drop: 'd01', style: 'hd', size: 'S', qty: 1 }], printful_order_id: null, fulfillment_status: null, printful_claimed_at: null })
+  process.env.PRINTFUL_VARIANT_MAP = JSON.stringify({ 'hd:S': 0 })
   await fulfillWithPrintful(client, session)
   assert.equal(db.row.fulfillment_status, 'printful_needs_mapping')
   assert.equal(calls.length, 0)
+})
+
+test('no PRINTFUL_API_TOKEN: nothing is sent and the row is untouched', async () => {
+  const { calls, db, client } = setup({ id: 42, items: [{ id: 'd01-hd', drop: 'd01', style: 'hd', size: 'M', qty: 1 }], printful_order_id: null, fulfillment_status: null, printful_claimed_at: null })
+  delete process.env.PRINTFUL_API_TOKEN
+  const r = await fulfillWithPrintful(client, session)
+  assert.equal(r.skipped, 'not configured')
+  assert.equal(calls.length, 0)
+  assert.equal(db.row.fulfillment_status, null)
+})
+
+test('default map (no PRINTFUL_VARIANT_MAP) sends LS17001 catalog variant + front_dtf file', async () => {
+  const { calls, client } = setup({ id: 42, items: [{ id: 'd01-hd', drop: 'd01', style: 'hd', size: '2X', qty: 1, price: 195 }], printful_order_id: null, fulfillment_status: null, printful_claimed_at: null })
+  delete process.env.PRINTFUL_VARIANT_MAP
+  await fulfillWithPrintful(client, session)
+  const item = calls.find(c => c.method === 'POST').body.items[0]
+  assert.equal(item.variant_id, 48538)
+  assert.equal(item.files[0].type, 'front_dtf')
 })

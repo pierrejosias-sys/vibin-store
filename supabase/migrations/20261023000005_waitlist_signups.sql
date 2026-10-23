@@ -11,6 +11,9 @@ CREATE TABLE IF NOT EXISTS public.waitlist_signups (
   early_access_token TEXT NOT NULL UNIQUE CHECK (early_access_token ~ '^[A-Za-z0-9_-]{20,64}$'),
   token_used_at      TIMESTAMPTZ,                     -- set by the Stripe webhook; token = one early checkout
   token_used_session_id TEXT,                         -- Stripe Checkout Session that used it
+  locked_at          TIMESTAMPTZ,                     -- checkout in progress (lock; stale after ~35 min)
+  locked_session_id  TEXT,                            -- Stripe session holding the lock
+  last_link_email_at TIMESTAMPTZ,                     -- re-signup 'here's your link' email, max 1 per 24h
   synced_to          TEXT,                            -- e.g. 'brevo'
   synced_at          TIMESTAMPTZ,                     -- set only on a successful ESP sync
   sync_error         TEXT,

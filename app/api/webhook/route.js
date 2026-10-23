@@ -1,7 +1,7 @@
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { pieceIdsFromMetadata, releasePieces } from '../../lib/pieces'
-import { markEarlyAccessTokenUsed } from '../../lib/waitlist.mjs'
+import { markEarlyAccessTokenUsed, releaseEarlyAccessLock } from '../../lib/waitlist.mjs'
 import { fulfillWithPrintful } from '../../lib/printful'
 
 export const runtime = 'nodejs'
@@ -125,6 +125,10 @@ export async function POST(request) {
       if (pieceIds.length) {
         const released = await releasePieces(supabase, pieceIds, session.id)
         console.log(`Session ${session.id} expired — released ${released} piece(s)`)
+      }
+      // Waitlist early access: free the private link for another attempt.
+      if (session.metadata?.earlyAccessToken) {
+        await releaseEarlyAccessLock(supabase, session.metadata.earlyAccessToken, session.id)
       }
       if (session.metadata?.orderId) {
         const { error: expireError } = await supabase.from('orders').update({ status: 'expired' })

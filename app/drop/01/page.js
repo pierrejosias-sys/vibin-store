@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic'
 
 export const metadata = buildMeta({
   title: 'Drop 01: The Foundation — Vibin Apparel',
-  description: 'Drop 01: The Foundation. Numbered pre-order Thu Nov 12 – Sun Nov 15 (ET), ships by Dec 11–17. The VOL 01 Hoodie from Vibin Apparel, Jacksonville.',
+  description: 'Drop 01: The Foundation. Numbered pre-order Thu Nov 12 – Sun Nov 15 (ET), ships by Dec 11–17. The VOL 01 Hoodie: Lane Seven heavyweight, DTF print, no cords.',
   path: '/drop/01',
   image: '/og-drop01.jpg'
 })

@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { normalizeEmail } from '../../lib/early-access.mjs'
-import { upsertSignup, syncRow } from '../../lib/waitlist.mjs'
+import { upsertSignup, syncRow, signupResponse, maybeSendLinkEmail } from '../../lib/waitlist.mjs'
 
 const SOURCE_RE = /^[a-z0-9-]{1,40}$/
 const STYLE_RE = /^[a-z]{2,4}$/
@@ -21,10 +21,11 @@ export async function POST(request) {
   const supabase = createClient(url, key, { auth: { persistSession: false } })
 
   try {
-    const { row } = await upsertSignup(supabase, { email, firstName, source, style, consent })
-    await syncRow(supabase, row) // never throws; no-op without Brevo env
-    // The early-access link is emailed, never returned to the browser.
-    return Response.json({ ok: true })
+    const result = await upsertSignup(supabase, { email, firstName, source, style, consent })
+    await syncRow(supabase, result.row) // never throws; no-op without Brevo env
+    // Existing email: never reveal the link here; email it to that address instead (max 1/24h).
+    if (!result.created) await maybeSendLinkEmail(supabase, result.row)
+    return Response.json(signupResponse(result))
   } catch (err) {
     console.error('waitlist signup failed:', err.message)
     return Response.json({ error: 'Something went wrong. Try again.' }, { status: 500 })

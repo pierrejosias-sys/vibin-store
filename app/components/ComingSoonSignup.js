@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import WaitlistThanks from './WaitlistThanks'
 
 /**
  * "Coming soon" waitlist for items that aren't produced yet.
@@ -9,6 +10,7 @@ import { useState } from 'react'
 export default function ComingSoonSignup({ slug, name, dark = true }) {
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState('idle')
+  const [result, setResult] = useState(null)
 
   async function submit(e) {
     e.preventDefault()
@@ -20,6 +22,7 @@ export default function ComingSoonSignup({ slug, name, dark = true }) {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, source: `coming-soon-${String(slug).toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 28)}` }),
       })
+      if (res.ok) setResult(await res.json())
       setStatus(res.ok ? 'done' : 'error')
     } catch { setStatus('error') }
   }
@@ -31,7 +34,7 @@ export default function ComingSoonSignup({ slug, name, dark = true }) {
     <div onClick={stop} style={{ position: 'relative', zIndex: 2, padding: '10px 12px', background: dark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.9)', color: fg }}>
       <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Coming soon</div>
       {status === 'done' ? (
-        <div style={{ fontSize: 13 }}>✓ You&apos;re on the list — we&apos;ll email you when it drops.</div>
+        <WaitlistThanks result={result} dark={dark} />
       ) : (
         <form onSubmit={submit} style={{ display: 'flex', gap: 6 }}>
           <input
