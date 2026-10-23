@@ -2,8 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import supabase from '../lib/supabase-public'
+
+/** Server-side sign-up (dedupes by email, issues the private early-access link, syncs to the ESP). */
+async function joinWaitlist(payload) {
+  try {
+    const res = await fetch('/api/waitlist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+    if (!res.ok) return { status: 'error' }
+    return { status: 'done', result: await res.json() }
+  } catch { return { status: 'error' } }
+}
 import { useCart } from '../lib/cart-context'
+import WaitlistThanks from '../components/WaitlistThanks'
 import { sizesForStyle } from '../lib/drops'
 import { DROP_STYLE_IMAGES } from '../lib/drop-catalog.mjs'
 import { countdownTarget, formatET } from '../lib/drop-window.mjs'
@@ -44,23 +53,17 @@ function useCountdown(releaseAt, serverNow) {
 function Waitlist({ dropId }) {
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState('idle')
+  const [result, setResult] = useState(null)
 
   async function submit(e) {
     e.preventDefault()
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setStatus('invalid'); return }
     setStatus('loading')
-    const code = 'VIBE' + Math.random().toString(36).substring(2, 6).toUpperCase()
-    const { error } = await supabase.from('vibin_signups').insert({
-      email: email.trim().toLowerCase(),
-      coupon_code: code,
-      source: `${dropId}-waitlist`,
-      metadata: { page: '/drop/01', drop: dropId },
-    })
-    // 23505 = already on the list — treat as success
-    setStatus(!error || error.code === '23505' ? 'done' : 'error')
+    const r = await joinWaitlist({ email, source: `${dropId}-waitlist` })
+    setResult(r.result); setStatus(r.status)
   }
 
-  if (status === 'done') return <p style={{ marginTop: 24 }}>You&apos;re on the list. We&apos;ll email you the second it drops.</p>
+  if (status === 'done') return <div style={{ marginTop: 24 }}><WaitlistThanks result={result} /></div>
   return (
     <form onSubmit={submit} style={{ marginTop: 32, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
       <input style={S.input} type="email" placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} aria-label="Email" required />
@@ -74,17 +77,13 @@ function Waitlist({ dropId }) {
 function ComingSoonCard({ drop, style }) {
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState('idle')
+  const [result, setResult] = useState(null)
   async function submit(e) {
     e.preventDefault()
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setStatus('invalid'); return }
     setStatus('loading')
-    const { error } = await supabase.from('vibin_signups').insert({
-      email: email.trim().toLowerCase(),
-      coupon_code: 'VIBE' + Math.random().toString(36).substring(2, 6).toUpperCase(),
-      source: `coming-soon-${drop.id}-${style.code}`,
-      metadata: { page: '/drop/01', drop: drop.id, style: style.code, product: style.name },
-    })
-    setStatus(!error || error.code === '23505' ? 'done' : 'error')
+    const r = await joinWaitlist({ email, source: `coming-soon-${drop.id}`, style: style.code })
+    setResult(r.result); setStatus(r.status)
   }
   return (
     <div style={S.card}>
@@ -92,7 +91,7 @@ function ComingSoonCard({ drop, style }) {
       <div style={S.eyebrow}>{drop.id.toUpperCase()}-{style.code.toUpperCase()}</div>
       <h3 style={{ margin: '8px 0' }}>{style.name}</h3>
       <div style={{ margin: '12px 0', fontSize: 14 }}><strong>Coming soon</strong> · not available to order yet</div>
-      {status === 'done' ? <p style={{ fontSize: 14 }}>✓ You&apos;re on the list — we&apos;ll email you when it&apos;s ready.</p> : (
+      {status === 'done' ? <WaitlistThanks result={result} /> : (
         <form onSubmit={submit} style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <input style={S.input} type="email" placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} aria-label={`Email for ${style.name} waitlist`} required />
           <button style={S.btn} disabled={status === 'loading'}>{status === 'loading' ? 'Joining…' : 'Join the waitlist'}</button>
@@ -213,7 +212,7 @@ function sz_note(left, size) {
   return <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 10 }}>{left} left in {size}</div>
 }
 
-export default function DropClient({ drop: dropProp, phase, serverNow }) {
+export default function DropClient({ drop: dropProp, phase, earlyAccess, serverNow }) {
   const router = useRouter()
   const drop = { ...dropProp, phase }
   const released = phase === 'open'
@@ -251,6 +250,7 @@ export default function DropClient({ drop: dropProp, phase, serverNow }) {
               <>
                 <div style={{ fontSize: 18, marginBottom: 12 }}>Pre-order opens {formatET(drop.releaseAt)}{drop.closesAt ? ` · closes ${formatET(drop.closesAt)}` : ''}</div>
                 {clock}
+                {drop.earlyAccessAt && <p style={{ opacity: 0.8 }}>Waitlist members get a private link to pre-order 1 hour early, from {formatET(drop.earlyAccessAt)}. Join below.</p>}
               </>
             ) : (
               <div style={{ fontSize: 28, fontWeight: 800 }}>Release date: TBA</div>
@@ -262,6 +262,7 @@ export default function DropClient({ drop: dropProp, phase, serverNow }) {
         {phase === 'open' && (
           <section style={{ marginTop: 40 }}>
             <div style={{ fontSize: 18, marginBottom: 12 }}>
+              {earlyAccess && <div style={{ color: '#6f6', marginBottom: 6 }}>★ Waitlist early access — you&apos;re in before the public.</div>}
               <strong>Pre-order open</strong>{drop.closesAt ? `, closes in… (${formatET(drop.closesAt)})` : ''}
             </div>
             {drop.closesAt && clock}

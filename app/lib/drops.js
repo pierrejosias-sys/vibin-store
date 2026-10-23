@@ -41,6 +41,8 @@ export const DROPS = {
     // Opens Thu Nov 12, 2026 7:00 PM ET; closes Sun Nov 15, 2026 11:59 PM ET.
     releaseAt: '2026-11-13T00:00:00Z',
     closesAt: '2026-11-16T04:59:59Z',
+    // Private waitlist early access: Thu Nov 12, 2026 6:00 PM ET (1 hour before public open).
+    earlyAccessAt: '2026-11-12T23:00:00Z',
     shipsBy: 'Dec 11–17',
     story: 'Drop 01 is the first numbered Vibin Apparel run, limited to 50 pieces per style, designed in Jacksonville, FL.',
     careInfo: 'Machine wash cold inside out, hang dry, do not bleach, and do not iron the print.',

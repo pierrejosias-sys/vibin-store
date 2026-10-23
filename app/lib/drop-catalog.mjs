@@ -45,7 +45,7 @@ export function dropCatalogEntry(item) {
  * `drops` = [{ id, name, release_at, closes_at }]. Mutates matching items (preorder, shipsBy).
  * Returns { error, status } or { preorderItems }.
  */
-export function enforceDropCatalog(items, drops, { now = Date.now(), shipsBy = {} } = {}) {
+export function enforceDropCatalog(items, drops, { now = Date.now(), shipsBy = {}, earlyAccessGranted = false, earlyAccessAt = {} } = {}) {
   const preorderItems = []
   for (const item of items) {
     if (item.drop && item.style) continue // numbered drop pieces are handled by resolveDropItems
@@ -53,7 +53,10 @@ export function enforceDropCatalog(items, drops, { now = Date.now(), shipsBy = {
     if (!hit) continue
     const drop = drops.find(d => d.id === hit.dropId)
     if (!drop) return { error: 'Unknown drop.', status: 400 }
-    const phase = dropPhase(drop.release_at, drop.closes_at, now)
+    let phase = dropPhase(drop.release_at, drop.closes_at, now)
+    // Waitlist early-access hour: holders of a locked private link shop as if open.
+    const ea = earlyAccessAt[hit.dropId]
+    if (phase === 'upcoming' && earlyAccessGranted && ea && now >= new Date(ea).getTime()) phase = 'open'
     if (phase === 'tba' || phase === 'upcoming') return { error: `${hit.entry.name} is part of ${drop.name} — the pre-order has not opened yet.`, status: 409 }
     if (phase === 'closed') return { error: `${drop.name} pre-order is closed.`, status: 409 }
     if (!hit.entry.sizes.includes(String(item.size))) return { error: `Pick a size for ${hit.entry.name}.`, status: 400 }
