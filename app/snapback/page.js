@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { FREE_SHIPPING_LABEL } from '../lib/shipping'
 
 const COLORWAYS = [
   { name: 'Black / Teal', bg: '#0d0d0d', accent: '#01696f', brim: '#01696f', hex: '#0d0d0d' },
@@ -323,7 +324,7 @@ export default function SnapbackPage() {
       `}</style>
 
       {/* PROMO BAR */}
-      <div className="promo">✦ Drop 01 — Snapback Now Live · Free Shipping on Orders $75+ ✦</div>
+      <div className="promo">✦ Drop 01 — Snapback Now Live · Free Shipping on Orders {FREE_SHIPPING_LABEL}+ ✦</div>
 
       {/* NAV */}
       <nav>

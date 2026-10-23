@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { FREE_SHIPPING_LABEL } from '../lib/shipping'
 
 const COLORWAYS = [
   { name: 'Black / Teal',   strap: '#0d0d0d', text: '#01696f', hardware: '#8a8a8a', badge: '#01696f', badgeText: '#fff',   hex: '#0d0d0d' },
@@ -288,7 +289,7 @@ export default function LanyardPage() {
       `}</style>
 
       {/* PROMO */}
-      <div className="promo">✦ Drop 01 — Lanyard Now Live · Free Shipping on Orders $75+ ✦</div>
+      <div className="promo">✦ Drop 01 — Lanyard Now Live · Free Shipping on Orders {FREE_SHIPPING_LABEL}+ ✦</div>
 
       {/* NAV */}
       <nav>

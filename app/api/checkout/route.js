@@ -7,6 +7,7 @@ import {
 } from '../../lib/pieces'
 import { resolveCatalogItems, sanitizeItem } from '../../lib/pricing'
 import { getSessionUser } from '../../lib/admin-auth'
+import { shippingFor, FREE_SHIPPING_LABEL } from '../../lib/shipping'
 
 // Clients are created per request so the build doesn't need secrets
 // (preview environments may not have Stripe/Supabase keys configured).
@@ -81,9 +82,23 @@ export async function POST(request) {
       quantity: item.qty,
     }))
 
+    // Shipping computed server-side from config ($8 flat, free at FREE_SHIPPING_THRESHOLD+).
+    const shippingAmount = shippingFor(total)
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: lineItems,
+      shipping_options: [{
+        shipping_rate_data: {
+          type: 'fixed_amount',
+          display_name: shippingAmount === 0 ? `Free shipping (orders ${FREE_SHIPPING_LABEL}+)` : 'Standard shipping',
+          fixed_amount: { amount: Math.round(shippingAmount * 100), currency: 'usd' },
+          delivery_estimate: {
+            minimum: { unit: 'business_day', value: 5 },
+            maximum: { unit: 'business_day', value: 8 },
+          },
+        },
+      }],
       mode: 'payment',
       success_url: `${request.headers.get('origin')}/checkout?success=true&order=${order.id}`,
       cancel_url: `${request.headers.get('origin')}/cart`,
@@ -93,6 +108,7 @@ export async function POST(request) {
       metadata: {
         orderId: String(order.id),
         ambassadorCode: ambassadorCode || '',
+        shipping: String(shippingAmount),
         items: JSON.stringify(items.map(i => ({ id: i.id, name: i.name, qty: i.qty }))),
         ...pieceIdsToMetadata(pieceIds),
       },
