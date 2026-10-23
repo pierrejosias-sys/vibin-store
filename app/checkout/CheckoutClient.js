@@ -7,7 +7,8 @@ import { loadStripe } from '@stripe/stripe-js'
 import { useCart } from '../lib/cart-context'
 import styles from '../styles.css'
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder')
+const STRIPE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+const stripePromise = STRIPE_PUBLISHABLE_KEY ? loadStripe(STRIPE_PUBLISHABLE_KEY) : Promise.resolve(null)
 
 export default function CheckoutPage() {
   const [step, setStep] = useState(1)

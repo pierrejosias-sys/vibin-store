@@ -6,6 +6,7 @@ import {
   pieceIdsToMetadata,
 } from '../../lib/pieces'
 import { resolveCatalogItems, sanitizeItem } from '../../lib/pricing'
+import { getSessionUser } from '../../lib/admin-auth'
 
 // Clients are created per request so the build doesn't need secrets
 // (preview environments may not have Stripe/Supabase keys configured).
@@ -22,7 +23,10 @@ export async function POST(request) {
   let pieceIds = []
   try {
     const body = await request.json()
-    const { email, ambassadorCode, userId } = body
+    const { email, ambassadorCode } = body
+    // Never trust a client-sent userId — derive it from the verified session cookie.
+    const sessionUser = await getSessionUser()
+    const userId = sessionUser?.id || null
 
     if (!Array.isArray(body.items) || body.items.length === 0 || body.items.length > 50) {
       return Response.json({ error: 'Your cart is empty.' }, { status: 400 })
