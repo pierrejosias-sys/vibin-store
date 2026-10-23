@@ -8,6 +8,9 @@ import {
 import { resolveCatalogItems, sanitizeItem } from '../../lib/pricing'
 import { getSessionUser } from '../../lib/admin-auth'
 import { shippingFor, FREE_SHIPPING_LABEL } from '../../lib/shipping'
+import { DROPS } from '../../lib/drops'
+import { DROP_CATALOG, enforceDropCatalog } from '../../lib/drop-catalog.mjs'
+import { serverNow } from '../../lib/drop-window.mjs'
 
 // Clients are created per request so the build doesn't need secrets
 // (preview environments may not have Stripe/Supabase keys configured).
@@ -38,9 +41,18 @@ export async function POST(request) {
     const { error: catalogError, status: catalogStatus } = await resolveCatalogItems(supabase, items)
     if (catalogError) return Response.json({ error: catalogError }, { status: catalogStatus || 400 })
 
+    // Drop-window catalog items (Foundation Tee, Snapback): same window + pre-order rules.
+    const dropIdsForCatalog = Object.keys(DROP_CATALOG)
+    const { data: windowDrops, error: windowErr } = await supabase.from('drops')
+      .select('id, name, release_at, closes_at').in('id', dropIdsForCatalog)
+    if (windowErr) throw new Error(windowErr.message)
+    const shipsBy = Object.fromEntries(dropIdsForCatalog.map(id => [id, DROPS[id]?.shipsBy || null]))
+    const { error: windowError, status: windowStatus, preorderItems } = enforceDropCatalog(items, windowDrops || [], { now: serverNow(), shipsBy })
+    if (windowError) return Response.json({ error: windowError }, { status: windowStatus || 400 })
+
     // Numbered drop items: validate, price server-side, and hold pieces before payment.
     const { dropItems, error: dropError, status: dropStatus } = await resolveDropItems(supabase, items)
-    if (dropItems?.length && body.preorderAck !== true) {
+    if ((dropItems?.length || preorderItems.length) && body.preorderAck !== true) {
       return Response.json({ error: 'Please confirm you understand this is a pre-order.' }, { status: 400 })
     }
     if (dropError) return Response.json({ error: dropError }, { status: dropStatus || 400 })
