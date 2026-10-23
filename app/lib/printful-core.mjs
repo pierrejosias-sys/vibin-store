@@ -29,16 +29,36 @@ export const PRINTFUL_PRODUCTS = ['hd']
 export const LS17001_PRODUCT_ID = 1540
 export const LS17001_BLACK_VARIANTS = { S: 48514, M: 48520, L: 48526, XL: 48532, '2X': 48538, '3X': 48544 }
 export const HOODIE_PRINT_PLACEMENT = 'front_dtf'
-export const DEFAULT_HOODIE_FILE_URL = 'https://vibinapparel.com/print/d01-hd-front-01-columns-chest-4in.png'
+export const DEFAULT_HOODIE_FILE_URL = 'https://vibinapparel.com/print/d01-hd-chest-mark-2.75in.png'
+// Design-approved chest mark (design/print-ready/hoodie-ls17001/chest-mark-2.75in.png): 825x210 px @ 300 DPI.
+export const CHEST_MARK = { widthIn: 2.75, aspect: 210 / 825, centerOffsetIn: 3.5, topIn: 3.0 }
 
-/** Default map when PRINTFUL_VARIANT_MAP is unset: hoodie -> LS17001 Black catalog variants + front DTF file. */
+/**
+ * Printful v1 file `position` for the wearer's-left chest mark.
+ * Area defaults to the 12x16 in design canvas (3600x4800 px @ 300 DPI) until the real
+ * LS17001 front_dtf printfile size is known (GET /mockup-generator/printfiles/1540).
+ * "Wearer's left" is the viewer's right on the front, so the mark sits right of center.
+ */
+export function hoodieChestPosition(env = {}) {
+  const num = (v, d) => (v != null && v !== '' && Number.isFinite(Number(v)) && Number(v) > 0 ? Number(v) : d)
+  const areaW = num(env.PRINTFUL_HOODIE_AREA_W, 3600)
+  const areaH = num(env.PRINTFUL_HOODIE_AREA_H, 4800)
+  const dpi = num(env.PRINTFUL_HOODIE_AREA_DPI, 300)
+  const width = Math.round(CHEST_MARK.widthIn * dpi)
+  const height = Math.round(width * CHEST_MARK.aspect)
+  const left = Math.round(areaW / 2 + CHEST_MARK.centerOffsetIn * dpi - width / 2)
+  const top = Math.round(CHEST_MARK.topIn * dpi)
+  return { area_width: areaW, area_height: areaH, width, height, top, left, limit_to_print_area: true }
+}
+
+/** Default map when PRINTFUL_VARIANT_MAP is unset: hoodie -> LS17001 Black catalog variants + front DTF chest mark. Back stays empty. */
 export function defaultVariantMap(env = {}) {
   const url = env.PRINTFUL_HOODIE_FILE_URL || DEFAULT_HOODIE_FILE_URL
   let position
   if (env.PRINTFUL_HOODIE_FILE_POSITION) {
     try { position = JSON.parse(env.PRINTFUL_HOODIE_FILE_POSITION) } catch { throw new Error('PRINTFUL_HOODIE_FILE_POSITION is not valid JSON') }
-  }
-  const file = { type: HOODIE_PRINT_PLACEMENT, url, ...(position ? { position } : {}) }
+  } else position = hoodieChestPosition(env)
+  const file = { type: HOODIE_PRINT_PLACEMENT, url, position }
   const out = {}
   for (const [size, id] of Object.entries(LS17001_BLACK_VARIANTS)) out[`hd:${size}`] = { variant_id: id, files: [file] }
   return out

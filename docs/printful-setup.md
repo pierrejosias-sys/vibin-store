@@ -39,24 +39,38 @@ Source: `GET https://api.printful.com/products/1540` (public, no auth), Oct 23, 
 Other colors: Arona, Asphalt, Chocolate Brown, Cream and Moss Gray. Each has an XS–3XL run (e.g. Cream M = 48522).
 XS is not sold.
 
-**Default routing (no `PRINTFUL_VARIANT_MAP` needed):** `hd:<size>` goes to the Black catalog variant above. It carries one
-file `{type:"front_dtf", url: PRINTFUL_HOODIE_FILE_URL}`. The default URL is
-`https://vibinapparel.com/print/d01-hd-front-01-columns-chest-4in.png`.
-**Art (UNCONFIRMED):** that file is Design's "01 Columns" chest hit (1200×1200 px, 4 in @300 DPI, transparent, cream/gold).
-The Drop 01 graphics README calls it the "hoodie hero". The hoodie tech pack (Rev 0.5) still specifies a small embroidered
-left-chest wordmark, and its back art is "pending owner pick". So no front art is formally approved for DTF yet.
-Confirm or replace the file before turning on `PRINTFUL_CONFIRM`.
-Without a `position`, Printful scales the file to fill the front print area. For a 4 in chest hit, set
-`PRINTFUL_HOODIE_FILE_POSITION` (JSON, Printful v1 file position:
-`{"area_width":…,"area_height":…,"width":…,"height":…,"top":…,"left":…}`).
-Get the numbers from Printful's design maker. The simpler route is to build the product in Printful's dashboard and
-put its **sync variant ids** in `PRINTFUL_VARIANT_MAP` (`{"hd:S":<sync id>,…}`). That overrides the default entirely.
+**Default routing (no `PRINTFUL_VARIANT_MAP` needed):** `hd:<size>` → Black catalog variant above with ONE file
+(back left empty): `{type:"front_dtf", url, position}`.
+* **Art (Design-approved):** `public/print/d01-hd-chest-mark-2.75in.png`, live at
+  `https://vibinapparel.com/print/d01-hd-chest-mark-2.75in.png`. It's a copy of
+  `design/print-ready/hoodie-ls17001/chest-mark-2.75in.png`: 825×210 px @ 300 DPI, transparent, "VIBIN." + star in #84754E.
+  Override it with `PRINTFUL_HOODIE_FILE_URL`.
+* **Placement:** wearer's left chest (the viewer's right on the front). The mark is 2.75 in wide, its center sits 3.5 in from the
+  print-area center, and its top edge is 3.0 in from the top of the area. `hoodieChestPosition()` computes it from env:
+
+| Env | Default | Meaning |
+|---|---|---|
+| `PRINTFUL_HOODIE_AREA_W` | 3600 | front_dtf printfile width, px |
+| `PRINTFUL_HOODIE_AREA_H` | 4800 | front_dtf printfile height, px |
+| `PRINTFUL_HOODIE_AREA_DPI` | 300 | printfile DPI |
+
+  The default position is
+  `{"area_width":3600,"area_height":4800,"width":825,"height":210,"top":900,"left":2438,"limit_to_print_area":true}`.
+  It is identical to Design's placed canvas `front_dtf-leftchest-placed.png` (12×16 in).
+  **Unverified:** "top 3.0 in from the area top" is treated as "about 3 in below the collar seam". Check it on the first draft's mockup.
+* **Replace the defaults with real values** once the token exists:
+  1. Run `curl -s https://api.printful.com/mockup-generator/printfiles/1540 -H "Authorization: Bearer <token>"`.
+  2. In `variant_printfiles[]`, find the entry for variant 48520 and its `placements.front_dtf` printfile id.
+  3. In `printfiles[]`, look up that id to get its `width`, `height` and `dpi`.
+  4. Set `PRINTFUL_HOODIE_AREA_W`, `PRINTFUL_HOODIE_AREA_H` and `PRINTFUL_HOODIE_AREA_DPI` to those numbers in Vercel (Production), then redeploy.
+     The mark keeps its physical size and offsets.
+  5. If you want an exact hand-set box instead, set `PRINTFUL_HOODIE_FILE_POSITION`. It overrides everything else.
 
 ### Print areas (NOT yet retrieved)
 `GET https://api.printful.com/mockup-generator/printfiles/1540` (and the v2 catalog endpoints) need a token. Without one they return 401.
 The public v1 catalog lists these placements: `front_dtf`, `back_dtf`, `long_sleeve_left_dtf`, `long_sleeve_right_dtf`, `label_inside_dtf`,
 plus embroidery-only `embroidery_chest_left/right/center` and `embroidery_wrist_left/right`.
-**There is no DTF chest-left placement.** A DTF chest mark has to go in `front_dtf` with a `position` (PRINTFUL_HOODIE_FILE_POSITION).
+**There is no DTF chest-left placement.** The DTF chest mark therefore goes in `front_dtf` with a computed `position` (above).
 After creating the token, run:
 `curl -s https://api.printful.com/mockup-generator/printfiles/1540 -H "Authorization: Bearer <token>"`
 In the response, `printfiles[]` gives width/height px and dpi, and `variant_printfiles` maps placements to printfile ids.
