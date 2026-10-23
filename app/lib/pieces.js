@@ -2,7 +2,7 @@
  * Server-only helpers for numbered drop pieces (service-role RPCs).
  * See supabase/migrations/20261022000001_drops_numbered_pieces.sql
  */
-import { DROPS, SIZES, PIECE_HOLD_MINUTES } from './drops'
+import { DROPS, SIZES, PIECE_HOLD_MINUTES, isStylePurchasable } from './drops'
 
 export function isDropItem(item) {
   return !!(item && item.drop && item.style)
@@ -22,6 +22,7 @@ export async function resolveDropItems(supabase, items) {
   for (const item of dropItems) {
     const drop = drops?.find(d => d.id === item.drop)
     if (!drop || !DROPS[item.drop]) return { error: 'Unknown drop.' }
+    if (!isStylePurchasable(item.drop, item.style)) return { error: 'This item is not available for purchase yet.', status: 409 }
     if (!drop.release_at || new Date(drop.release_at).getTime() > Date.now()) return { error: `${drop.name} has not released yet.` }
     if (!SIZES.includes(item.size)) return { error: 'Invalid size.' }
     const qty = Number(item.qty)

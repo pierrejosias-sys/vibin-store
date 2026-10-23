@@ -35,11 +35,14 @@ export const DROPS = {
     piecesPerStyle: 50,
     // Approved prices (drop_styles.price is the source of truth; this is the fallback).
     styles: [
-      { code: 'hd', name: 'Hoodie', price: 98 },
+      { code: 'hd', name: 'VOL 01 Hoodie', price: 98 },
       { code: 'cj', name: 'Cargo Jogger', price: 88 },
       { code: 'wb', name: 'Windbreaker', price: 128 },
       { code: 'ns', name: 'Nylon Shorts', price: 58 },
     ],
+    // Approved launch lineup (Oct 22, 2026): only hd is for sale. Enforced in
+    // /api/checkout via isStylePurchasable(); 'hidden' styles are not shown at all.
+    availability: { hd: 'available', cj: 'coming-soon', wb: 'coming-soon', ns: 'hidden' },
   },
 }
 
@@ -72,7 +75,10 @@ function publicClient() {
 export async function getDropState(dropId) {
   const base = DROPS[dropId]
   if (!base) return null
-  const state = { ...base, styles: base.styles.map(s => ({ ...s, remaining: null, sizes: {} })), inventoryAvailable: false }
+  const withAvailability = st => st
+    .map(s => ({ ...s, availability: styleAvailability(dropId, s.code) }))
+    .filter(s => s.availability !== 'hidden')
+  const state = { ...base, styles: withAvailability(base.styles.map(s => ({ ...s, remaining: null, sizes: {} }))), inventoryAvailable: false }
   const supabase = publicClient()
   if (!supabase) return state
 
@@ -88,10 +94,10 @@ export async function getDropState(dropId) {
       state.piecesPerStyle = drop.pieces_per_style || state.piecesPerStyle
     }
     if (styles?.length) {
-      state.styles = styles.map(s => {
+      state.styles = withAvailability(styles.map(s => {
         const cfg = base.styles.find(c => c.code === s.style_code) || {}
         return { code: s.style_code, name: s.name, price: s.price != null ? Number(s.price) : cfg.price ?? null, remaining: null, sizes: {} }
-      })
+      }))
     }
   } catch (err) {
     console.warn('getDropState: drops lookup failed', err.message)
@@ -113,6 +119,15 @@ export async function getDropInventory(state) {
     for (const r of rows) if (r.size) style.sizes[r.size] = r.remaining
   }
   return state
+}
+
+/** 'available' | 'coming-soon' | 'hidden'. Unknown styles are never purchasable. */
+export function styleAvailability(dropId, styleCode) {
+  return DROPS[dropId]?.availability?.[styleCode] || 'hidden'
+}
+
+export function isStylePurchasable(dropId, styleCode) {
+  return styleAvailability(dropId, styleCode) === 'available'
 }
 
 export function isReleased(releaseAt, now = Date.now()) {
