@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  parseVariantMap, defaultVariantMap, LS17001_BLACK_VARIANTS, splitCart, normalizeSize, recipientFromSession, buildOrderPayload,
+  parseVariantMap, defaultVariantMap, hoodieChestPosition, LS17001_BLACK_VARIANTS, splitCart, normalizeSize, recipientFromSession, buildOrderPayload,
   decideFulfillment, isConfirmEnabled, CLAIM_STALE_MS, safeEqual,
 } from '../app/lib/printful-core.mjs'
 
@@ -39,8 +39,10 @@ test('defaultVariantMap: LS17001 Black catalog variants with front DTF file, all
   assert.deepEqual(Object.keys(m), ['hd:S', 'hd:M', 'hd:L', 'hd:XL', 'hd:2X', 'hd:3X'])
   assert.equal(m['hd:M'].variant_id, 48520)
   assert.equal(m['hd:3X'].variant_id, LS17001_BLACK_VARIANTS['3X'])
-  assert.deepEqual(m['hd:S'].files, [{ type: 'front_dtf', url: 'https://cdn/x.png' }])
-  assert.match(defaultVariantMap({})['hd:L'].files[0].url, /\/print\/.+\.png$/)
+  assert.equal(m['hd:S'].files.length, 1)
+  assert.equal(m['hd:S'].files[0].type, 'front_dtf')
+  assert.equal(m['hd:S'].files[0].url, 'https://cdn/x.png')
+  assert.match(defaultVariantMap({})['hd:L'].files[0].url, /\/print\/d01-hd-chest-mark-2\.75in\.png$/)
   assert.deepEqual(defaultVariantMap({ PRINTFUL_HOODIE_FILE_POSITION: '{"top":0}' })['hd:L'].files[0].position, { top: 0 })
 })
 
@@ -116,4 +118,18 @@ test('hoodie Printful payload carries no insert / packing-slip / QR data', () =>
   assert.deepEqual(Object.keys(p).sort(), ['external_id', 'items', 'recipient', 'shipping'])
   assert.doesNotMatch(JSON.stringify(p), /packing|gift|insert|qr|certificate/i)
   assert.deepEqual(p.items[0].files.map(f => f.type), ['front_dtf'])
+})
+
+test('default chest position matches Design placed canvas (left 2438, top 900, 825x210 on 3600x4800)', () => {
+  assert.deepEqual(hoodieChestPosition({}), { area_width: 3600, area_height: 4800, width: 825, height: 210, top: 900, left: 2438, limit_to_print_area: true })
+  assert.deepEqual(defaultVariantMap({})['hd:M'].files[0].position, hoodieChestPosition({}))
+  const p = hoodieChestPosition({ PRINTFUL_HOODIE_AREA_W: '4500', PRINTFUL_HOODIE_AREA_H: '5400' })
+  assert.equal(p.left, Math.round(2250 + 1050 - 412.5))
+  assert.equal(p.area_height, 5400)
+  const q = hoodieChestPosition({ PRINTFUL_HOODIE_AREA_W: '1800', PRINTFUL_HOODIE_AREA_H: '2400', PRINTFUL_HOODIE_AREA_DPI: '150' })
+  assert.deepEqual([q.width, q.height, q.top, q.left], [413, 105, 450, 1219])
+})
+
+test('no back print in default hoodie file set', () => {
+  assert.ok(!JSON.stringify(defaultVariantMap({})).includes('back_dtf'))
 })
