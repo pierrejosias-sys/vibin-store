@@ -3,9 +3,11 @@
 // only their own thread, identified by email + a token kept in localStorage. No direct table access.
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { usePathname } from 'next/navigation'
+import { HELP_AVOID, liftFor } from '../lib/help-fab.mjs'
 import { TOPIC_OPTIONS, getSavedThread, saveThread, forgetThread, createTicket, sendFollowUp, fetchThread } from '../lib/support-client'
 
 const HIDE_ON = ['/admin', '/support-agent']
+
 const C = { ink: '#111', cream: '#f6f1e7', coral: '#e2553c', muted: '#6b6b6b', line: '#ddd5c4' }
 const input = { width: '100%', padding: '10px', border: `1px solid ${C.ink}`, background: '#fff', font: 'inherit', fontSize: '14px', marginBottom: '10px', boxSizing: 'border-box', borderRadius: 0 }
 const btn = { padding: '10px 14px', background: C.ink, color: C.cream, border: 'none', cursor: 'pointer', font: 'inherit', fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em' }
@@ -21,6 +23,9 @@ export default function SupportChat() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
   const endRef = useRef(null)
+  const fabRef = useRef(null)
+  const [lift, setLift] = useState(0)
+  const [mobile, setMobile] = useState(false)
 
   useEffect(() => {
     const sync = () => setSaved(getSavedThread())
@@ -45,6 +50,31 @@ export default function SupportChat() {
 
   useEffect(() => { endRef.current?.scrollIntoView({ block: 'end' }) }, [thread, open])
 
+  // Keep the closed button off key controls: lift it above any overlapping CTA/total, or hide it if there's no room.
+  useEffect(() => {
+    let raf = 0
+    const measure = () => {
+      raf = 0
+      setMobile(window.innerWidth <= 640)
+      const el = fabRef.current
+      if (!el || open) { setLift(0); return }
+      const prev = el.style.transform
+      el.style.transform = 'none'
+      const btnRect = el.getBoundingClientRect()
+      el.style.transform = prev
+      const avoid = Array.from(document.querySelectorAll(HELP_AVOID)).map(n => n.getBoundingClientRect())
+      setLift(liftFor(btnRect, avoid, window.innerHeight))
+    }
+    const schedule = () => { if (!raf) raf = requestAnimationFrame(measure) }
+    measure()
+    window.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule)
+    const mo = new MutationObserver(schedule)
+    mo.observe(document.body, { childList: true, subtree: true })
+    const t = setInterval(schedule, 1000)
+    return () => { window.removeEventListener('scroll', schedule); window.removeEventListener('resize', schedule); mo.disconnect(); clearInterval(t); if (raf) cancelAnimationFrame(raf) }
+  }, [open, pathname])
+
   if (HIDE_ON.some(p => pathname.startsWith(p))) return null
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }))
 
@@ -65,7 +95,7 @@ export default function SupportChat() {
   }
 
   return (
-    <div style={{ position: 'fixed', right: '16px', bottom: '16px', zIndex: 9999, fontFamily: 'Manrope, system-ui, sans-serif', color: C.ink }}>
+    <div style={{ position: 'fixed', right: mobile ? '12px' : '16px', bottom: mobile ? 'calc(12px + env(safe-area-inset-bottom, 0px))' : '16px', zIndex: 9999, fontFamily: 'Manrope, system-ui, sans-serif', color: C.ink }}>
       {open && (
         <div role="dialog" aria-label="Vibin help chat" style={{ width: 'min(360px, calc(100vw - 32px))', maxHeight: 'min(560px, calc(100vh - 100px))', display: 'flex', flexDirection: 'column', background: C.cream, border: `1px solid ${C.ink}`, boxShadow: '0 10px 30px rgba(0,0,0,.2)', marginBottom: '10px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', background: C.ink, color: C.cream }}>
@@ -116,8 +146,15 @@ export default function SupportChat() {
         </div>
       )}
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <button onClick={() => setOpen(o => !o)} aria-expanded={open} style={{ ...btn, borderRadius: '999px', padding: '12px 18px', boxShadow: '0 4px 14px rgba(0,0,0,.25)' }}>
-          {open ? 'Close' : 'Help'}
+        <button ref={fabRef} onClick={() => setOpen(o => !o)} aria-expanded={open} aria-label={open ? 'Close help' : 'Help'}
+          style={{
+            ...btn, borderRadius: '999px', boxShadow: '0 4px 14px rgba(0,0,0,.25)',
+            ...(mobile && !open ? { width: '44px', height: '44px', padding: 0, fontSize: '18px', letterSpacing: 0 } : { padding: '12px 18px' }),
+            transform: lift ? `translateY(-${lift}px)` : 'none',
+            opacity: lift === null ? 0 : 1, pointerEvents: lift === null ? 'none' : 'auto',
+            transition: 'transform .15s ease, opacity .15s ease',
+          }}>
+          {open ? 'Close' : mobile ? '?' : 'Help'}
         </button>
       </div>
     </div>

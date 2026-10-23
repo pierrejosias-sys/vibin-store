@@ -19,6 +19,8 @@
  * Snapback are fulfilled in-house, so keys for them in PRINTFUL_VARIANT_MAP are ignored.
  * 'hd' = Drop 01 VOL 01 Hoodie (cart lines carry { drop: 'd01', style: 'hd' }).
  */
+import { allowedStyleColor } from './drop-catalog.mjs'
+
 export const PRINTFUL_PRODUCTS = ['hd']
 
 /**
@@ -115,6 +117,8 @@ export function splitCart(items, variantMap) {
     const keys = productKeys(item)
     const isPod = keys.some(k => podProducts.has(k))
     if (!isPod) { manualLines.push(item); continue }
+    // Drop styles with a color config (hoodie = Black only) must be an active colorway, else never auto-route.
+    if (item?.style && item?.drop && item.color != null && !allowedStyleColor(item.drop, item.style, item.color)) { unmapped.push(item); continue }
     const size = normalizeSize(item.size)
     const key = keys.map(k => `${k}:${size}`).find(k => variantMap[k])
     if (!key) { unmapped.push(item); continue }

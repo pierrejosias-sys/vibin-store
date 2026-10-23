@@ -14,7 +14,7 @@ async function joinWaitlist(payload) {
 import { useCart } from '../lib/cart-context'
 import WaitlistThanks from '../components/WaitlistThanks'
 import { sizesForStyle } from '../lib/drops'
-import { DROP_STYLE_IMAGES } from '../lib/drop-catalog.mjs'
+import { DROP_STYLE_IMAGES, activeStyleColors } from '../lib/drop-catalog.mjs'
 import { countdownTarget, formatET } from '../lib/drop-window.mjs'
 
 const S = {
@@ -141,7 +141,7 @@ function CatalogCard({ drop, item, released }) {
               ))}
             </div>
           ) : <div style={{ fontSize: 13, opacity: 0.7, marginBottom: 12 }}>One size</div>}
-          <button style={{ ...S.btn, ...(canBuy ? {} : S.btnOff) }} disabled={!canBuy} onClick={addToCart}>
+          <button data-help-avoid style={{ ...S.btn, ...(canBuy ? {} : S.btnOff) }} disabled={!canBuy} onClick={addToCart}>
             {added ? 'Added ✓' : size ? 'Add to cart' : 'Pick a size'}
           </button>
         </>
@@ -164,7 +164,7 @@ function StyleCard({ drop, style, released }) {
     const id = `${drop.id}-${style.code}`
     const existing = cart.find(i => i.id === id && i.size === size)
     if (existing) existing.qty += 1
-    else cart.push({ id, name: `${style.name} — ${drop.name}`, price: style.price, color: 'Black', size, qty: 1, slug: null, image_url: DROP_STYLE_IMAGES[drop.id]?.[style.code]?.[0] || null, drop: drop.id, style: style.code })
+    else cart.push({ id, name: `${style.name} — ${drop.name}`, price: style.price, color: activeStyleColors(drop.id, style.code)[0]?.name || 'Black', size, qty: 1, slug: null, image_url: DROP_STYLE_IMAGES[drop.id]?.[style.code]?.[0] || null, drop: drop.id, style: style.code })
     localStorage.setItem('vibin_cart', JSON.stringify(cart))
     updateCart?.()
     setAdded(true)
@@ -184,6 +184,9 @@ function StyleCard({ drop, style, released }) {
         {released && soldOut && <strong style={{ color: '#f66' }}>SOLD OUT</strong>}
         {released && !soldOut && style.remaining != null && <span>{style.remaining} of {drop.piecesPerStyle} left</span>}
       </div>
+      {activeStyleColors(drop.id, style.code).length > 0 && (
+        <p style={{ margin: '0 0 10px', fontSize: 13, color: '#bbb' }}>Color: {activeStyleColors(drop.id, style.code).map(c => c.name).join(' / ')}</p>
+      )}
       {released && !soldOut && (
         <>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
@@ -199,7 +202,7 @@ function StyleCard({ drop, style, released }) {
             })}
           </div>
           {size && sizeLeft(size) != null && sz_note(sizeLeft(size), size)}
-          <button style={{ ...S.btn, ...(canBuy ? {} : S.btnOff) }} disabled={!canBuy} onClick={addToCart}>
+          <button data-help-avoid style={{ ...S.btn, ...(canBuy ? {} : S.btnOff) }} disabled={!canBuy} onClick={addToCart}>
             {added ? 'Added ✓' : size ? 'Add to cart' : 'Pick a size'}
           </button>
         </>

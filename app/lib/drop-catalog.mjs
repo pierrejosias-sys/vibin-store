@@ -14,10 +14,40 @@ export const DROP_CATALOG = {
   ],
 }
 
-/** Product shots for numbered drop styles (VOL 01 Hoodie = Lane Seven LS17001). */
-export const DROP_STYLE_IMAGES = {
-  d01: { hd: ['/drop01/hoodie-ls17001-cream-front.webp'] },
+/**
+ * Colorways for numbered drop styles (VOL 01 Hoodie = Lane Seven LS17001).
+ * Only `active` colors are shown, accepted at checkout and routed to Printful.
+ * Inactive rows are kept (not deleted) so a colorway can be brought back by flipping the flag.
+ */
+export const DROP_STYLE_COLORS = {
+  d01: {
+    hd: [
+      { name: 'Black', active: true, images: ['/drop01/hoodie-ls17001-black-front.webp'] },
+      { name: 'Cream', active: false, images: ['/drop01/hoodie-ls17001-cream-front.webp'] }, // hidden 2026-10-23: Drop 01 hoodie is black only
+    ],
+  },
 }
+
+/** Active colorways for a drop style ([] when the style has no color config). */
+export function activeStyleColors(dropId, styleCode) {
+  return (DROP_STYLE_COLORS[dropId]?.[styleCode] || []).filter(c => c.active)
+}
+
+/**
+ * True when `color` is an active colorway for the style. Styles without a color config accept any color
+ * (they are single-color in-house items). Returns the canonical color name, or null if not allowed.
+ */
+export function allowedStyleColor(dropId, styleCode, color) {
+  const all = DROP_STYLE_COLORS[dropId]?.[styleCode]
+  if (!all) return typeof color === 'string' && color.trim() ? color.trim() : 'Black'
+  const want = String(color ?? '').trim().toLowerCase()
+  const hit = all.find(c => c.active && c.name.toLowerCase() === want)
+  return hit ? hit.name : null
+}
+
+/** Product shots for numbered drop styles: images of active colorways only. */
+export const DROP_STYLE_IMAGES = Object.fromEntries(Object.entries(DROP_STYLE_COLORS).map(([d, styles]) =>
+  [d, Object.fromEntries(Object.entries(styles).map(([code, colors]) => [code, colors.filter(c => c.active).flatMap(c => c.images)]))]))
 
 export const TWO_PACKAGES_NOTE = 'Ships in two packages: your hoodie ships separately from your tee/snapback, so your order may arrive in two packages.'
 
