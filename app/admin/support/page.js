@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import supabase from '../../lib/supabase-public'
 import styles from '../../styles.css'
+import SupportThreads from './SupportThreads'
 
 export default function AdminSupportPage() {
   const router = useRouter();
@@ -61,6 +62,7 @@ export default function AdminSupportPage() {
       <style dangerouslySetInnerHTML={{__html: styles}} />
       <nav><Link href="/" className="logo">VIBIN ADMIN</Link></nav>
       <div style={{padding:'40px 60px',maxWidth:'1200px',margin:'0 auto'}}>
+         <SupportThreads />
          <h1 style={{fontFamily:'Anton,sans-serif',fontSize:'48px',textTransform:'uppercase'}}>
            Support <em style={{fontStyle:'italic',color:'var(--coral)'}}>Verification</em>
          </h1>

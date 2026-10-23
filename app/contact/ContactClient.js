@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useCart } from '../lib/cart-context'
 import styles from '../styles.css'
+import { TOPIC_OPTIONS, createTicket, saveThread } from '../lib/support-client'
 
 const CONTACT_EMAIL = 'hello@vibinapparel.com'
 const PHONE_DISPLAY = '(786) 716-1673'
@@ -15,18 +16,26 @@ const h3 = { fontFamily: 'Anton, sans-serif', fontSize: '24px', textTransform: '
 
 export default function ContactPage() {
   const { cartCount } = useCart() || {}
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
-  const [sent, setSent] = useState(false)
+  const [form, setForm] = useState({ name: '', email: '', orderNumber: '', topic: '', message: '', website: '' })
+  const [sent, setSent] = useState(null)
+  const [error, setError] = useState(null)
+  const [sending, setSending] = useState(false)
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }))
 
-  // No inbound contact/support email API exists in this app, so the form opens
-  // the visitor's mail client with the message pre-filled.
-  function onSubmit(e) {
+  // Submits into the support queue (support_chats/support_messages) via /api/support.
+  async function onSubmit(e) {
     e.preventDefault()
-    const subject = form.subject || `Message from ${form.name}`
-    const body = `${form.message}\n\n— ${form.name} (${form.email})`
-    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-    setSent(true)
+    setError(null); setSending(true)
+    try {
+      const r = await createTicket({ ...form, source: 'contact' })
+      if (r.ticket && r.token) saveThread(r)
+      setSent(r.ticket || 'received')
+      setForm({ name: '', email: '', orderNumber: '', topic: '', message: '', website: '' })
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
@@ -79,16 +88,27 @@ export default function ContactPage() {
           <h3 style={{...h3,color:'inherit'}}>Send a Message</h3>
           <form onSubmit={onSubmit}>
             <label style={label} htmlFor="c-name">Name</label>
-            <input id="c-name" style={field} required value={form.name} onChange={set('name')} />
+            <input id="c-name" style={field} maxLength={80} value={form.name} onChange={set('name')} autoComplete="name" />
             <label style={label} htmlFor="c-email">Email</label>
-            <input id="c-email" type="email" style={field} required value={form.email} onChange={set('email')} />
-            <label style={label} htmlFor="c-subject">Subject</label>
-            <input id="c-subject" style={field} value={form.subject} onChange={set('subject')} />
+            <input id="c-email" type="email" style={field} required maxLength={254} value={form.email} onChange={set('email')} autoComplete="email" />
+            <label style={label} htmlFor="c-topic">Topic</label>
+            <select id="c-topic" style={field} required value={form.topic} onChange={set('topic')}>
+              <option value="" disabled>Choose a topic</option>
+              {TOPIC_OPTIONS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+            </select>
+            <label style={label} htmlFor="c-order">Order number (optional)</label>
+            <input id="c-order" style={field} maxLength={40} placeholder="e.g. 1042" value={form.orderNumber} onChange={set('orderNumber')} />
             <label style={label} htmlFor="c-message">Message</label>
-            <textarea id="c-message" rows={6} style={field} required value={form.message} onChange={set('message')} />
-            <button type="submit" className="nl-btn" style={{cursor:'pointer'}}>Send Message</button>
+            <textarea id="c-message" rows={6} style={field} required maxLength={4000} value={form.message} onChange={set('message')} />
+            {/* Honeypot: hidden from people, bots fill it in. */}
+            <div aria-hidden="true" style={{ position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden' }}>
+              <label htmlFor="c-website">Website</label>
+              <input id="c-website" tabIndex={-1} autoComplete="off" value={form.website} onChange={set('website')} />
+            </div>
+            <button type="submit" className="nl-btn" style={{cursor:'pointer'}} disabled={sending}>{sending ? 'Sending…' : 'Send Message'}</button>
           </form>
-          {sent && <p style={{marginTop:'16px'}}>Your email app should open with your message. If it didn&apos;t, email us at <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.</p>}
+          {error && <p role="alert" style={{marginTop:'16px',color:'var(--coral)'}}>{error}</p>}
+          {sent && <p role="status" style={{marginTop:'16px'}}>Thanks, we got it{sent !== 'received' ? <> (ticket <strong>{sent}</strong>)</> : null}. We reply within 1 business day. You can follow the conversation anytime in the <strong>Help</strong> chat at the bottom right of this site on this device, or email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.</p>}
         </div>
       </section>
     </>
