@@ -56,8 +56,7 @@ INSERT INTO public.drop_styles (drop_id, style_code, name, price, care_info, sor
   ('d01', 'hd',  'Hoodie',         NULL, 'PLACEHOLDER care info', 1),
   ('d01', 'cj',  'Cargo Jogger',   NULL, 'PLACEHOLDER care info', 2),
   ('d01', 'wb',  'Windbreaker',    NULL, 'PLACEHOLDER care info', 3),
-  ('d01', 'ns',  'Nylon Shorts',   NULL, 'PLACEHOLDER care info', 4),
-  ('d01', 'tee', 'Tee',            NULL, 'PLACEHOLDER care info', 5)
+  ('d01', 'ns',  'Nylon Shorts',   NULL, 'PLACEHOLDER care info', 4)
 ON CONFLICT DO NOTHING;
 
 -- 3. OPTIONAL SIZE ALLOCATIONS ---------------------------------------------

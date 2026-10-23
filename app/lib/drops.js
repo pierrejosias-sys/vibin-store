@@ -38,7 +38,6 @@ export const DROPS = {
       { code: 'cj', name: 'Cargo Jogger', price: 75 },
       { code: 'wb', name: 'Windbreaker', price: 95 },
       { code: 'ns', name: 'Nylon Shorts', price: 55 },
-      { code: 'tee', name: 'Tee', price: 45 },
     ],
   },
 }
