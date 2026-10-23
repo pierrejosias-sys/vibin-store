@@ -43,9 +43,9 @@ export default function HomePage() {
       setProducts(data)
     } else {
       setProducts([
-        { id: 1, name: 'Foundation Tee — Black', price: 48, category: 'Tee · Heavyweight', color: 'Black', image_color: 'ink' },
+        { id: 1, name: 'Foundation Tee — Black', price: 85, category: 'Tee · Heavyweight', color: 'Black', image_color: 'ink' },
         { id: 2, name: 'Move Different Tee — Cream', slug: 'move-different-tee', comingSoon: true, price: 48, category: 'Tee · Heavyweight', color: 'Cream', image_color: 'cream2' },
-        { id: 3, name: 'Vol 01 Hoodie — Coral', slug: 'vol-01-hoodie', comingSoon: true, price: 98, category: 'Hoodie · Heavyweight Fleece', color: 'Coral', image_color: 'coral' },
+        { id: 3, name: 'Vol 01 Hoodie — Coral', slug: 'vol-01-hoodie', comingSoon: true, price: 195, category: 'Hoodie · Heavyweight Fleece', color: 'Coral', image_color: 'coral' },
         { id: 4, name: 'Mark Hoodie — Onyx', price: 98, category: 'Hoodie · Heavyweight Fleece', color: 'Onyx', image_color: 'ink2' },
         { id: 5, name: 'Different Crewneck — Violet', slug: 'different-crewneck', comingSoon: true, price: 78, category: 'Sweatshirt · Cotton Blend', color: 'Violet', image_color: 'violet' },
         { id: 6, name: 'Louder Cap — Acid', price: 38, category: 'Headwear · 6-Panel', color: 'Acid', image_color: 'acid' },

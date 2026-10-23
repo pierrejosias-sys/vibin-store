@@ -35,7 +35,7 @@ export const DROPS = {
     piecesPerStyle: 50,
     // Approved prices (drop_styles.price is the source of truth; this is the fallback).
     styles: [
-      { code: 'hd', name: 'VOL 01 Hoodie', price: 98 },
+      { code: 'hd', name: 'VOL 01 Hoodie', price: 195 },
       { code: 'cj', name: 'Cargo Jogger', price: 88 },
       { code: 'wb', name: 'Windbreaker', price: 128 },
       { code: 'ns', name: 'Nylon Shorts', price: 58 },
