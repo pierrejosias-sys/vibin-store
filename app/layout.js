@@ -1,5 +1,6 @@
 import { CartProvider } from './lib/cart-context'
 import './globals.css'
+import { FREE_SHIPPING_LABEL } from './lib/shipping'
 
 export const metadata = {
   metadataBase: new URL('https://vibinapparel.com'),
@@ -23,7 +24,7 @@ export const metadata = {
     url: 'https://vibinapparel.com',
     siteName: 'Vibin Apparel',
     title: 'Vibin Apparel — Jacksonville Streetwear SS26',
-    description: 'Heavyweight cotton streetwear built for those who move different. SS26 Drop 01: The Foundation — now live. Free shipping on orders $75+.',
+    description: `Heavyweight cotton streetwear built for those who move different. SS26 Drop 01: The Foundation — now live. Free shipping on orders ${FREE_SHIPPING_LABEL}+.`,
     images: [{ url: '/og-default.jpg', width: 1200, height: 630, alt: 'Vibin Apparel SS26 Drop 01 — The Foundation Collection' }]
   },
   twitter: {

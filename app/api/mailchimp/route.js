@@ -6,13 +6,13 @@ export async function POST(request) {
       return Response.json({ error: 'Email is required' }, { status: 400 })
     }
 
-    const API_KEY = process.env.MAILCHIMP_API_KEY
+    const mailchimpKey = process.env.MAILCHIMP_API_KEY
     const LIST_ID = process.env.MAILCHIMP_LIST_ID
-    const DC = API_KEY?.split('-').pop() // datacenter e.g. us21
+    const DC = mailchimpKey?.split('-').pop() // datacenter e.g. us21
 
-    if (!API_KEY || !LIST_ID) {
+    if (!mailchimpKey || !LIST_ID) {
       console.error('Mailchimp env vars missing')
-      return Response.json({ error: 'Email service not configured' }, { status: 500 })
+      return Response.json({ error: 'Email signup is temporarily unavailable.' }, { status: 503 })
     }
 
     const data = {
@@ -31,7 +31,7 @@ export async function POST(request) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Basic ${Buffer.from(`anystring:${API_KEY}`).toString('base64')}`,
+          Authorization: `Basic ${Buffer.from(`anystring:${mailchimpKey}`).toString('base64')}`,
         },
         body: JSON.stringify(data),
       }
@@ -52,6 +52,6 @@ export async function POST(request) {
     return Response.json({ success: true, message: 'Subscribed successfully' })
   } catch (error) {
     console.error('Mailchimp route error:', error.message)
-    return Response.json({ error: error.message }, { status: 500 })
+    return Response.json({ error: 'Subscription failed' }, { status: 500 })
   }
 }

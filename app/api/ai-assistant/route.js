@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 const SYSTEM_PROMPT = `You are the Vibin Apparel AI Assistant — an expert on:
 - Vibin Apparel business (LLC, HVD Holdings, Jacksonville, FL)
 - Next.js app architecture (app router, Supabase, Stripe, Vercel)
-- All 28 routes: /, /shop, /drop-01, /careers, /support-agent, /admin/*, etc.
+- All 28 routes: /, /shop, /drop/01, /careers, /support-agent, /admin/*, etc.
 - Business plan: $153K Year 1 revenue, 10% equity for $100K
 - Marketing: 12% ambassador commissions, email signups, social media
 - Legal: Trademark Class 025, Florida LLC, GDPR/CCPA compliant
@@ -20,7 +20,7 @@ You help with:
 - Explaining features (Support Chat, job applications, etc.)
 
 Be concise, confident, and use the "Vibin different" tone — calm, intentional, community-focused.
-Always provide actionable advice. If unsure, say "Check the docs at /admin/requisitions"`;
+Always provide actionable advice. If unsure, say "Check the docs at /admin"`;
 
 export async function POST(request) {
   try {
@@ -44,9 +44,9 @@ Key metrics:
 - LTV:CAC ratio: 14:1 (healthy >3:1)
 - Conversion rate: 2.4% (industry avg: 1.8%)
 
-Need the full plan? Check /admin/requisitions or open VIBIN_APP_COMPILED.md from the repo.`;
+Need the full plan? Check /admin or open VIBIN_APP_COMPILED.md from the repo.`;
     } else if (lastMessage.toLowerCase().includes('hire') || lastMessage.toLowerCase().includes('recruit')) {
-      response = `You have 3 open roles (see /careers & /admin/requisitions):
+      response = `You have 3 open roles (see /careers & /admin):
 
 1. **Support Specialist** (Full-Time, $42K + 2% equity)
    - 12 applicants, 1 in review
@@ -118,7 +118,7 @@ Checklist for Drop 01 launch:
 ✅ Privacy Policy (/legal/privacy)
 ⏳ Trademark approval (waiting on USPTO)
 
-Need a contract template? Check /admin/requisitions for ambassador agreements.`;
+Need a contract template? Check /admin for ambassador agreements.`;
     } else if (lastMessage.toLowerCase().includes('hello') || lastMessage.toLowerCase().includes('hi') || lastMessage.toLowerCase().includes('hey')) {
       response = `Hey! 👋 I'm the Vibin Apparel AI Assistant.
 
@@ -161,7 +161,7 @@ Ask me anything about Vibin Apparel! 🚀`;
   } catch (error) {
     console.error('AI Assistant error:', error);
     return NextResponse.json(
-      { error: 'Something went wrong. Try again or check /admin/requisitions.' },
+      { error: 'Something went wrong. Try again or check /admin.' },
       { status: 500 }
     );
   }

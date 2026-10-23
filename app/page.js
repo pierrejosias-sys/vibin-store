@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from './lib/supabase'
+import ComingSoonSignup from './components/ComingSoonSignup'
 import { useCart } from './lib/cart-context'
 import styles from './styles.css'
+import { FREE_SHIPPING_LABEL } from './lib/shipping'
 
 export default function HomePage() {
   const [products, setProducts] = useState([])
@@ -42,12 +44,12 @@ export default function HomePage() {
     } else {
       setProducts([
         { id: 1, name: 'Foundation Tee — Black', price: 48, category: 'Tee · Heavyweight', color: 'Black', image_color: 'ink' },
-        { id: 2, name: 'Move Different Tee — Cream', price: 48, category: 'Tee · Heavyweight', color: 'Cream', image_color: 'cream2' },
-        { id: 3, name: 'Vol 01 Hoodie — Coral', price: 98, category: 'Hoodie · Heavyweight Fleece', color: 'Coral', image_color: 'coral' },
+        { id: 2, name: 'Move Different Tee — Cream', slug: 'move-different-tee', comingSoon: true, price: 48, category: 'Tee · Heavyweight', color: 'Cream', image_color: 'cream2' },
+        { id: 3, name: 'Vol 01 Hoodie — Coral', slug: 'vol-01-hoodie', comingSoon: true, price: 98, category: 'Hoodie · Heavyweight Fleece', color: 'Coral', image_color: 'coral' },
         { id: 4, name: 'Mark Hoodie — Onyx', price: 98, category: 'Hoodie · Heavyweight Fleece', color: 'Onyx', image_color: 'ink2' },
-        { id: 5, name: 'Different Crewneck — Violet', price: 78, category: 'Sweatshirt · Cotton Blend', color: 'Violet', image_color: 'violet' },
+        { id: 5, name: 'Different Crewneck — Violet', slug: 'different-crewneck', comingSoon: true, price: 78, category: 'Sweatshirt · Cotton Blend', color: 'Violet', image_color: 'violet' },
         { id: 6, name: 'Louder Cap — Acid', price: 38, category: 'Headwear · 6-Panel', color: 'Acid', image_color: 'acid' },
-        { id: 7, name: 'VBN Heavyweight Tee — Forest', price: 48, category: 'Tee · Heavyweight', color: 'Forest', image_color: 'teal' },
+        { id: 7, name: 'VBN Heavyweight Tee — Forest', slug: 'vbn-heavyweight-tee', comingSoon: true, price: 48, category: 'Tee · Heavyweight', color: 'Forest', image_color: 'teal' },
         { id: 8, name: 'Sunup Beanie — Sun', price: 32, category: 'Headwear · Knit', color: 'Sun', image_color: 'sun' },
       ])
     }
@@ -81,10 +83,10 @@ export default function HomePage() {
       {/* PROMO BAR */}
       <div className="promo">
         <div className="promo-track">
-          <span>Free shipping on orders over $75</span>
+          <span>Free shipping on orders over {FREE_SHIPPING_LABEL}</span>
           <span>New SS26 Drop is live</span>
           <span>Sign up for 15% off your first order</span>
-          <span>Free shipping on orders over $75</span>
+          <span>Free shipping on orders over {FREE_SHIPPING_LABEL}</span>
           <span>New SS26 Drop is live</span>
           <span>Sign up for 15% off your first order</span>
         </div>
@@ -95,7 +97,7 @@ export default function HomePage() {
         <a href="/" className="logo">VIBIN</a>
         <div className="nav-links">
           <a href="/shop">Shop</a>
-          <a href="/drop-01" className="new" style={{color:'var(--coral)'}}>Drop 01 ★</a>
+          <a href="/drop/01" className="new" style={{color:'var(--coral)'}}>Drop 01 ★</a>
           <a href="/lookbook">Lookbook</a>
           <a href="/about">About</a>
           <a href="/contact">Contact</a>
@@ -146,11 +148,11 @@ export default function HomePage() {
           <span>SS26 IS LIVE</span>
           <span><em>The Foundation</em></span>
           <span>NEW ARRIVALS</span>
-          <span>FREE SHIPPING $75+</span>
+          <span>FREE SHIPPING {FREE_SHIPPING_LABEL}+</span>
           <span>SS26 IS LIVE</span>
           <span><em>The Foundation</em></span>
           <span>NEW ARRIVALS</span>
-          <span>FREE SHIPPING $75+</span>
+          <span>FREE SHIPPING {FREE_SHIPPING_LABEL}+</span>
         </div>
       </div>
 
@@ -186,12 +188,19 @@ export default function HomePage() {
                   </div>
                 </div>
                 {/* Fix: pass name, price, color to handleQuickAdd */}
+                {prod.comingSoon ? (
+                  // Not produced yet — waitlist instead of add-to-cart
+                  <div style={{position:'absolute',left:0,right:0,bottom:0}}>
+                    <ComingSoonSignup slug={prod.slug} name={prod.name} />
+                  </div>
+                ) : (
                 <div
                   className="prod-quick"
                   onClick={() => handleQuickAdd(prod.id, prod.name, prod.price, prod.color)}
                 >
                   {addedId === prod.id ? '✓ Added' : '+ Quick Add'}
                 </div>
+                )}
               </div>
               <div className="prod-info">
                 <div>
@@ -316,13 +325,12 @@ export default function HomePage() {
             btn.textContent = 'Sending...';
             btn.disabled = true;
             try {
-              // TODO #21: Replace with your Mailchimp form action URL from Audience > Signup Forms > Embedded Forms
-              const MAILCHIMP_URL = 'YOUR_MAILCHIMP_FORM_ACTION_URL';
-              await fetch(MAILCHIMP_URL, {
+              const res = await fetch('/api/mailchimp', {
                 method: 'POST',
-                body: new FormData(form),
-                mode: 'no-cors'
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, tags: ['homepage-newsletter'] }),
               });
+              if (!res.ok) throw new Error('subscribe failed');
               btn.textContent = '✓ Subscribed';
               form.insertAdjacentHTML('afterend', '<div style="background:#0a0a0a;color:#f6f1e7;padding:16px;margin-top:16px;font-family:Manrope,sans-serif;">You\'re on the list. Check your email for your 15% off code. ✦</div>');
             } catch (err) {

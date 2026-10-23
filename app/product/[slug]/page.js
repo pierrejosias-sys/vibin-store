@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
+import { FREE_SHIPPING_LABEL } from '../../lib/shipping'
 
 export default function ProductPage() {
   const params = useParams()
@@ -106,8 +107,8 @@ export default function ProductPage() {
       {/* PROMO BAR */}
       <div className="promo">
         <div className="promo-track">
-          <span>Free shipping over $75</span><span>★ New Drop Live</span><span>15% off your first order</span>
-          <span>Free shipping over $75</span><span>★ New Drop Live</span><span>15% off your first order</span>
+          <span>Free shipping over {FREE_SHIPPING_LABEL}</span><span>★ New Drop Live</span><span>15% off your first order</span>
+          <span>Free shipping over {FREE_SHIPPING_LABEL}</span><span>★ New Drop Live</span><span>15% off your first order</span>
         </div>
       </div>
 
@@ -116,7 +117,7 @@ export default function ProductPage() {
         <Link href="/" className="logo">VIBIN</Link>
         <div className="nav-links">
           <Link href="/shop">Shop</Link>
-          <Link href="/drop-01">New Drop</Link>
+          <Link href="/drop/01">New Drop</Link>
           <Link href="/lookbook">Lookbook</Link>
         </div>
         <div className="nav-actions">
@@ -254,7 +255,7 @@ export default function ProductPage() {
             <div className="perk">
               <div className="perk-icon">🚚</div>
               <div className="perk-name">Free Shipping</div>
-              <div className="perk-desc">Orders $75+</div>
+              <div className="perk-desc">Orders {FREE_SHIPPING_LABEL}+</div>
             </div>
             <div className="perk">
               <div className="perk-icon">↻</div>

@@ -36,6 +36,25 @@ export function useSearch() {
 function SearchModal() {
   const { open, setOpen, query, setQuery } = useSearch()
   const [results, setResults] = useState({ products: [], pages: [] })
+  const [catalog, setCatalog] = useState(null)
+
+  // Products come from the products table so search only links to real /product/<slug> pages.
+  useEffect(() => {
+    if (!open || catalog) return
+    let cancelled = false
+    import('./supabase-public')
+      .then(({ default: supabase }) => supabase.from('products').select('name, slug, price, category'))
+      .then(({ data, error }) => {
+        if (cancelled) return
+        if (error) throw error
+        setCatalog((data || []).filter(p => p.slug).map(p => ({
+          name: p.name, price: Number(p.price), url: `/product/${p.slug}`,
+          tags: `${p.slug} ${p.category || ''}`.toLowerCase(),
+        })))
+      })
+      .catch(() => { if (!cancelled) setCatalog([]) })
+    return () => { cancelled = true }
+  }, [open, catalog])
 
   useEffect(() => {
     if (!query.trim()) {
@@ -43,17 +62,15 @@ function SearchModal() {
       return
     }
     const q = query.toLowerCase()
-    
-    const products = [
-      { name: 'Foundation Tee', price: 48, url: '/product/foundation-tee', tags: 'basic cotton t-shirt white black' },
-      { name: 'Move Different Tee', price: 52, url: '/product/move-different-tee', tags: 'graphic print oversized' },
-      { name: 'Vol 01 Hoodie', price: 98, url: '/product/vol-01-hoodie', tags: 'hoodie sweatshirt' },
-      { name: 'VIBIN Cap', price: 38, url: '/product/vibin-cap', tags: 'hat snapback' },
-      { name: 'Cargo Pant', price: 88, url: '/product/cargo-pant', tags: 'pants trousers utility' },
-    ].filter(p => p.name.toLowerCase().includes(q) || p.tags.includes(q))
+
+    const products = (catalog || []).filter(p => p.name.toLowerCase().includes(q) || p.tags.includes(q))
 
     const pages = [
       { name: 'Shop', url: '/shop', desc: 'Browse all products' },
+      { name: 'Drop 01', url: '/drop/01', desc: 'Numbered limited drop' },
+      { name: 'Snapback', url: '/snapback', desc: 'Vibin Snapback hat' },
+      { name: 'Lanyard', url: '/lanyard', desc: 'Vibin Lanyard' },
+      { name: 'Shipping', url: '/shipping', desc: 'Shipping info' },
       { name: 'Lookbook', url: '/lookbook', desc: 'Style inspiration' },
       { name: 'About', url: '/about', desc: 'Our story' },
       { name: 'Ambassador', url: '/ambassador', desc: 'Earn with VIBIN' },
@@ -66,7 +83,7 @@ function SearchModal() {
     ].filter(p => p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q))
 
     setResults({ products, pages })
-  }, [query])
+  }, [query, catalog])
 
   if (!open) return null
 
@@ -88,7 +105,7 @@ function SearchModal() {
                 <h4>Products</h4>
                 {results.products.map((p, i) => (
                   <a key={i} href={p.url} className="search-result">
-                    {p.name} <span>${p.price}</span>
+                    {p.name} <span>${p.price.toFixed(2)}</span>
                   </a>
                 ))}
               </div>

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { FREE_SHIPPING_LABEL } from '../lib/shipping'
 
 const COLORWAYS = [
   { name: 'Black / Teal', bg: '#0d0d0d', accent: '#01696f', brim: '#01696f', hex: '#0d0d0d' },
@@ -15,13 +16,21 @@ export default function SnapbackPage() {
   const [added, setAdded] = useState(false)
   const [qty, setQty] = useState(1)
   const cw = COLORWAYS[color]
+  // Price shown = price charged: checkout re-prices from the products table (slug 'vibin-snapback').
+  const [price, setPrice] = useState(38)
+  useEffect(() => {
+    import('../lib/supabase-public')
+      .then(({ default: supabase }) => supabase.from('products').select('price').eq('slug', 'vibin-snapback').maybeSingle())
+      .then(({ data }) => { if (data?.price != null) setPrice(Number(data.price)) })
+      .catch(() => {})
+  }, [])
 
   function addToCart() {
     try {
       const cart = JSON.parse(localStorage.getItem('vibin_cart') || '[]')
       const existing = cart.find(i => i.id === 'snapback-001' && i.color === cw.name)
       if (existing) { existing.qty += qty } else {
-        cart.push({ id: 'snapback-001', name: 'Vibin Snapback', price: 38, color: cw.name, size: 'OS', qty, slug: 'snapback' })
+        cart.push({ id: 'snapback-001', name: 'Vibin Snapback', price, color: cw.name, size: 'OS', qty, slug: 'vibin-snapback' })
       }
       localStorage.setItem('vibin_cart', JSON.stringify(cart))
     } catch(e) {}
@@ -323,14 +332,14 @@ export default function SnapbackPage() {
       `}</style>
 
       {/* PROMO BAR */}
-      <div className="promo">✦ Drop 01 — Snapback Now Live · Free Shipping on Orders $75+ ✦</div>
+      <div className="promo">✦ Drop 01 — Snapback Now Live · Free Shipping on Orders {FREE_SHIPPING_LABEL}+ ✦</div>
 
       {/* NAV */}
       <nav>
         <Link href="/" className="logo">VIBIN</Link>
         <div className="nav-links">
           <Link href="/shop">Shop</Link>
-          <Link href="/drop-01">New Drop</Link>
+          <Link href="/drop/01">New Drop</Link>
           <Link href="/lookbook">Lookbook</Link>
         </div>
         <div className="nav-actions">
@@ -459,7 +468,7 @@ export default function SnapbackPage() {
           <div className="colorway-name">{cw.name}</div>
 
           <div className="price">
-            $38.00 <span className="tag">NEW</span>
+            ${price.toFixed(2)} <span className="tag">NEW</span>
           </div>
 
           <p className="desc">
@@ -494,7 +503,7 @@ export default function SnapbackPage() {
               <button onClick={() => setQty(Math.min(5, qty + 1))}>+</button>
             </div>
             <button className={`btn-atc ${added ? 'done' : ''}`} onClick={addToCart}>
-              {added ? `✓ Added to Bag` : `Add to Bag · $${(38 * qty).toFixed(2)}`}
+              {added ? `✓ Added to Bag` : `Add to Bag · $${(price * qty).toFixed(2)}`}
             </button>
           </div>
 
