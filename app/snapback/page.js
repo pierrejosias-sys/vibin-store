@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { FREE_SHIPPING_LABEL } from '../lib/shipping'
+import { useDropStatus } from '../lib/use-drop-status'
 
 const COLORWAYS = [
   { name: 'Black / Teal', bg: '#0d0d0d', accent: '#01696f', brim: '#01696f', hex: '#0d0d0d' },
@@ -18,6 +19,7 @@ export default function SnapbackPage() {
   const [color, setColor] = useState(0)
   const [added, setAdded] = useState(false)
   const [qty, setQty] = useState(1)
+  const drop = useDropStatus()
   const cw = COLORWAYS[color]
   // Price shown = price charged: checkout re-prices from the products table (slug 'vibin-snapback').
   const [price, setPrice] = useState(65)
@@ -29,6 +31,7 @@ export default function SnapbackPage() {
   }, [])
 
   function addToCart() {
+    if (!drop.canAdd) return
     try {
       const cart = JSON.parse(localStorage.getItem('vibin_cart') || '[]')
       const existing = cart.find(i => i.id === 'snapback-001' && i.color === cw.name)
@@ -335,7 +338,7 @@ export default function SnapbackPage() {
       `}</style>
 
       {/* PROMO BAR */}
-      <div className="promo">✦ Drop 01 — Snapback Now Live · Free Shipping on Orders {FREE_SHIPPING_LABEL}+ ✦</div>
+      <div className="promo">✦ {drop.live ? 'Drop 01 — Snapback Now Live' : `Drop 01 Snapback — ${drop.promo}`} · Free Shipping on Orders {FREE_SHIPPING_LABEL}+ ✦</div>
 
       {/* NAV */}
       <nav>
@@ -432,8 +435,8 @@ export default function SnapbackPage() {
               <input type="text" value={qty} readOnly />
               <button onClick={() => setQty(Math.min(5, qty + 1))}>+</button>
             </div>
-            <button className={`btn-atc ${added ? 'done' : ''}`} onClick={addToCart}>
-              {added ? `✓ Added to Bag` : `Add to Bag · $${(price * qty).toFixed(2)}`}
+            <button className={`btn-atc ${added ? 'done' : ''}`} onClick={addToCart} disabled={!drop.canAdd} aria-disabled={!drop.canAdd}>
+              {!drop.canAdd ? drop.atcLabel : added ? `✓ Added to Bag` : `Add to Bag · $${(price * qty).toFixed(2)}`}
             </button>
           </div>
 

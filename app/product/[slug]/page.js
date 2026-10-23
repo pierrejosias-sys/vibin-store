@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 import { FREE_SHIPPING_LABEL } from '../../lib/shipping'
+import { useDropStatus } from '../../lib/use-drop-status'
 
 export default function ProductPage() {
   const params = useParams()
@@ -15,6 +16,9 @@ export default function ProductPage() {
   const [qty, setQty] = useState(1)
   const [added, setAdded] = useState(false)
   const [activeImage, setActiveImage] = useState(0)
+  const drop = useDropStatus()
+  const isDropItem = params.slug === 'vibin-classic-tee'
+  const blocked = isDropItem && !drop.canAdd
 
   useEffect(() => {
     fetchProduct()
@@ -40,6 +44,7 @@ export default function ProductPage() {
   }
 
   function addToCart() {
+    if (blocked) return
     const cart = JSON.parse(localStorage.getItem('vibin_cart') || '[]')
     const existing = cart.find(
       item => item.id === product.id && item.color === selectedColor && item.size === selectedSize
@@ -250,8 +255,8 @@ export default function ProductPage() {
               <input type="text" value={qty} readOnly />
               <button onClick={() => setQty(Math.min(10, qty + 1))}>+</button>
             </div>
-            <button className="btn-atc" onClick={addToCart}>
-              {added ? '✓ Added to Bag' : `Add to Bag · $${(product.price * qty).toFixed(2)}`}
+            <button className="btn-atc" onClick={addToCart} disabled={blocked} aria-disabled={blocked}>
+              {blocked ? drop.atcLabel : added ? '✓ Added to Bag' : `Add to Bag · $${(product.price * qty).toFixed(2)}`}
             </button>
           </div>
 
