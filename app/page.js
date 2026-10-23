@@ -7,6 +7,7 @@ import ComingSoonSignup from './components/ComingSoonSignup'
 import { useCart } from './lib/cart-context'
 import styles from './styles.css'
 import { FREE_SHIPPING_LABEL } from './lib/shipping'
+import { categoryCounts, piecesLabel } from './lib/shop-filter.mjs'
 
 export default function HomePage() {
   const [products, setProducts] = useState([])
@@ -75,6 +76,8 @@ export default function HomePage() {
     setAddedId(id)
     setTimeout(() => setAddedId(null), 1800)
   }
+
+  const counts = categoryCounts(products)
 
   return (
     <>
@@ -230,7 +233,7 @@ export default function HomePage() {
             <div className="cat-num">01 / 04</div>
             <div className="cat-foot">
               <div className="cat-name">Tees</div>
-              <div className="cat-count">2 Pieces</div>
+              <div className="cat-count">{loading ? '\u00a0' : piecesLabel(counts.tees)}</div>
               <a href="/shop?cat=tees" className="cat-cta">Shop Tees →</a>
             </div>
           </div>
@@ -241,7 +244,7 @@ export default function HomePage() {
             <div className="cat-num">02 / 04</div>
             <div className="cat-foot">
               <div className="cat-name">Hoodies<br/>+ Crews</div>
-              <div className="cat-count">1 Piece</div>
+              <div className="cat-count">{loading ? '\u00a0' : piecesLabel(counts.hoodies)}</div>
               <a href="/shop?cat=hoodies" className="cat-cta">Shop Hoodies →</a>
             </div>
           </div>
@@ -252,7 +255,7 @@ export default function HomePage() {
             <div className="cat-num">03 / 04</div>
             <div className="cat-foot">
               <div className="cat-name">Bottoms</div>
-              <div className="cat-count">1 Piece</div>
+              <div className="cat-count">{loading ? '\u00a0' : piecesLabel(counts.bottoms)}</div>
               <a href="/shop?cat=bottoms" className="cat-cta">Shop Bottoms →</a>
             </div>
           </div>
@@ -263,7 +266,7 @@ export default function HomePage() {
             <div className="cat-num">04 / 04</div>
             <div className="cat-foot">
               <div className="cat-name">Headwear<br/>+ Acc.</div>
-              <div className="cat-count">1 Piece</div>
+              <div className="cat-count">{loading ? '\u00a0' : piecesLabel(counts.accessories)}</div>
               <a href="/shop?cat=accessories" className="cat-cta">Shop Accessories →</a>
             </div>
           </div>
@@ -292,21 +295,18 @@ export default function HomePage() {
         <div className="man-credit">— The Vibin Manifesto · Vol. 01</div>
       </section>
 
-      {/* DROP COUNTDOWN */}
+      {/* DROP 02: no date announced yet, so no countdown */}
       <section className="drop-block">
         <div className="drop-left">
           <div className="drop-eye">Coming Next · Drop 02</div>
           <h2 className="drop-title">Vol. <em>02</em></h2>
           <p className="drop-info">
-            The next chapter. Pieces designed for late nights, sunrises, and everything in between. Sign up to get early access — drops always sell out before retail.
+            The next chapter. Pieces designed for late nights, sunrises, and everything in between. No date yet. Join the list and we&apos;ll email you when it&apos;s announced.
           </p>
-          <a href="#email-signup" className="btn" style={{borderColor:'var(--cream)',color:'var(--cream)'}}>Get Early Access →</a>
+          <a href="#email-signup" className="btn" style={{borderColor:'var(--cream)',color:'var(--cream)'}}>Get Notified →</a>
         </div>
-        <div className="countdown" id="countdown">
-          <div className="cd"><div className="cd-num" id="cd-d">--</div><div className="cd-lbl">Days</div></div>
-          <div className="cd"><div className="cd-num" id="cd-h">--</div><div className="cd-lbl">Hours</div></div>
-          <div className="cd"><div className="cd-num" id="cd-m">--</div><div className="cd-lbl">Minutes</div></div>
-          <div className="cd"><div className="cd-num" id="cd-s">--</div><div className="cd-lbl">Seconds</div></div>
+        <div className="countdown" aria-label="Drop 02 coming soon">
+          <div className="cd"><div className="cd-num">Coming</div><div className="cd-lbl">Soon</div></div>
         </div>
       </section>
 
@@ -378,7 +378,6 @@ export default function HomePage() {
               <li><a href="/shop?cat=hoodies">Hoodies</a></li>
               <li><a href="/shop?cat=accessories">Accessories</a></li>
               <li><a href="/lookbook">Lookbook</a></li>
-              <li><a href="/print">Print</a></li>
             </ul>
           </div>
           <div className="foot-col">
@@ -419,33 +418,6 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {/* COUNTDOWN SCRIPT — Fix: hardcoded to July 4 2026, not today+30 */}
-      <script dangerouslySetInnerHTML={{ __html: `
-        const DROP02_TARGET = new Date('2026-07-04T00:00:00-05:00');
-
-        function updateCountdown() {
-          const now = new Date().getTime();
-          const diff = DROP02_TARGET.getTime() - now;
-
-          if (diff <= 0) {
-            document.getElementById('countdown').innerHTML = '<a href="/shop" style="color:#f6f1e7;font-size:24px;font-family:Anton,sans-serif;text-transform:uppercase;">Drop 02 is LIVE. Shop Now →</a>';
-            return;
-          }
-
-          const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-          const secs = Math.floor((diff % (1000 * 60)) / 1000);
-
-          document.getElementById('cd-d').textContent = String(days).padStart(2, '0');
-          document.getElementById('cd-h').textContent = String(hours).padStart(2, '0');
-          document.getElementById('cd-m').textContent = String(mins).padStart(2, '0');
-          document.getElementById('cd-s').textContent = String(secs).padStart(2, '0');
-        }
-
-        updateCountdown();
-        setInterval(updateCountdown, 1000);
-      `}} />
     </>
   )
 }

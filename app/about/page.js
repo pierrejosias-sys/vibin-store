@@ -69,13 +69,13 @@ export default function AboutPage() {
             <div className="sec-eye">Our Story</div>
             <h2 className="sec-title">Built in <em>Jacksonville.</em></h2>
             <p className="about-body">
-              Vibin was born in the heart of Miami, FL — a city that moves to its own rhythm. Now based in Jacksonville, the brand carries that Miami energy into every piece: bold, intentional, and unapologetically different.
+              Vibin is built in Jacksonville, FL — a city that moves to its own rhythm. The brand carries that energy into every piece: bold, intentional, and unapologetically different.
             </p>
             <p className="about-body">
               Vibin isn't about following trends or chasing hype. It's about creating quality pieces that speak to the people who don't need to announce who they are — they show it. Every piece is designed with intention. Heavyweight cotton that lasts. Cuts that fit right. Graphics that mean something.
             </p>
             <p className="about-body">
-              A subsidiary of HVD Holdings, LLC, Vibin represents a new wave of lifestyle streetwear that prioritizes substance over spectacle. Built in Miami. Living in Jacksonville. Shipping everywhere.
+              A subsidiary of HVD Holdings, LLC, Vibin represents a new wave of lifestyle streetwear that prioritizes substance over spectacle. Built in Jacksonville. Shipping everywhere.
             </p>
           </div>
           <div className="about-story-img">
@@ -124,7 +124,7 @@ export default function AboutPage() {
         <div className="foot-cols">
           <div className="foot-brand">
             <div className="foot-logo">VIBIN</div>
-            <div className="foot-tagline">A lifestyle streetwear brand from Miami, FL. Now based in Jacksonville. A subsidiary of HVD Holdings.</div>
+            <div className="foot-tagline">A lifestyle streetwear brand from Jacksonville, FL. A subsidiary of HVD Holdings.</div>
           </div>
           <div className="foot-col">
             <h4>Shop</h4>

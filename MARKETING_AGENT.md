@@ -27,7 +27,7 @@ An AI-powered marketing assistant that automates, optimizes, and scales all mark
 ---
 
 ### 2. Email Marketing Agent
-**Platform:** Mailchimp / Klaviyo integration
+**Platform:** Brevo (sign-ups via /api/waitlist; see docs/brevo-setup.md)
 **Automations:**
 - **Welcome Series (3 emails):**
   1. "Welcome to Vibin — here's 15% off your first piece"
@@ -116,7 +116,7 @@ An AI-powered marketing assistant that automates, optimizes, and scales all mark
 |-----------|-------------|---------|
 | AI Engine | OpenAI GPT-4 | Caption generation, content ideas |
 | Scheduling | Buffer API | Auto-post to social platforms |
-| Email | Mailchimp API | Automated email campaigns |
+| Email | Brevo API | Automated email campaigns |
 | Payments | Stripe Connect | Ambassador commission payouts |
 | Analytics | Google Analytics 4 | Web traffic + conversion tracking |
 | CRM | Airtable | Ambassador + customer database |
@@ -159,7 +159,7 @@ graph TD
 ## 🚀 NEXT STEPS TO ACTIVATE MARKETING AGENT
 
 1. **Connect APIs:**
-   - Add Mailchimp API key to Vercel env vars
+   - Add the Brevo env vars to Vercel (docs/brevo-setup.md)
    - Connect Instagram Business account to Meta API
    - Set up Stripe Connect for ambassador payouts
 

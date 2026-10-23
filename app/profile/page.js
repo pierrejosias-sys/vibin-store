@@ -79,7 +79,7 @@ export default function ProfilePage() {
         <Link href="/" style={{fontFamily:'Anton, sans-serif', fontSize:'32px', color:'#f6f1e7', textDecoration:'none'}}>VIBIN</Link>
         <div style={{display:'flex', gap:'24px', alignItems:'center'}}>
           <Link href="/shop" style={{color:'#888', textDecoration:'none', fontSize:'14px'}}>Shop</Link>
-          <Link href="/print" style={{color:'#888', textDecoration:'none', fontSize:'14px'}}>Custom Print</Link>
+          <Link href="/shop" style={{color:'#888', textDecoration:'none', fontSize:'14px'}}>Shop</Link>
           <Link href="/ambassador" style={{color:'#888', textDecoration:'none', fontSize:'14px'}}>Ambassador</Link>
           <Link href="/cart" style={{color:'#f6f1e7', textDecoration:'none', fontSize:'20px'}}>🛒</Link>
         </div>

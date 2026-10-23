@@ -70,3 +70,18 @@ export async function sendLinkEmail({ email, link }, { env = process.env, fetchI
     return { ok: false, error: String(err?.message || err).slice(0, 200) }
   }
 }
+
+/** Opt-out: blocklist the contact in Brevo (PUT /v3/contacts/{email}). Quiet no-op without BREVO_API_KEY; 404 = not in Brevo = fine. */
+export async function unsubscribeFromBrevo(email, { env = process.env, fetchImpl = fetch } = {}) {
+  if (!env.BREVO_API_KEY) return { skipped: true }
+  try {
+    const res = await fetchImpl(`${URL_CONTACTS}/${encodeURIComponent(email)}`, {
+      method: 'PUT',
+      headers: { 'api-key': env.BREVO_API_KEY, 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ emailBlacklisted: true }),
+    })
+    return res.ok || res.status === 404 ? { ok: true } : { ok: false, error: `brevo ${res.status}` }
+  } catch (err) {
+    return { ok: false, error: String(err?.message || err).slice(0, 200) }
+  }
+}

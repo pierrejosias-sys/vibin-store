@@ -117,8 +117,9 @@ export default function PrivacyPolicy() {
             <p style={{marginTop:'12px'}}>
               Email: <a href="mailto:privacy@vibinapparel.com" style={{color:'#e05c2e'}}>privacy@vibinapparel.com</a><br />
               Mail: Vibin Apparel, LLC (c/o HVD Holdings, LLC)<br />
-              10151 Deerwood Park Blvd, Building 100, Suite 250<br />
-              Jacksonville, FL 32256
+              1285 West 26th Street<br />
+              Jacksonville, FL 32209<br />
+              Phone: <a href="tel:+17867161673" style={{color:'#e05c2e'}}>(786) 716-1673</a>
             </p>
           </section>
 

@@ -140,7 +140,7 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     try {
-      const res = await fetch('/api/mailchimp/unsubscribe', {
+      const res = await fetch('/api/waitlist/unsubscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
