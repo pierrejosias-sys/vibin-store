@@ -8,6 +8,7 @@ import { loadStripe } from '@stripe/stripe-js'
 import { useCart } from '../lib/cart-context'
 import styles from '../styles.css'
 import { shippingFor, FREE_SHIPPING_LABEL } from '../lib/shipping'
+import { useDropStatus } from '../lib/use-drop-status'
 
 const STRIPE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 const stripePromise = STRIPE_PUBLISHABLE_KEY ? loadStripe(STRIPE_PUBLISHABLE_KEY) : Promise.resolve(null)
@@ -22,6 +23,7 @@ export default function CheckoutPage() {
   const [errorMsg, setErrorMsg] = useState(null)
   const [preorderAck, setPreorderAck] = useState(false)
   const { updateCart } = useCart()
+  const drop = useDropStatus()
   const router = useRouter()
 
   const [shipping, setShipping] = useState({
@@ -101,7 +103,7 @@ export default function CheckoutPage() {
     return (
       <>
         <style dangerouslySetInnerHTML={{ __html: styles }} />
-        <div className="promo"><div className="promo-track"><span>Free shipping over {FREE_SHIPPING_LABEL}</span><span>SS26 Drop is live</span></div></div>
+        <div className="promo"><div className="promo-track"><span>Free shipping over {FREE_SHIPPING_LABEL}</span><span>{drop.promo}</span></div></div>
         <nav>
           <Link href="/" className="logo">VIBIN</Link>
           <div className="nav-actions"><Link href="/cart" className="nav-icon">🛒</Link></div>
@@ -122,8 +124,8 @@ export default function CheckoutPage() {
 
       <div className="promo">
         <div className="promo-track">
-          <span>Free shipping over {FREE_SHIPPING_LABEL}</span><span>SS26 Drop is live</span>
-          <span>Free shipping over {FREE_SHIPPING_LABEL}</span><span>SS26 Drop is live</span>
+          <span>Free shipping over {FREE_SHIPPING_LABEL}</span><span>{drop.promo}</span>
+          <span>Free shipping over {FREE_SHIPPING_LABEL}</span><span>{drop.promo}</span>
         </div>
       </div>
 
