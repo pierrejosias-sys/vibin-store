@@ -30,7 +30,7 @@ async function loadThread(supabase, { ticket, email, token }) {
   return chat
 }
 
-// GET /api/support?ticket=VB-XXXXXX&email=...&token=... -> the customer's own thread
+// GET /api/support?ticket=VB-XXXXXX&email=... + access token -> the customer's own thread
 export async function GET(request) {
   const p = new URL(request.url).searchParams
   try {
@@ -76,14 +76,14 @@ export async function POST(request) {
     if (!v.ok) return json({ error: v.error }, 400)
     const t = v.value
     if (await emailOverLimit(supabase, t.email)) return json({ error: 'Too many messages. Please wait a few minutes.' }, 429)
-    const token = newAccessToken()
+    const accessToken = newAccessToken()
     const source = body.source === 'chat' ? 'chat' : 'contact'
     let chat = null
     for (let i = 0; i < 3 && !chat; i++) {
       const { data, error } = await supabase.from('support_chats').insert({
         chat_id: newTicketCode(), email: t.email, name: t.name, topic: t.topic, order_number: t.orderNumber,
         subject: `${t.topic}${t.orderNumber ? ` · #${t.orderNumber}` : ''}`, status: 'open', source,
-        access_token_hash: hashToken(token), updated_at: now, last_message_at: now,
+        access_token_hash: hashToken(accessToken), updated_at: now, last_message_at: now,
       }).select('id, chat_id').single()
       if (data) chat = data
       else if (error?.code !== '23505') throw error
@@ -91,7 +91,7 @@ export async function POST(request) {
     if (!chat) throw new Error('could not allocate ticket code')
     const { error: mErr } = await supabase.from('support_messages').insert({ chat_id: chat.id, sender: 'customer', sender_email: t.email, message: t.message })
     if (mErr) { await supabase.from('support_chats').delete().eq('id', chat.id); throw mErr }
-    return json({ ok: true, ticket: chat.chat_id, token, email: t.email }, 201)
+    return json({ ok: true, ticket: chat.chat_id, token: accessToken, email: t.email }, 201)
   } catch (err) {
     console.error('support POST', err.message)
     return json({ error: 'We could not send that. Please email hello@vibinapparel.com.' }, 500)
