@@ -18,6 +18,8 @@ export default function CheckoutPage() {
   const [items, setItems] = useState([])
   const [ambassadorCode, setAmbassadorCode] = useState(null)
   const [paymentStatus, setPaymentStatus] = useState(null)
+  const [errorMsg, setErrorMsg] = useState(null)
+  const [preorderAck, setPreorderAck] = useState(false)
   const { updateCart } = useCart()
   const router = useRouter()
 
@@ -59,12 +61,14 @@ export default function CheckoutPage() {
           email: shipping.email,
           ambassadorCode: ambassadorCode || null,
           shippingAddress: shipping,
+          preorderAck,
         })
       })
 
       const { sessionId, url, error } = await response.json()
 
       if (error) {
+        setErrorMsg(error)
         setPaymentStatus('error')
         setLoading(false)
         return
@@ -182,7 +186,7 @@ export default function CheckoutPage() {
 
             {paymentStatus === 'error' && (
               <div style={{ padding: '12px', background: '#ffcccc', color: '#cc0000', marginBottom: '20px', fontSize: '13px' }}>
-                Payment failed. Please try again.
+                {errorMsg || 'Payment failed. Please try again.'}
               </div>
             )}
 
@@ -199,7 +203,13 @@ export default function CheckoutPage() {
               <div className="checkout-total"><span>Total</span><span>${total}</span></div>
             </div>
 
-            <button className="btn-atc" onClick={handleStripeCheckout} disabled={loading}>
+            {items.some(i => i.drop) && (
+              <label style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', margin: '16px 0', fontSize: '14px' }}>
+                <input type="checkbox" checked={preorderAck} onChange={e => setPreorderAck(e.target.checked)} required />
+                <span>I understand this is a pre-order shipping by Dec 11–17.</span>
+              </label>
+            )}
+            <button className="btn-atc" onClick={handleStripeCheckout} disabled={loading || (items.some(i => i.drop) && !preorderAck)}>
               {loading ? 'Processing...' : `Pay $${total} with Stripe →`}
             </button>
 

@@ -3,6 +3,7 @@
  * See supabase/migrations/20261022000001_drops_numbered_pieces.sql
  */
 import { DROPS, SIZES, PIECE_HOLD_MINUTES, isStylePurchasable } from './drops'
+import { dropPhase, serverNow } from './drop-window.mjs'
 
 export function isDropItem(item) {
   return !!(item && item.drop && item.style)
@@ -15,7 +16,7 @@ export async function resolveDropItems(supabase, items) {
 
   const dropIds = [...new Set(dropItems.map(i => i.drop))]
   const [{ data: drops }, { data: styles }] = await Promise.all([
-    supabase.from('drops').select('id, name, release_at').in('id', dropIds),
+    supabase.from('drops').select('id, name, release_at, closes_at').in('id', dropIds),
     supabase.from('drop_styles').select('drop_id, style_code, name, price').in('drop_id', dropIds),
   ])
 
@@ -23,7 +24,9 @@ export async function resolveDropItems(supabase, items) {
     const drop = drops?.find(d => d.id === item.drop)
     if (!drop || !DROPS[item.drop]) return { error: 'Unknown drop.' }
     if (!isStylePurchasable(item.drop, item.style)) return { error: 'This item is not available for purchase yet.', status: 409 }
-    if (!drop.release_at || new Date(drop.release_at).getTime() > Date.now()) return { error: `${drop.name} has not released yet.` }
+    const phase = dropPhase(drop.release_at, drop.closes_at, serverNow())
+    if (phase === 'tba' || phase === 'upcoming') return { error: `${drop.name} pre-order has not opened yet.`, status: 409 }
+    if (phase === 'closed') return { error: `${drop.name} pre-order is closed.`, status: 409 }
     if (!SIZES.includes(item.size)) return { error: 'Invalid size.' }
     const qty = Number(item.qty)
     if (!Number.isInteger(qty) || qty < 1 || qty > 10) return { error: 'Invalid quantity.' }
@@ -34,6 +37,8 @@ export async function resolveDropItems(supabase, items) {
     item.qty = qty
     item.price = price // never trust the client price for drop items
     item.name = `${row.name} — ${drop.name}`
+    item.preorder = true
+    item.shipsBy = DROPS[item.drop].shipsBy
   }
   return { dropItems }
 }

@@ -40,6 +40,9 @@ export async function POST(request) {
 
     // Numbered drop items: validate, price server-side, and hold pieces before payment.
     const { dropItems, error: dropError, status: dropStatus } = await resolveDropItems(supabase, items)
+    if (dropItems?.length && body.preorderAck !== true) {
+      return Response.json({ error: 'Please confirm you understand this is a pre-order.' }, { status: 400 })
+    }
     if (dropError) return Response.json({ error: dropError }, { status: dropStatus || 400 })
     if (dropItems.length) {
       const claim = await claimDropPieces(supabase, dropItems)
@@ -75,7 +78,9 @@ export async function POST(request) {
         currency: 'usd',
         product_data: {
           name: item.name,
-          description: `${item.color} / ${item.size}`,
+          description: item.preorder
+            ? `Pre-order · Ships by ${item.shipsBy} · Size ${item.size}`
+            : `${item.color} / ${item.size}`,
         },
         unit_amount: Math.round(item.price * 100),
       },

@@ -27,9 +27,11 @@ export const DROPS = {
     id: 'd01',
     slug: '01',
     name: 'Drop 01: The Foundation',
-    // ⚠️ PLACEHOLDER — release time not set yet. null = locked / "TBA".
-    // Set the real value in the `drops` table (release_at); this is only a fallback.
-    releaseAt: null,
+    // Pre-order window (source of truth: drops.release_at / drops.closes_at; this is the fallback).
+    // Opens Thu Nov 12, 2026 7:00 PM ET; closes Sun Nov 15, 2026 11:59 PM ET.
+    releaseAt: '2026-11-13T00:00:00Z',
+    closesAt: '2026-11-16T04:59:59Z',
+    shipsBy: 'Dec 11–17',
     story: 'Drop 01 is the first numbered Vibin Apparel run, limited to 50 pieces per style, made in Jacksonville, FL.',
     careInfo: 'Machine wash cold inside out, hang dry, do not bleach, and iron low away from prints and embroidery.',
     piecesPerStyle: 50,
@@ -84,13 +86,14 @@ export async function getDropState(dropId) {
 
   try {
     const [{ data: drop }, { data: styles }] = await Promise.all([
-      supabase.from('drops').select('name, story, release_at, pieces_per_style').eq('id', dropId).maybeSingle(),
+      supabase.from('drops').select('name, story, release_at, closes_at, pieces_per_style').eq('id', dropId).maybeSingle(),
       supabase.from('drop_styles').select('style_code, name, price, sort_order').eq('drop_id', dropId).order('sort_order'),
     ])
     if (drop) {
       state.name = drop.name || state.name
       state.story = drop.story || state.story
       state.releaseAt = drop.release_at
+      state.closesAt = drop.closes_at ?? null
       state.piecesPerStyle = drop.pieces_per_style || state.piecesPerStyle
     }
     if (styles?.length) {
@@ -129,6 +132,8 @@ export function styleAvailability(dropId, styleCode) {
 export function isStylePurchasable(dropId, styleCode) {
   return styleAvailability(dropId, styleCode) === 'available'
 }
+
+export { dropPhase, formatET, serverNow } from './drop-window.mjs'
 
 export function isReleased(releaseAt, now = Date.now()) {
   return !!releaseAt && new Date(releaseAt).getTime() <= now
