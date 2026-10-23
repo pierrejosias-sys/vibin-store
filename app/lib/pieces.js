@@ -2,7 +2,7 @@
  * Server-only helpers for numbered drop pieces (service-role RPCs).
  * See supabase/migrations/20261022000001_drops_numbered_pieces.sql
  */
-import { DROPS, SIZES, PIECE_HOLD_MINUTES, isStylePurchasable } from './drops'
+import { DROPS, sizesForStyle, PIECE_HOLD_MINUTES, isStylePurchasable } from './drops'
 import { dropPhase, serverNow } from './drop-window.mjs'
 
 export function isDropItem(item) {
@@ -27,7 +27,7 @@ export async function resolveDropItems(supabase, items) {
     const phase = dropPhase(drop.release_at, drop.closes_at, serverNow())
     if (phase === 'tba' || phase === 'upcoming') return { error: `${drop.name} pre-order has not opened yet.`, status: 409 }
     if (phase === 'closed') return { error: `${drop.name} pre-order is closed.`, status: 409 }
-    if (!SIZES.includes(item.size)) return { error: 'Invalid size.' }
+    if (!sizesForStyle(item.style).includes(item.size)) return { error: 'Invalid size.' }
     const qty = Number(item.qty)
     if (!Number.isInteger(qty) || qty < 1 || qty > 10) return { error: 'Invalid quantity.' }
     const row = styles?.find(s => s.drop_id === item.drop && s.style_code === item.style)

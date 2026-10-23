@@ -1,8 +1,10 @@
-# Printful print-on-demand setup (Foundation Tee)
+# Printful print-on-demand setup (VOL 01 Hoodie)
 
 When Stripe sends `checkout.session.completed` for a **paid** session, `/api/webhook`
 calls `fulfillWithPrintful()` (`app/lib/printful.js`). It sends the cart's POD lines
-(currently the Foundation Tee, black, S–3X) to Printful and records the result on
+to Printful. **Only the Drop 01 VOL 01 Hoodie (drop style `hd`, $195, S–3X) is print-on-demand**
+(allow-list `PRINTFUL_PRODUCTS` in `app/lib/printful-core.mjs`); the Foundation Tee and
+Snapback are fulfilled in-house and are never sent, even if they appear in the map and records the result on
 the `orders` row. Everything else in the cart is left for manual fulfillment and
 listed in `orders.printful_error` ("Manual fulfillment needed for: …").
 
@@ -20,63 +22,73 @@ listed in `orders.printful_error` ("Manual fulfillment needed for: …").
   `fulfillment_status = printful_failed` along with `printful_error`. The next delivery of
   the same event retries, and Stripe's "Resend" button in the Dashboard works for this.
 
+## Product: Lane Seven LS17001 (Printful catalog product 1540)
+"Unisex Super Heavyweight Hoodie | Lane Seven LS17001". It's 16.5 oz (560 g/m²) 65/35 cotton/poly, raglan, with a double-layer hood **without drawstrings**.
+Techniques: DTF film or embroidery. Print placement used: `front_dtf`.
+Source: `GET https://api.printful.com/products/1540` (public, no auth), Oct 23, 2026.
+
+| Size | Black variant id | Printful base price (USD) |
+|---|---|---|
+| S | 48514 | 39.73 |
+| M | 48520 | 39.73 |
+| L | 48526 | 39.73 |
+| XL | 48532 | 39.73 |
+| 2X (2XL) | 48538 | 41.73 |
+| 3X (3XL) | 48544 | 43.73 |
+
+Other colors: Arona, Asphalt, Chocolate Brown, Cream and Moss Gray. Each has an XS–3XL run (e.g. Cream M = 48522).
+XS is not sold.
+
+**Default routing (no `PRINTFUL_VARIANT_MAP` needed):** `hd:<size>` goes to the Black catalog variant above. It carries one
+file `{type:"front_dtf", url: PRINTFUL_HOODIE_FILE_URL}`. The default URL is
+`https://vibinapparel.com/print/d01-hd-front-01-columns-chest-4in.png`.
+**Art (UNCONFIRMED):** that file is Design's "01 Columns" chest hit (1200×1200 px, 4 in @300 DPI, transparent, cream/gold).
+The Drop 01 graphics README calls it the "hoodie hero". The hoodie tech pack (Rev 0.5) still specifies a small embroidered
+left-chest wordmark, and its back art is "pending owner pick". So no front art is formally approved for DTF yet.
+Confirm or replace the file before turning on `PRINTFUL_CONFIRM`.
+Without a `position`, Printful scales the file to fill the front print area. For a 4 in chest hit, set
+`PRINTFUL_HOODIE_FILE_POSITION` (JSON, Printful v1 file position:
+`{"area_width":…,"area_height":…,"width":…,"height":…,"top":…,"left":…}`).
+Get the numbers from Printful's design maker. The simpler route is to build the product in Printful's dashboard and
+put its **sync variant ids** in `PRINTFUL_VARIANT_MAP` (`{"hd:S":<sync id>,…}`). That overrides the default entirely.
+
 ## Checklist for Josias
 
-### 1. Apply the migration
+
+### 1. Migrations (already applied Oct 23, 2026)
 Run `supabase/migrations/20261023000003_orders_printful_fulfillment.sql` against production
 (Supabase SQL editor or `supabase db push`). Do this **before** setting `PRINTFUL_API_TOKEN`.
 Until you set the token, the integration does nothing.
 
-### 2. Create the Printful product (Logistics)
+### 2. Printful store
 In Printful, add a store for vibinapparel.com (type "Manual order platform / API").
-Then create the Foundation Tee product in black, sizes S, M, L, XL, 2XL, 3XL, with the design files.
-Each size becomes a **sync variant**, which has its own id.
+Optionally, build the LS17001 hoodie there as a product with the approved art, and use its sync variant ids (see above).
 
 ### 3. Create a private token
-* Go to https://developers.printful.com/tokens ("Your tokens" in the Developer Portal;
-  log in at https://developers.printful.com/login). Use "Add new token":
-  https://developers.printful.com/tokens/add-new-token
-* Access level: **the vibinapparel.com store** (a store-level token). If you pick an
-  account-level token instead, you must set `PRINTFUL_STORE_ID`.
-* Scopes:
-  * `orders` (read/write)
-  * `sync_products/read`, used to look up the variant ids
-  * `webhooks` (read/write), used to register the webhook below
-* Copy the token right away, because Printful only shows it once. Note the expiry
-  date, too. Private tokens expire and must be replaced by hand.
+1. Open https://developers.printful.com/tokens and log in.
+2. Choose "Add new token".
+3. Set the access level to the vibinapparel.com store.
+4. Select these scopes: **orders**, **products** (sync products), **file library**, **webhooks**. Read+write.
+5. Copy the token immediately. It is shown once and has an expiry date.
 
-### 4. Find the sync variant ids
-```bash
-curl -s https://api.printful.com/store/products -H "Authorization: Bearer $PRINTFUL_API_TOKEN"
-curl -s https://api.printful.com/store/products/<sync_product_id> -H "Authorization: Bearer $PRINTFUL_API_TOKEN"
-# -> result.sync_variants[].id  (with .size / .name)
-```
-Add `-H "X-PF-Store-Id: <id>"` if the token is account-level. To get the store id, run
-`curl -s https://api.printful.com/stores -H "Authorization: Bearer …"`.
+### 4. Find the store id
+`curl -s https://api.printful.com/stores -H "Authorization: Bearer <token>"`, then read `result[].id`.
 
 ### 5. Vercel environment variables
-Go to Vercel → project **vibin-store** → Settings → Environment Variables
-(https://vercel.com/dashboard → vibin-store → Settings → Environment Variables).
-Set these for Production, and for Preview if you want to test there:
+1. Open https://vercel.com/team_4QgnaZOcozdgjGoDhf0EwX7T/vibin-store/settings/environment-variables
+2. Add these with the **Production** environment selected:
 
 | Name | Value |
 |---|---|
-| `PRINTFUL_API_TOKEN` | the private token from step 3 |
-| `PRINTFUL_STORE_ID` | numeric store id (needed only for account-level tokens, but harmless otherwise) |
-| `PRINTFUL_CONFIRM` | `false` to start (orders land as drafts you confirm in Printful). Set it to `true` only after a test order looks right. |
-| `PRINTFUL_WEBHOOK_SECRET` | a long random string, e.g. `openssl rand -hex 32` |
-| `PRINTFUL_VARIANT_MAP` | JSON, see below |
+| `PRINTFUL_API_TOKEN` | the token from step 3 |
+| `PRINTFUL_STORE_ID` | the store id from step 4 |
+| `PRINTFUL_CONFIRM` | (optional) leave unset or `false`. Orders land as **drafts** you confirm in Printful. Set `true` only after a test order looks right. |
+| `PRINTFUL_WEBHOOK_SECRET` | (optional) long random string, for tracking updates (step 7) |
+| `PRINTFUL_HOODIE_FILE_URL` / `PRINTFUL_HOODIE_FILE_POSITION` | (optional) override the print file / placement |
+| `PRINTFUL_VARIANT_MAP` | (optional) sync variant ids, overrides the default LS17001 mapping |
 
-`PRINTFUL_VARIANT_MAP`: keys are `<product id or slug>:<size>`. The Foundation Tee is
-product id `1` in the `products` table. Sizes `2XL`/`XXL` normalize to `2X`, and `3XL`/`XXXL` to `3X`.
-Use a value of `0` as a placeholder. A POD item with a placeholder is **not** sent. Instead the
-order gets `fulfillment_status = printful_needs_mapping`.
-```json
-{"1:S":0,"1:M":0,"1:L":0,"1:XL":0,"1:2X":0,"1:3X":0}
-```
-Replace each `0` with the sync variant id. You can also use a catalog variant plus print files:
-`"1:M":{"variant_id":4017,"files":[{"url":"https://…/front.png"}]}`.
-After changing env vars, redeploy.
+3. **Redeploy:** Deployments → latest Production deployment → ⋯ → Redeploy. Env changes apply only to new deployments.
+   Until `PRINTFUL_API_TOKEN` is set, the integration does nothing.
 
 ### 6. Stripe webhook events
 Go to Stripe Dashboard → Developers → Webhooks (https://dashboard.stripe.com/webhooks).
@@ -102,7 +114,7 @@ When `package_shipped` arrives, the route sets `status = shipped`, `fulfillment_
 `tracking_number`, `tracking_url`, `carrier` and `shipped_at`.
 
 ### 8. Test
-Keep `PRINTFUL_CONFIRM=false` and place a real order for one Foundation Tee. Then check:
+Keep `PRINTFUL_CONFIRM=false` and place a real order for one VOL 01 Hoodie (when the pre-order is open). Then check:
 * A draft order `vibin-<orderId>` appears in Printful → Orders.
 * The order row has `printful_order_id` set and `fulfillment_status = printful_draft`.
 * In Stripe, "Resend" the event. There should still be one Printful order.

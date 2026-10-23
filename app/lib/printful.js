@@ -4,7 +4,7 @@
  * Docs: https://developers.printful.com/docs/  Setup: docs/printful-setup.md
  */
 import {
-  parseVariantMap, splitCart, recipientFromSession, buildOrderPayload,
+  parseVariantMap, defaultVariantMap, splitCart, recipientFromSession, buildOrderPayload,
   decideFulfillment, isConfirmEnabled, fulfillmentStatusFromPrintful, externalIdFor,
 } from './printful-core.mjs'
 
@@ -53,7 +53,9 @@ export async function fulfillWithPrintful(supabase, session) {
     if (session.payment_status !== 'paid') return { skipped: `payment_status=${session.payment_status}` }
     if (!process.env.PRINTFUL_API_TOKEN) { log('PRINTFUL_API_TOKEN not set — skipping'); return { skipped: 'not configured' } }
 
-    const variantMap = parseVariantMap(process.env.PRINTFUL_VARIANT_MAP)
+    const variantMap = process.env.PRINTFUL_VARIANT_MAP
+      ? parseVariantMap(process.env.PRINTFUL_VARIANT_MAP)
+      : defaultVariantMap(process.env)
     const { data: order, error } = await supabase.from('orders')
       .select('id, items, printful_order_id, fulfillment_status, printful_claimed_at').eq('id', orderId).maybeSingle()
     if (error) throw new Error(`load order: ${error.message}`)
