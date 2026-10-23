@@ -28,11 +28,11 @@ test('parseVariantMap: numbers, objects, placeholders, errors', () => {
 test('splitCart: Foundation Tee all sizes, mixed cart, unmapped placeholder', () => {
   const map = parseVariantMap(MAP)
   const items = [
-    { id: 1, name: 'Foundation Tee — Black', size: 'S', qty: 1, price: 48 },
-    { id: 1, name: 'Foundation Tee — Black', size: 'XXL', qty: 2, price: 48 },
+    { id: 1, name: 'Foundation Tee — Black', size: 'S', qty: 1, price: 85 },
+    { id: 1, name: 'Foundation Tee — Black', size: 'XXL', qty: 2, price: 85 },
     { id: 'snapback-001', name: 'Snapback', size: 'OS', qty: 1, price: 30 },
     { id: 7, drop: 'drop-01', style: 'cj', size: 'M', qty: 1 },
-    { id: 1, name: 'Foundation Tee — Black', size: '3X', qty: 1, price: 48 },
+    { id: 1, name: 'Foundation Tee — Black', size: '3X', qty: 1, price: 85 },
   ]
   const { podLines, manualLines, unmapped } = splitCart(items, map)
   assert.deepEqual(podLines.map(l => l.variant.sync_variant_id), [101, 105])
@@ -57,10 +57,10 @@ test('recipientFromSession handles new and legacy Stripe shapes', () => {
 
 test('buildOrderPayload uses stable external ids', () => {
   const map = parseVariantMap(MAP)
-  const { podLines } = splitCart([{ id: 1, size: 'M', qty: 2, price: 48, name: 'Tee' }], map)
+  const { podLines } = splitCart([{ id: 1, size: 'M', qty: 2, price: 85, name: 'Tee' }], map)
   const p = buildOrderPayload({ orderId: 42, recipient: { name: 'x' }, podLines })
   assert.equal(p.external_id, 'vibin-42')
-  assert.deepEqual(p.items[0], { external_id: 'vibin-42-1', quantity: 2, sync_variant_id: 102, retail_price: '48.00', name: 'Tee' })
+  assert.deepEqual(p.items[0], { external_id: 'vibin-42-1', quantity: 2, sync_variant_id: 102, retail_price: '85.00', name: 'Tee' })
 })
 
 test('decideFulfillment idempotency rules', () => {
