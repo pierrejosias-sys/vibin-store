@@ -187,7 +187,7 @@ export default function ProductPage() {
           {/* PRICE */}
           <div className="price-row">
             <span className="current">${Number(product.price).toFixed(2)}</span>
-            {product.compare_price && (
+            {Number(product.compare_price) > Number(product.price) && (
               <>
                 <span className="original">${Number(product.compare_price).toFixed(2)}</span>
                 <span className="save">
