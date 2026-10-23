@@ -5,6 +5,7 @@
 import { DROPS, sizesForStyle, PIECE_HOLD_MINUTES, isStylePurchasable } from './drops'
 import { serverNow } from './drop-window.mjs'
 import { accessPhase, canPreorder } from './early-access.mjs'
+import { allowedStyleColor } from './drop-catalog.mjs'
 
 export function isDropItem(item) {
   return !!(item && item.drop && item.style)
@@ -31,6 +32,9 @@ export async function resolveDropItems(supabase, items, { earlyAccessGranted = f
     } else if (phase === 'tba' || phase === 'upcoming') return { error: `${drop.name} pre-order has not opened yet.`, status: 409 }
     if (phase === 'closed') return { error: `${drop.name} pre-order is closed.`, status: 409 }
     if (!sizesForStyle(item.style).includes(item.size)) return { error: 'Invalid size.' }
+    const color = allowedStyleColor(item.drop, item.style, item.color)
+    if (!color) return { error: 'That color is not available. The Drop 01 hoodie comes in Black only.' }
+    item.color = color
     const qty = Number(item.qty)
     if (!Number.isInteger(qty) || qty < 1 || qty > 10) return { error: 'Invalid quantity.' }
     const row = styles?.find(s => s.drop_id === item.drop && s.style_code === item.style)
