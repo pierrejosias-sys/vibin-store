@@ -5,6 +5,7 @@
  * below is the fallback when the table/env is unavailable.
  */
 import { createClient } from '@supabase/supabase-js'
+import { DROP_CATALOG } from './drop-catalog.mjs'
 
 export const STYLE_NAMES = {
   hd: 'Hoodie',
@@ -89,7 +90,8 @@ export async function getDropState(dropId) {
   const withAvailability = st => st
     .map(s => ({ ...s, availability: styleAvailability(dropId, s.code) }))
     .filter(s => s.availability !== 'hidden')
-  const state = { ...base, styles: withAvailability(base.styles.map(s => ({ ...s, remaining: null, sizes: {} }))), inventoryAvailable: false }
+  const catalog = (DROP_CATALOG[dropId] || []).map(c => ({ ...c, inStock: true }))
+  const state = { ...base, styles: withAvailability(base.styles.map(s => ({ ...s, remaining: null, sizes: {} }))), catalog, inventoryAvailable: false }
   const supabase = publicClient()
   if (!supabase) return state
 
@@ -110,6 +112,13 @@ export async function getDropState(dropId) {
         const cfg = base.styles.find(c => c.code === s.style_code) || {}
         return { code: s.style_code, name: s.name, price: s.price != null ? Number(s.price) : cfg.price ?? null, description: s.description || cfg.description || null, remaining: null, sizes: {} }
       }))
+    }
+    if (catalog.length) {
+      const { data: prods } = await supabase.from('products').select('id, name, price, in_stock, color').in('id', catalog.map(c => c.productId))
+      for (const c of state.catalog) {
+        const p = prods?.find(x => Number(x.id) === c.productId)
+        if (p) Object.assign(c, { name: p.name || c.name, price: Number(p.price), inStock: p.in_stock !== false, color: p.color || null })
+      }
     }
   } catch (err) {
     console.warn('getDropState: drops lookup failed', err.message)

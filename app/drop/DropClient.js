@@ -102,6 +102,52 @@ function ComingSoonCard({ drop, style }) {
   )
 }
 
+function CatalogCard({ drop, item, released }) {
+  const { updateCart } = useCart() || {}
+  const [size, setSize] = useState(item.sizes.length === 1 ? item.sizes[0] : null)
+  const [added, setAdded] = useState(false)
+  const canBuy = released && item.inStock && size
+
+  function addToCart() {
+    if (!canBuy) return
+    const cart = JSON.parse(localStorage.getItem('vibin_cart') || '[]')
+    const existing = cart.find(i => String(i.id) === String(item.productId) && i.size === size)
+    if (existing) existing.qty += 1
+    else cart.push({ id: item.productId, slug: item.slug, name: item.name, price: item.price, color: item.color || 'Black', size, qty: 1, image_url: null, preorder: drop.id })
+    localStorage.setItem('vibin_cart', JSON.stringify(cart))
+    updateCart?.()
+    setAdded(true)
+    setTimeout(() => setAdded(false), 2000)
+  }
+
+  return (
+    <div style={S.card}>
+      <div style={S.eyebrow}>{drop.id.toUpperCase()} · Made in-house</div>
+      <h3 style={{ margin: '8px 0' }}>{item.name}</h3>
+      <div style={{ opacity: 0.8 }}>${item.price}</div>
+      {drop.shipsBy && <div style={{ fontSize: 13, opacity: 0.8, marginTop: 4 }}>Pre-order · Ships by {drop.shipsBy}</div>}
+      <div style={{ margin: '12px 0', fontSize: 14 }}>
+        {!released && <span>🔒 {drop.phase === 'closed' ? 'Pre-order closed' : `Pre-order opens ${formatET(drop.releaseAt)}`}</span>}
+        {released && !item.inStock && <strong style={{ color: '#f66' }}>SOLD OUT</strong>}
+      </div>
+      {released && item.inStock && (
+        <>
+          {item.sizes.length > 1 ? (
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+              {item.sizes.map(sz => (
+                <button key={sz} onClick={() => setSize(sz)} style={{ ...S.size, ...(size === sz ? { background: '#f5f5f5', color: '#0a0a0a' } : {}) }}>{sz}</button>
+              ))}
+            </div>
+          ) : <div style={{ fontSize: 13, opacity: 0.7, marginBottom: 12 }}>One size</div>}
+          <button style={{ ...S.btn, ...(canBuy ? {} : S.btnOff) }} disabled={!canBuy} onClick={addToCart}>
+            {added ? 'Added ✓' : size ? 'Add to cart' : 'Pick a size'}
+          </button>
+        </>
+      )}
+    </div>
+  )
+}
+
 function StyleCard({ drop, style, released }) {
   const { updateCart } = useCart() || {}
   const [size, setSize] = useState(null)
@@ -231,10 +277,13 @@ export default function DropClient({ drop: dropProp, phase, serverNow }) {
         )}
 
         <div style={S.grid}>
-          {drop.styles.map(style => (
-            style.availability === 'coming-soon'
-              ? <ComingSoonCard key={style.code} drop={drop} style={style} />
-              : <StyleCard key={style.code} drop={drop} style={style} released={released} />
+          {(drop.catalog || []).filter(c => c.slug === 'vibin-classic-tee').map(c => <CatalogCard key={c.slug} drop={drop} item={c} released={released} />)}
+          {drop.styles.filter(s => s.availability !== 'coming-soon').map(style => (
+            <StyleCard key={style.code} drop={drop} style={style} released={released} />
+          ))}
+          {(drop.catalog || []).filter(c => c.slug !== 'vibin-classic-tee').map(c => <CatalogCard key={c.slug} drop={drop} item={c} released={released} />)}
+          {drop.styles.filter(s => s.availability === 'coming-soon').map(style => (
+            <ComingSoonCard key={style.code} drop={drop} style={style} />
           ))}
         </div>
       </div>

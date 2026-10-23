@@ -55,7 +55,8 @@ export default function ProductPage() {
         size: selectedSize,
         qty,
         slug: product.slug,
-        image_url: product.image_url || null
+        image_url: product.image_url || null,
+        ...(product.slug === 'vibin-classic-tee' ? { preorder: 'd01' } : {})
       })
     }
     localStorage.setItem('vibin_cart', JSON.stringify(cart))
@@ -188,6 +189,9 @@ export default function ProductPage() {
           </h1>
 
           {/* PRICE */}
+          {product.slug === 'vibin-classic-tee' && (
+            <p style={{ fontWeight: 700, margin: '8px 0' }}>Drop 01 pre-order · opens Thu Nov 12, 7:00 PM ET · Ships by Dec 11–17</p>
+          )}
           <div className="price-row">
             <span className="current">${Number(product.price).toFixed(2)}</span>
             {Number(product.compare_price) > Number(product.price) && (

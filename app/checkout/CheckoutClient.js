@@ -203,13 +203,13 @@ export default function CheckoutPage() {
               <div className="checkout-total"><span>Total</span><span>${total}</span></div>
             </div>
 
-            {items.some(i => i.drop) && (
+            {items.some(i => i.drop || i.preorder) && (
               <label style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', margin: '16px 0', fontSize: '14px' }}>
                 <input type="checkbox" checked={preorderAck} onChange={e => setPreorderAck(e.target.checked)} required />
                 <span>I understand this is a pre-order shipping by Dec 11–17.</span>
               </label>
             )}
-            <button className="btn-atc" onClick={handleStripeCheckout} disabled={loading || (items.some(i => i.drop) && !preorderAck)}>
+            <button className="btn-atc" onClick={handleStripeCheckout} disabled={loading || (items.some(i => i.drop || i.preorder) && !preorderAck)}>
               {loading ? 'Processing...' : `Pay $${total} with Stripe →`}
             </button>
 

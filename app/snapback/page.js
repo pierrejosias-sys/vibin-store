@@ -30,7 +30,7 @@ export default function SnapbackPage() {
       const cart = JSON.parse(localStorage.getItem('vibin_cart') || '[]')
       const existing = cart.find(i => i.id === 'snapback-001' && i.color === cw.name)
       if (existing) { existing.qty += qty } else {
-        cart.push({ id: 'snapback-001', name: 'Vibin Snapback', price, color: cw.name, size: 'OS', qty, slug: 'vibin-snapback' })
+        cart.push({ id: 'snapback-001', name: 'Vibin Snapback', price, color: cw.name, size: 'OS', qty, slug: 'vibin-snapback', preorder: 'd01' })
       }
       localStorage.setItem('vibin_cart', JSON.stringify(cart))
     } catch(e) {}
@@ -470,6 +470,8 @@ export default function SnapbackPage() {
           <div className="price">
             ${price.toFixed(2)} <span className="tag">NEW</span>
           </div>
+
+          <p style={{ fontWeight: 700, margin: '8px 0' }}>Drop 01 pre-order · opens Thu Nov 12, 7:00 PM ET · Ships by Dec 11–17</p>
 
           <p className="desc">
             Structured 6-panel snapback with embroidered VIBIN wordmark on the front crown. Flat brim with tonal stitching. One-size-fits-most snap closure. Built for everyday wear — the cap that goes with everything in Drop 01.
