@@ -12,7 +12,7 @@ export async function POST(request) {
 
     if (!mailchimpKey || !LIST_ID) {
       console.error('Mailchimp env vars missing')
-      return Response.json({ error: 'Email service not configured' }, { status: 500 })
+      return Response.json({ error: 'Email signup is temporarily unavailable.' }, { status: 503 })
     }
 
     const data = {
@@ -52,6 +52,6 @@ export async function POST(request) {
     return Response.json({ success: true, message: 'Subscribed successfully' })
   } catch (error) {
     console.error('Mailchimp route error:', error.message)
-    return Response.json({ error: error.message }, { status: 500 })
+    return Response.json({ error: 'Subscription failed' }, { status: 500 })
   }
 }

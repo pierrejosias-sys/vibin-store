@@ -56,16 +56,6 @@ export default function ShippingPage() {
                 <td style={{padding:'16px 0'}}>5–8 business days</td>
                 <td style={{padding:'16px 0',textAlign:'right'}}>${SHIPPING_FLAT_RATE} · free on orders {FREE_SHIPPING_LABEL}+</td>
               </tr>
-              <tr style={{borderBottom:'1px solid var(--line)'}}>
-                <td style={{padding:'16px 0',fontWeight:'600'}}>Priority Shipping</td>
-                <td style={{padding:'16px 0'}}>2–3 business days</td>
-                <td style={{padding:'16px 0',textAlign:'right'}}>$12.99</td>
-              </tr>
-              <tr style={{borderBottom:'1px solid var(--line)'}}>
-                <td style={{padding:'16px 0',fontWeight:'600'}}>Express Shipping</td>
-                <td style={{padding:'16px 0'}}>1–2 business days</td>
-                <td style={{padding:'16px 0',textAlign:'right'}}>$24.99</td>
-              </tr>
             </tbody>
           </table>
         </div>

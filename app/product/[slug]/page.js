@@ -117,7 +117,7 @@ export default function ProductPage() {
         <Link href="/" className="logo">VIBIN</Link>
         <div className="nav-links">
           <Link href="/shop">Shop</Link>
-          <Link href="/drop-01">New Drop</Link>
+          <Link href="/drop/01">New Drop</Link>
           <Link href="/lookbook">Lookbook</Link>
         </div>
         <div className="nav-actions">

@@ -97,7 +97,7 @@ export default function HomePage() {
         <a href="/" className="logo">VIBIN</a>
         <div className="nav-links">
           <a href="/shop">Shop</a>
-          <a href="/drop-01" className="new" style={{color:'var(--coral)'}}>Drop 01 ★</a>
+          <a href="/drop/01" className="new" style={{color:'var(--coral)'}}>Drop 01 ★</a>
           <a href="/lookbook">Lookbook</a>
           <a href="/about">About</a>
           <a href="/contact">Contact</a>
@@ -325,13 +325,12 @@ export default function HomePage() {
             btn.textContent = 'Sending...';
             btn.disabled = true;
             try {
-              // TODO #21: Replace with your Mailchimp form action URL from Audience > Signup Forms > Embedded Forms
-              const MAILCHIMP_URL = 'YOUR_MAILCHIMP_FORM_ACTION_URL';
-              await fetch(MAILCHIMP_URL, {
+              const res = await fetch('/api/mailchimp', {
                 method: 'POST',
-                body: new FormData(form),
-                mode: 'no-cors'
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, tags: ['homepage-newsletter'] }),
               });
+              if (!res.ok) throw new Error('subscribe failed');
               btn.textContent = '✓ Subscribed';
               form.insertAdjacentHTML('afterend', '<div style="background:#0a0a0a;color:#f6f1e7;padding:16px;margin-top:16px;font-family:Manrope,sans-serif;">You\'re on the list. Check your email for your 15% off code. ✦</div>');
             } catch (err) {

@@ -119,9 +119,7 @@ export default function AdminEmailPage() {
             { label: 'Dashboard', href: '/admin', icon: '◈' },
             { label: 'Orders', href: '/admin/orders', icon: '◈' },
             { label: 'Email', href: '/admin/email', icon: '✉', active: true },
-            { label: 'Requisitions', href: '/admin/requisitions', icon: '◈' },
             { label: 'Support', href: '/admin/support', icon: '◈' },
-            { label: 'Security', href: '/admin/security', icon: '◈' },
           ].map((item, i) => (
             <Link key={i} href={item.href} style={{
               display:'flex',alignItems:'center',gap:'12px',padding:'12px 16px',marginBottom:'4px',

@@ -5,7 +5,7 @@ const BASE_URL = 'https://vibinapparel.com'
 const STATIC_ROUTES = [
   { path: '/',           priority: 1.0,  changeFreq: 'weekly'  },
   { path: '/shop',       priority: 0.95, changeFreq: 'daily'   },
-  { path: '/drop-01',    priority: 0.9,  changeFreq: 'weekly'  },
+  { path: '/drop/01',    priority: 0.9,  changeFreq: 'weekly'  },
   { path: '/lookbook',   priority: 0.85, changeFreq: 'monthly' },
   { path: '/about',      priority: 0.7,  changeFreq: 'monthly' },
   { path: '/ambassador', priority: 0.65, changeFreq: 'monthly' },

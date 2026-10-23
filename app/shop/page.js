@@ -96,7 +96,7 @@ function ShopContent() {
         <Link href="/" style={{fontFamily:'Anton,sans-serif',fontSize:'24px',color:'#f6f1e7',textDecoration:'none',letterSpacing:'0.05em'}}>VIBIN</Link>
         <div style={{display:'flex',gap:'32px',fontSize:'14px'}}>
           <Link href="/shop" style={{color:'#ff6b4a',textDecoration:'none',fontWeight:600}}>Shop</Link>
-          <Link href="/drop-01" style={{color:'#f6f1e7',textDecoration:'none'}}>Drop 01</Link>
+          <Link href="/drop/01" style={{color:'#f6f1e7',textDecoration:'none'}}>Drop 01</Link>
           <Link href="/lookbook" style={{color:'#f6f1e7',textDecoration:'none'}}>Lookbook</Link>
           <Link href="/about" style={{color:'#f6f1e7',textDecoration:'none'}}>About</Link>
         </div>

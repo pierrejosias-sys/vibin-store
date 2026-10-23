@@ -96,7 +96,7 @@ export default function CareersPage() {
         <a href="/" className="logo">VIBIN</a>
         <div className="nav-links">
           <a href="/shop">Shop</a>
-          <a href="/drop-01" className="new" style={{color:'var(--coral)'}}>Drop 01 ★</a>
+          <a href="/drop/01" className="new" style={{color:'var(--coral)'}}>Drop 01 ★</a>
           <a href="/lookbook">Lookbook</a>
           <a href="/about">About</a>
           <a href="/careers" style={{color:'var(--coral)'}}>Careers</a>
