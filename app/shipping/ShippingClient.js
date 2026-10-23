@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useCart } from '../lib/cart-context'
 import styles from '../styles.css'
+import { FREE_SHIPPING_LABEL, SHIPPING_FLAT_RATE } from '../lib/shipping'
 
 export default function ShippingPage() {
   const { cart } = useCart()
@@ -53,7 +54,7 @@ export default function ShippingPage() {
               <tr style={{borderBottom:'1px solid var(--line)'}}>
                 <td style={{padding:'16px 0',fontWeight:'600'}}>Standard Shipping</td>
                 <td style={{padding:'16px 0'}}>5–8 business days</td>
-                <td style={{padding:'16px 0',textAlign:'right'}}>Free on orders over $75</td>
+                <td style={{padding:'16px 0',textAlign:'right'}}>${SHIPPING_FLAT_RATE} · free on orders {FREE_SHIPPING_LABEL}+</td>
               </tr>
               <tr style={{borderBottom:'1px solid var(--line)'}}>
                 <td style={{padding:'16px 0',fontWeight:'600'}}>Priority Shipping</td>

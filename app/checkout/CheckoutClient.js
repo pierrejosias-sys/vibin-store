@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { loadStripe } from '@stripe/stripe-js'
 import { useCart } from '../lib/cart-context'
 import styles from '../styles.css'
+import { shippingFor, FREE_SHIPPING_LABEL } from '../lib/shipping'
 
 const STRIPE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 const stripePromise = STRIPE_PUBLISHABLE_KEY ? loadStripe(STRIPE_PUBLISHABLE_KEY) : Promise.resolve(null)
@@ -88,14 +89,14 @@ export default function CheckoutPage() {
   }
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0)
-  const shippingCost = subtotal >= 75 ? 0 : 10
+  const shippingCost = shippingFor(subtotal)
   const total = subtotal + shippingCost
 
   if (items.length === 0 && step !== 3 && paymentStatus !== 'success') {
     return (
       <>
         <style dangerouslySetInnerHTML={{ __html: styles }} />
-        <div className="promo"><div className="promo-track"><span>Free shipping over $75</span><span>SS26 Drop is live</span></div></div>
+        <div className="promo"><div className="promo-track"><span>Free shipping over {FREE_SHIPPING_LABEL}</span><span>SS26 Drop is live</span></div></div>
         <nav>
           <Link href="/" className="logo">VIBIN</Link>
           <div className="nav-actions"><Link href="/cart" className="nav-icon">🛒</Link></div>
@@ -116,8 +117,8 @@ export default function CheckoutPage() {
 
       <div className="promo">
         <div className="promo-track">
-          <span>Free shipping over $75</span><span>SS26 Drop is live</span>
-          <span>Free shipping over $75</span><span>SS26 Drop is live</span>
+          <span>Free shipping over {FREE_SHIPPING_LABEL}</span><span>SS26 Drop is live</span>
+          <span>Free shipping over {FREE_SHIPPING_LABEL}</span><span>SS26 Drop is live</span>
         </div>
       </div>
 

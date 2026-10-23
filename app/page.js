@@ -6,6 +6,7 @@ import { supabase } from './lib/supabase'
 import ComingSoonSignup from './components/ComingSoonSignup'
 import { useCart } from './lib/cart-context'
 import styles from './styles.css'
+import { FREE_SHIPPING_LABEL } from './lib/shipping'
 
 export default function HomePage() {
   const [products, setProducts] = useState([])
@@ -82,10 +83,10 @@ export default function HomePage() {
       {/* PROMO BAR */}
       <div className="promo">
         <div className="promo-track">
-          <span>Free shipping on orders over $75</span>
+          <span>Free shipping on orders over {FREE_SHIPPING_LABEL}</span>
           <span>New SS26 Drop is live</span>
           <span>Sign up for 15% off your first order</span>
-          <span>Free shipping on orders over $75</span>
+          <span>Free shipping on orders over {FREE_SHIPPING_LABEL}</span>
           <span>New SS26 Drop is live</span>
           <span>Sign up for 15% off your first order</span>
         </div>
@@ -147,11 +148,11 @@ export default function HomePage() {
           <span>SS26 IS LIVE</span>
           <span><em>The Foundation</em></span>
           <span>NEW ARRIVALS</span>
-          <span>FREE SHIPPING $75+</span>
+          <span>FREE SHIPPING {FREE_SHIPPING_LABEL}+</span>
           <span>SS26 IS LIVE</span>
           <span><em>The Foundation</em></span>
           <span>NEW ARRIVALS</span>
-          <span>FREE SHIPPING $75+</span>
+          <span>FREE SHIPPING {FREE_SHIPPING_LABEL}+</span>
         </div>
       </div>
 

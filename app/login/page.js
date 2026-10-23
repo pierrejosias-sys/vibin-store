@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
+import { FREE_SHIPPING_LABEL } from '../lib/shipping'
 
 export default function LoginPage() {
   // Supabase client created inside component to avoid cross-user session sharing
@@ -186,7 +187,7 @@ export default function LoginPage() {
                 <>
                   <div className="sl-perk"><div className="sl-perk-icon">❆</div><div><strong>Early access</strong>Drops 24 hours before the public</div></div>
                   <div className="sl-perk"><div className="sl-perk-icon">→</div><div><strong>Member pricing</strong>15% off your first order</div></div>
-                  <div className="sl-perk"><div className="sl-perk-icon">▸</div><div><strong>Free shipping</strong>On all orders over $75</div></div>
+                  <div className="sl-perk"><div className="sl-perk-icon">▸</div><div><strong>Free shipping</strong>On all orders over {FREE_SHIPPING_LABEL}</div></div>
                   <div className="sl-perk"><div className="sl-perk-icon">★</div><div><strong>Ambassador track</strong>Earn commission for sharing</div></div>
                 </>
               )}

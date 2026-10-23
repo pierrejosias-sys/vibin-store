@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useCart } from '../lib/cart-context'
+import { shippingFor, FREE_SHIPPING_THRESHOLD, FREE_SHIPPING_LABEL } from '../lib/shipping'
 
 export default function CartPage() {
   const [items, setItems] = useState([])
@@ -78,7 +79,7 @@ export default function CartPage() {
   }
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0)
-  const shipping = subtotal >= 75 ? 0 : 10
+  const shipping = shippingFor(subtotal)
   const total = subtotal + shipping
 
   if (loading) return (
@@ -91,8 +92,8 @@ export default function CartPage() {
     <>
       <div className="promo">
         <div className="promo-track">
-          <span>Free shipping over $75</span><span>SS26 Drop is live</span><span>15% off your first order</span>
-          <span>Free shipping over $75</span><span>SS26 Drop is live</span><span>15% off your first order</span>
+          <span>Free shipping over {FREE_SHIPPING_LABEL}</span><span>SS26 Drop is live</span><span>15% off your first order</span>
+          <span>Free shipping over {FREE_SHIPPING_LABEL}</span><span>SS26 Drop is live</span><span>15% off your first order</span>
         </div>
       </div>
 
@@ -180,9 +181,9 @@ export default function CartPage() {
             </div>
 
             <div className="cart-summary">
-              {subtotal < 75 && (
+              {subtotal < FREE_SHIPPING_THRESHOLD && (
                 <div style={{background:'#f5f0eb',borderRadius:'8px',padding:'10px 14px',marginBottom:'16px',fontSize:'0.78rem',color:'#555',textAlign:'center'}}>
-                  Add <strong>${(75 - subtotal).toFixed(2)}</strong> more for free shipping 🚚
+                  Add <strong>${(FREE_SHIPPING_THRESHOLD - subtotal).toFixed(2)}</strong> more for free shipping 🚚
                 </div>
               )}
               <div className="cart-row">
