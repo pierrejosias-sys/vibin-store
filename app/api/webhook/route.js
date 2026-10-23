@@ -1,5 +1,6 @@
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import { pieceIdsFromMetadata, releasePieces } from '../../lib/pieces'
 
 export const runtime = 'nodejs'
 
@@ -62,6 +63,19 @@ export async function POST(request) {
           .eq('id', orderId)
       }
 
+      // Numbered drop pieces: held -> sold
+      const pieceIds = pieceIdsFromMetadata(session.metadata)
+      if (pieceIds.length) {
+        const { data: soldCount, error: soldError } = await supabase.rpc('mark_pieces_sold', {
+          p_piece_ids: pieceIds, p_order_id: orderId ? String(orderId) : null, p_session_id: session.id,
+        })
+        if (soldError) throw new Error(`mark_pieces_sold: ${soldError.message}`)
+        if (soldCount !== pieceIds.length) {
+          // A hold lapsed and the piece was re-claimed by another buyer — needs manual follow-up.
+          console.error(`⚠️ Order ${orderId}: only ${soldCount}/${pieceIds.length} pieces marked sold (session ${session.id})`)
+        }
+      }
+
       // Log notification
       await supabase
         .from('notifications')
@@ -75,6 +89,20 @@ export async function POST(request) {
         })
 
       console.log(`✅ Order ${orderId} confirmed — payment: ${paymentId}, ambassador: ${ambassadorCode || 'none'}, commission: $${commissionAmount}`)
+      return Response.json({ received: true })
+    }
+
+    if (event.type === 'checkout.session.expired') {
+      const session = event.data.object
+      const pieceIds = pieceIdsFromMetadata(session.metadata)
+      if (pieceIds.length) {
+        const released = await releasePieces(supabase, pieceIds, session.id)
+        console.log(`Session ${session.id} expired — released ${released} piece(s)`)
+      }
+      if (session.metadata?.orderId) {
+        await supabase.from('orders').update({ status: 'expired' })
+          .eq('id', session.metadata.orderId).eq('status', 'pending')
+      }
       return Response.json({ received: true })
     }
 

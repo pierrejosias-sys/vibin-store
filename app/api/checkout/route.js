@@ -1,5 +1,10 @@
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import { STRIPE_SESSION_MINUTES } from '../../lib/drops'
+import {
+  resolveDropItems, claimDropPieces, releasePieces,
+  pieceIdsToMetadata,
+} from '../../lib/pieces'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
@@ -9,9 +14,28 @@ const supabase = createClient(
 )
 
 export async function POST(request) {
+  let pieceIds = []
   try {
     const body = await request.json()
     const { items, email, ambassadorCode, userId } = body
+
+    if (!Array.isArray(items) || items.length === 0) {
+      return Response.json({ error: 'Your cart is empty.' }, { status: 400 })
+    }
+
+    // Numbered drop items: validate, price server-side, and hold pieces before payment.
+    const { dropItems, error: dropError } = await resolveDropItems(supabase, items)
+    if (dropError) return Response.json({ error: dropError }, { status: 400 })
+    if (dropItems.length) {
+      const claim = await claimDropPieces(supabase, dropItems)
+      if (claim.soldOut) {
+        return Response.json(
+          { error: `Sold out: ${claim.soldOut.name} (${claim.soldOut.size}). Update your cart and try again.`, soldOut: claim.soldOut },
+          { status: 409 }
+        )
+      }
+      pieceIds = claim.pieceIds
+    }
 
     const total = items.reduce((sum, i) => sum + i.price * i.qty, 0)
 
@@ -50,15 +74,27 @@ export async function POST(request) {
       success_url: `${request.headers.get('origin')}/checkout?success=true&order=${order.id}`,
       cancel_url: `${request.headers.get('origin')}/cart`,
       customer_email: email,
+      // Stripe minimum is 30 minutes; piece holds last slightly longer (PIECE_HOLD_MINUTES).
+      ...(pieceIds.length ? { expires_at: Math.floor(Date.now() / 1000) + STRIPE_SESSION_MINUTES * 60 } : {}),
       metadata: {
         orderId: String(order.id),
         ambassadorCode: ambassadorCode || '',
         items: JSON.stringify(items.map(i => ({ id: i.id, name: i.name, qty: i.qty }))),
+        ...pieceIdsToMetadata(pieceIds),
       },
     })
 
+    if (pieceIds.length) {
+      const { error: attachError } = await supabase.rpc('attach_piece_session', {
+        p_piece_ids: pieceIds, p_session_id: session.id, p_order_id: String(order.id),
+      })
+      if (attachError) console.error('attach_piece_session failed:', attachError.message)
+    }
+
     return Response.json({ sessionId: session.id, url: session.url })
   } catch (error) {
+    // Don't strand held pieces if anything after the claim failed.
+    if (pieceIds.length) await releasePieces(supabase, pieceIds)
     console.error('Checkout error:', error.message)
     return Response.json({ error: error.message }, { status: 500 })
   }
