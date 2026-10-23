@@ -1,4 +1,5 @@
 'use client'
+import { shipsInTwoPackages } from '../lib/drop-catalog.mjs'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -203,6 +204,11 @@ export default function CheckoutPage() {
               <div className="checkout-total"><span>Total</span><span>${total}</span></div>
             </div>
 
+            {shipsInTwoPackages(items) && (
+              <div data-testid="two-packages" style={{ border: '1px solid #01696f', borderRadius: '8px', padding: '10px 14px', marginBottom: '12px', fontSize: '0.85rem' }}>
+                <strong>Ships in two packages.</strong> Your hoodie ships separately from your tee/snapback, so your order may arrive in two packages.
+              </div>
+            )}
             {items.some(i => i.drop || i.preorder) && (
               <label style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', margin: '16px 0', fontSize: '14px' }}>
                 <input type="checkbox" checked={preorderAck} onChange={e => setPreorderAck(e.target.checked)} required />

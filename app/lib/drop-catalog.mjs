@@ -7,9 +7,28 @@ import { dropPhase } from './drop-window.mjs'
 
 export const DROP_CATALOG = {
   d01: [
-    { productId: 1, slug: 'vibin-classic-tee', name: 'Foundation Tee', price: 85, sizes: ['S', 'M', 'L', 'XL', '2X', '3X'] },
-    { productId: 10, slug: 'vibin-snapback', name: 'Snapback', price: 65, sizes: ['OS'] },
+    { productId: 1, slug: 'vibin-classic-tee', name: 'Foundation Tee', price: 85, sizes: ['S', 'M', 'L', 'XL', '2X', '3X'], images: [] },
+    { productId: 10, slug: 'vibin-snapback', name: 'Snapback', price: 65, sizes: ['OS'],
+      images: ['/drop01/snapback-6089m-hero.webp', '/drop01/snapback-6089m-hero-flat.webp'] },
   ],
+}
+
+/** Product shots for numbered drop styles (VOL 01 Hoodie = Lane Seven LS17001). */
+export const DROP_STYLE_IMAGES = {
+  d01: { hd: ['/drop01/hoodie-ls17001-cream-front.webp'] },
+}
+
+export const TWO_PACKAGES_NOTE = 'Ships in two packages: your hoodie ships separately from your tee/snapback, so your order may arrive in two packages.'
+
+/**
+ * True when a cart mixes the print-on-demand hoodie (drop style 'hd') with an in-house
+ * item (Foundation Tee / Snapback): those ship from different places.
+ */
+export function shipsInTwoPackages(items) {
+  const list = Array.isArray(items) ? items : []
+  const hasHoodie = list.some(i => i?.drop && i?.style === 'hd')
+  const hasInHouse = list.some(i => !i?.drop && dropCatalogEntry(i))
+  return hasHoodie && hasInHouse
 }
 
 /** Finds the drop entry for a resolved catalog item (numeric DB id) or slug. */

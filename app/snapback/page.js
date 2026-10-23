@@ -11,7 +11,10 @@ const COLORWAYS = [
   { name: 'Sand / Black', bg: '#c8b89a', accent: '#0d0d0d', brim: '#0d0d0d', hex: '#c8b89a' },
 ]
 
+const SNAP_IMAGES = ['/drop01/snapback-6089m-hero.webp', '/drop01/snapback-6089m-hero-flat.webp']
+
 export default function SnapbackPage() {
+  const [shot, setShot] = useState(0)
   const [color, setColor] = useState(0)
   const [added, setAdded] = useState(false)
   const [qty, setQty] = useState(1)
@@ -30,7 +33,7 @@ export default function SnapbackPage() {
       const cart = JSON.parse(localStorage.getItem('vibin_cart') || '[]')
       const existing = cart.find(i => i.id === 'snapback-001' && i.color === cw.name)
       if (existing) { existing.qty += qty } else {
-        cart.push({ id: 'snapback-001', name: 'Vibin Snapback', price, color: cw.name, size: 'OS', qty, slug: 'vibin-snapback', preorder: 'd01' })
+        cart.push({ id: 'snapback-001', name: 'Vibin Snapback', price, color: cw.name, size: 'OS', qty, slug: 'vibin-snapback', preorder: 'd01', image_url: SNAP_IMAGES[0] })
       }
       localStorage.setItem('vibin_cart', JSON.stringify(cart))
     } catch(e) {}
@@ -361,90 +364,15 @@ export default function SnapbackPage() {
           <div className="hat-canvas" style={{ background: `linear-gradient(145deg, #111 0%, #1a1a1a 100%)` }}>
             <div className="hat-bg" style={{ color: cw.accent }} />
 
-            {/* SVG Snapback Illustration */}
-            <svg className="hat-svg" viewBox="0 0 400 320" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Vibin Snapback Hat">
-
-              {/* BRIM */}
-              <path
-                d="M55 215 Q60 235 80 240 L320 240 Q340 235 345 215 L330 200 L70 200 Z"
-                fill={cw.brim}
-                stroke="rgba(255,255,255,0.06)"
-                strokeWidth="1"
-              />
-              {/* Brim underside stitching */}
-              <path d="M75 228 L325 228" stroke="rgba(255,255,255,0.1)" strokeWidth="1" strokeDasharray="4 4"/>
-
-              {/* CROWN BODY */}
-              <path
-                d="M70 200 C65 180 60 140 80 100 C100 60 150 42 200 40 C250 42 300 60 320 100 C340 140 335 180 330 200 Z"
-                fill={cw.bg}
-                stroke="rgba(255,255,255,0.08)"
-                strokeWidth="1.5"
-              />
-
-              {/* CROWN PANELS — center seam */}
-              <path d="M200 42 L200 200" stroke="rgba(255,255,255,0.06)" strokeWidth="1"/>
-              {/* Side panel seams */}
-              <path d="M130 52 C120 100 115 155 118 200" stroke="rgba(255,255,255,0.06)" strokeWidth="1"/>
-              <path d="M270 52 C280 100 285 155 282 200" stroke="rgba(255,255,255,0.06)" strokeWidth="1"/>
-
-              {/* BUTTON top */}
-              <circle cx="200" cy="44" r="7" fill={cw.accent} stroke="rgba(255,255,255,0.15)" strokeWidth="1"/>
-
-              {/* FRONT PANEL — slightly lighter for depth */}
-              <path
-                d="M118 200 C116 165 120 120 130 90 C145 58 170 44 200 42 C230 44 255 58 270 90 C280 120 284 165 282 200 Z"
-                fill={cw.bg}
-                fillOpacity="0.5"
-              />
-
-              {/* VIBIN WORDMARK on crown */}
-              <text
-                x="200"
-                y="132"
-                textAnchor="middle"
-                fontFamily="'Cabinet Grotesk', sans-serif"
-                fontWeight="900"
-                fontSize="28"
-                fill={cw.accent}
-                letterSpacing="4"
-              >VIBIN</text>
-
-              {/* Embroidered arc detail */}
-              <path
-                d="M155 145 Q200 155 245 145"
-                stroke={cw.accent}
-                strokeWidth="1.5"
-                strokeOpacity="0.5"
-                fill="none"
-                strokeDasharray="3 3"
-              />
-
-              {/* SWEATBAND LINE */}
-              <path
-                d="M70 200 Q200 196 330 200"
-                stroke="rgba(255,255,255,0.12)"
-                strokeWidth="2"
-                fill="none"
-              />
-
-              {/* SNAPBACK ADJUSTER */}
-              <rect x="155" y="230" width="90" height="10" rx="3" fill="#1a1a1a" stroke="rgba(255,255,255,0.1)" strokeWidth="1"/>
-              {/* Snap holes */}
-              {[170, 185, 200, 215, 230].map((x, i) => (
-                <circle key={i} cx={x} cy="235" r="2.5" fill="rgba(255,255,255,0.15)"/>
-              ))}
-
-              {/* STITCHING detail on brim edge */}
-              <path
-                d="M62 218 Q200 214 338 218"
-                stroke={cw.accent}
-                strokeWidth="1"
-                strokeOpacity="0.35"
-                fill="none"
-              />
-
-            </svg>
+            {/* Product photo (Richardson 6089M render) */}
+            <img src={SNAP_IMAGES[shot]} alt="Vibin Snapback" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'relative' }} />
+          </div>
+          <div style={{ display: 'flex', gap: 8, margin: '10px 0' }}>
+            {SNAP_IMAGES.map((src, i) => (
+              <button key={src} onClick={() => setShot(i)} aria-label={`View photo ${i + 1}`} style={{ padding: 0, border: shot === i ? '2px solid #01696f' : '1px solid #333', borderRadius: 6, background: 'none', cursor: 'pointer' }}>
+                <img src={src} alt="" style={{ width: 64, height: 85, objectFit: 'cover', display: 'block', borderRadius: 4 }} />
+              </button>
+            ))}
           </div>
 
           {/* Color Thumbs */}
