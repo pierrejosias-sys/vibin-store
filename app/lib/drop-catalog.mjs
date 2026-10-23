@@ -7,7 +7,8 @@ import { dropPhase } from './drop-window.mjs'
 
 export const DROP_CATALOG = {
   d01: [
-    { productId: 1, slug: 'vibin-classic-tee', name: 'Foundation Tee', price: 85, sizes: ['S', 'M', 'L', 'XL', '2X', '3X'], images: [] },
+    { productId: 1, slug: 'vibin-classic-tee', name: 'Foundation Tee', price: 85, sizes: ['S', 'M', 'L', 'XL', '2X', '3X'],
+      images: ['/drop01/tee-shgdd-front.webp'], square: '/drop01/tee-shgdd-front-square.webp' },
     { productId: 10, slug: 'vibin-snapback', name: 'Snapback', price: 65, sizes: ['OS'],
       images: ['/drop01/snapback-6089m-hero.webp', '/drop01/snapback-6089m-hero-flat.webp'] },
   ],

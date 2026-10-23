@@ -114,7 +114,7 @@ function CatalogCard({ drop, item, released }) {
     const cart = JSON.parse(localStorage.getItem('vibin_cart') || '[]')
     const existing = cart.find(i => String(i.id) === String(item.productId) && i.size === size)
     if (existing) existing.qty += 1
-    else cart.push({ id: item.productId, slug: item.slug, name: item.name, price: item.price, color: item.color || 'Black', size, qty: 1, image_url: item.images?.[0] || null, preorder: drop.id })
+    else cart.push({ id: item.productId, slug: item.slug, name: item.name, price: item.price, color: item.color || 'Black', size, qty: 1, image_url: item.square || item.images?.[0] || null, preorder: drop.id })
     localStorage.setItem('vibin_cart', JSON.stringify(cart))
     updateCart?.()
     setAdded(true)
