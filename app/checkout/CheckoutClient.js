@@ -8,6 +8,7 @@ import { loadStripe } from '@stripe/stripe-js'
 import { useCart } from '../lib/cart-context'
 import styles from '../styles.css'
 import { shippingFor, FREE_SHIPPING_LABEL } from '../lib/shipping'
+import { STATUS_COPY } from '../lib/order-status.mjs'
 
 const STRIPE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 const stripePromise = STRIPE_PUBLISHABLE_KEY ? loadStripe(STRIPE_PUBLISHABLE_KEY) : Promise.resolve(null)
@@ -40,13 +41,32 @@ export default function CheckoutPage() {
     const urlParams = new URLSearchParams(window.location.search)
     const success = urlParams.get('success')
     const orderId = urlParams.get('order')
-    if (success === 'true' && orderId) {
+    if (success === 'true') {
+      // Never trust the URL: verify the order + Stripe session on the server.
       setOrderId(orderId)
-      setPaymentStatus('success')
+      setPaymentStatus('checking')
       setStep(3)
-      localStorage.removeItem('vibin_cart')
-      localStorage.removeItem('vibin_ref')
-      updateCart()
+      const sessionId = urlParams.get('session_id')
+      let tries = 0
+      let timer
+      const check = async () => {
+        let status = 'unknown'
+        try {
+          const qs = new URLSearchParams({ order: orderId || '', session_id: sessionId || '' })
+          const res = await fetch(`/api/order-status?${qs}`, { cache: 'no-store' })
+          status = (await res.json()).status || 'unknown'
+        } catch { status = 'pending' }
+        setPaymentStatus(status)
+        if (status === 'paid') {
+          localStorage.removeItem('vibin_cart')
+          localStorage.removeItem('vibin_ref')
+          updateCart()
+        } else if (status === 'pending' && ++tries < 10) {
+          timer = setTimeout(check, 3000)
+        }
+      }
+      check()
+      return () => clearTimeout(timer)
     }
   }, [])
 
@@ -97,7 +117,7 @@ export default function CheckoutPage() {
   const shippingCost = shippingFor(subtotal)
   const total = subtotal + shippingCost
 
-  if (items.length === 0 && step !== 3 && paymentStatus !== 'success') {
+  if (items.length === 0 && step !== 3 && paymentStatus !== 'paid') {
     return (
       <>
         <style dangerouslySetInnerHTML={{ __html: styles }} />
@@ -227,14 +247,18 @@ export default function CheckoutPage() {
 
         {step === 3 && (
           <div className="checkout-success">
-            <div className="success-icon">✓</div>
-            <h2>Order Confirmed!</h2>
-            <p className="success-order">Order #{orderId}</p>
-            <p>Thank you for your order! Your payment was successful.</p>
-            <p style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '8px' }}>
-              Confirmation sent to <strong>{shipping.email}</strong>
-            </p>
-            <Link href="/shop" className="btn-atc">Continue Shopping</Link>
+            <div className="success-icon">{paymentStatus === 'paid' ? '✓' : paymentStatus === 'checking' || paymentStatus === 'pending' ? '…' : '!'}</div>
+            <h2>{(STATUS_COPY[paymentStatus] || STATUS_COPY.unknown).title}</h2>
+            {orderId && paymentStatus !== 'unknown' && <p className="success-order">Order #{orderId}</p>}
+            <p>{(STATUS_COPY[paymentStatus] || STATUS_COPY.unknown).body}</p>
+            {paymentStatus === 'paid' && (
+              <p style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '8px' }}>
+                A receipt from Stripe is sent to the email you used at checkout.
+              </p>
+            )}
+            {paymentStatus === 'failed'
+              ? <Link href="/cart" className="btn-atc">Back to Bag</Link>
+              : <Link href="/shop" className="btn-atc">Continue Shopping</Link>}
           </div>
         )}
       </div>

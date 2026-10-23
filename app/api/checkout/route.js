@@ -146,7 +146,7 @@ export async function POST(request) {
         },
       }],
       mode: 'payment',
-      success_url: `${request.headers.get('origin')}/checkout?success=true&order=${order.id}`,
+      success_url: `${request.headers.get('origin')}/checkout?success=true&order=${order.id}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${request.headers.get('origin')}/cart`,
       customer_email: email,
       // Stripe minimum is 30 minutes; piece holds last slightly longer (PIECE_HOLD_MINUTES).
