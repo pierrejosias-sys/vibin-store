@@ -69,6 +69,38 @@ function Waitlist({ dropId }) {
   )
 }
 
+function ComingSoonCard({ drop, style }) {
+  const [email, setEmail] = useState('')
+  const [status, setStatus] = useState('idle')
+  async function submit(e) {
+    e.preventDefault()
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setStatus('invalid'); return }
+    setStatus('loading')
+    const { error } = await supabase.from('vibin_signups').insert({
+      email: email.trim().toLowerCase(),
+      coupon_code: 'VIBE' + Math.random().toString(36).substring(2, 6).toUpperCase(),
+      source: `coming-soon-${drop.id}-${style.code}`,
+      metadata: { page: '/drop/01', drop: drop.id, style: style.code, product: style.name },
+    })
+    setStatus(!error || error.code === '23505' ? 'done' : 'error')
+  }
+  return (
+    <div style={S.card}>
+      <div style={S.eyebrow}>{drop.id.toUpperCase()}-{style.code.toUpperCase()}</div>
+      <h3 style={{ margin: '8px 0' }}>{style.name}</h3>
+      <div style={{ margin: '12px 0', fontSize: 14 }}><strong>Coming soon</strong> · not available to order yet</div>
+      {status === 'done' ? <p style={{ fontSize: 14 }}>✓ You&apos;re on the list — we&apos;ll email you when it&apos;s ready.</p> : (
+        <form onSubmit={submit} style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <input style={S.input} type="email" placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} aria-label={`Email for ${style.name} waitlist`} required />
+          <button style={S.btn} disabled={status === 'loading'}>{status === 'loading' ? 'Joining…' : 'Join the waitlist'}</button>
+          {status === 'invalid' && <p style={{ width: '100%', color: '#f66' }}>Enter a valid email.</p>}
+          {status === 'error' && <p style={{ width: '100%', color: '#f66' }}>Something went wrong. Try again.</p>}
+        </form>
+      )}
+    </div>
+  )
+}
+
 function StyleCard({ drop, style, released }) {
   const { updateCart } = useCart() || {}
   const [size, setSize] = useState(null)
@@ -170,7 +202,9 @@ export default function DropClient({ drop, released: releasedAtRender, serverNow
 
         <div style={S.grid}>
           {drop.styles.map(style => (
-            <StyleCard key={style.code} drop={drop} style={style} released={released} />
+            style.availability === 'coming-soon'
+              ? <ComingSoonCard key={style.code} drop={drop} style={style} />
+              : <StyleCard key={style.code} drop={drop} style={style} released={released} />
           ))}
         </div>
       </div>

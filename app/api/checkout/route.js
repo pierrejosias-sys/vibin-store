@@ -39,8 +39,8 @@ export async function POST(request) {
     if (catalogError) return Response.json({ error: catalogError }, { status: catalogStatus || 400 })
 
     // Numbered drop items: validate, price server-side, and hold pieces before payment.
-    const { dropItems, error: dropError } = await resolveDropItems(supabase, items)
-    if (dropError) return Response.json({ error: dropError }, { status: 400 })
+    const { dropItems, error: dropError, status: dropStatus } = await resolveDropItems(supabase, items)
+    if (dropError) return Response.json({ error: dropError }, { status: dropStatus || 400 })
     if (dropItems.length) {
       const claim = await claimDropPieces(supabase, dropItems)
       if (claim.soldOut) {
