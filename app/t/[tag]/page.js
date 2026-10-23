@@ -63,14 +63,12 @@ export default async function TagPage({ params }) {
 
         <section style={{ marginTop: 32 }}>
           <h2 style={{ fontSize: 16, letterSpacing: 2, textTransform: 'uppercase' }}>The drop</h2>
-          {/* PLACEHOLDER: drop story copy (drops.story) */}
-          <p style={{ opacity: 0.8 }}>{piece.drop_story || drop?.story}</p>
+          <p style={{ opacity: 0.8 }}>{(piece.drop_story && !piece.drop_story.startsWith('PLACEHOLDER') ? piece.drop_story : null) || drop?.story}</p>
         </section>
 
         <section style={{ marginTop: 32 }}>
           <h2 style={{ fontSize: 16, letterSpacing: 2, textTransform: 'uppercase' }}>Care</h2>
-          {/* PLACEHOLDER: care info copy (drop_styles.care_info) */}
-          <p style={{ opacity: 0.8 }}>{piece.care_info || 'PLACEHOLDER care info.'}</p>
+          <p style={{ opacity: 0.8 }}>{(piece.care_info && !piece.care_info.startsWith('PLACEHOLDER') ? piece.care_info : null) || drop?.careInfo}</p>
         </section>
       </div>
     </main>
