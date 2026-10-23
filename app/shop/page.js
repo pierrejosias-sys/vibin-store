@@ -6,24 +6,6 @@ import Link from 'next/link'
 import { supabase } from '../lib/supabase'
 import { useCart } from '../lib/cart-context'
 
-export const metadata = {
-  title: 'Shop SS26 Drop 01 — Vibin Apparel',
-  description: 'Shop Vibin Apparel\'s SS26 Drop 01: The Foundation. Heavyweight cotton tees, hoodies, crewnecks, and headwear. Jacksonville streetwear. Free shipping on orders $75+.',
-  alternates: { canonical: 'https://vibinapparel.com/shop' },
-  openGraph: {
-    title: 'Shop SS26 Drop 01 — Vibin Apparel',
-    description: 'Shop heavyweight cotton tees, hoodies, and accessories from Vibin Apparel\'s SS26 Drop 01: The Foundation. Jacksonville streetwear. Free shipping $75+.',
-    url: 'https://vibinapparel.com/shop',
-    images: [{ url: '/og-shop.jpg', width: 1200, height: 630, alt: 'Vibin Apparel SS26 Shop — Drop 01 The Foundation Collection' }]
-  },
-  twitter: {
-    card: 'summary_large_image',
-    site: '@vibinapparel',
-    title: 'Shop SS26 Drop 01 — Vibin Apparel',
-    description: 'Heavyweight cotton tees, hoodies, crewnecks, and headwear. Jacksonville streetwear. Free shipping $75+.',
-    images: ['/og-shop.jpg']
-  }
-}
 
 // Fix #13: expanded CATEGORY_MAP to match all product category strings including Cargo Pant
 const CATEGORY_MAP = {
