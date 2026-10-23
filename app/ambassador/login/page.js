@@ -38,22 +38,22 @@ export default function AmbassadorLoginPage() {
 
     const code = ambCode.trim().toUpperCase()
 
-    // Look up the ambassador by their unique referral code
-    const { data: ambassador, error } = await supabase
-      .from('ambassadors')
-      .select('id, name, email, status, code')
-      .eq('code', code)
-      .single()
+    // Code status comes from the server; the browser can't read the ambassadors table.
+    let status = 'invalid'
+    try {
+      const r = await fetch('/api/ambassador/code', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }) })
+      status = (await r.json()).status || 'invalid'
+    } catch {}
 
-    if (error || !ambassador) {
+    if (status === 'invalid') {
       setMessage('Invalid ambassador code. Please check and try again.')
       setLoading(false)
       return
     }
 
-    if (ambassador.status !== 'approved') {
+    if (status !== 'approved') {
       setMessage(
-        ambassador.status === 'pending'
+        status === 'pending'
           ? 'Your application is still under review. Check back after approval.'
           : 'Your ambassador account is not active. Contact ambassador@vibinapparel.com.'
       )
