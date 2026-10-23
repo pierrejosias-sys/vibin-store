@@ -54,7 +54,7 @@ Copy, then adjust the name and order number.
 > Shipping is a flat **$8** in the US, and **free on orders of $125 or more**. We currently ship to US addresses only.
 
 **What sizes does the hoodie come in?**
-> The Drop 01 hoodie comes in **S, M, L, XL, 2X and 3X**. It has a relaxed fit; if you're between sizes, take your usual size for a classic fit or size up for an oversized look.
+> The Drop 01 hoodie comes in **S, M, L, XL, 2X and 3X**. Need help choosing? Tell us your height and usual size and we'll suggest one.
 
 **I ordered a hoodie and a tee/snapback. Why two packages?**
 > The hoodie is produced and shipped separately from the tee and snapback, so a mixed order **ships in two packages**, each with its own tracking. You pay shipping once.
@@ -66,8 +66,8 @@ Copy, then adjust the name and order number.
 > Your payment receipt comes from Stripe. Check spam or promotions for "Vibin Apparel". If your order number showed on the confirmation page, your order is in. Reply with it and I'll confirm.
 
 **Returns and exchanges**
-> We're happy to help. Reply with your order number, the item, and whether you'd like an exchange (size) or a return, and we'll send next steps. Items should be unworn with tags. Pre-order (made-to-order) pieces can be exchanged for a different size subject to availability.
-> *(Confirm the policy with Josias before promising refunds on made-to-order pieces.)*
+> We're happy to help. Reply with your order number, the item, and whether you'd like an exchange (size) or a return, and we'll send next steps. [Policy details: TBD by Josias]
+> *(Return policy for made-to-order pieces is not set yet: confirm with Josias before promising anything.)*
 
 **Can I change or cancel my pre-order?**
 > Yes, while the pre-order window is open (until Nov 15, 11:59 PM ET). Reply with your order number and the change. After the window closes, production starts and changes may not be possible.
