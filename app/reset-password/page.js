@@ -41,9 +41,9 @@ export default function ResetPasswordPage() {
 
   return (
     <div style={{ background: '#0a0a0a', minHeight: '100vh', color: '#f6f1e7', fontFamily: 'Manrope, sans-serif' }}>
-      <nav style={{ padding: '20px', borderBottom: '1px solid #1e1e1e', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-        <Link href="/" style={{ fontFamily: 'Anton, sans-serif', fontSize: '32px', color: '#f6f1e7', textDecoration: 'none' }}>VIBIN</Link>
-        <Link href="/login" style={{ color: '#888', textDecoration: 'none', fontSize: '14px' }}>← Sign In</Link>
+      <nav className="dark">
+        <Link href="/" className="logo">VIBIN</Link>
+        <Link href="/login" className="back">← Sign In</Link>
       </nav>
       <div style={{ maxWidth: '400px', margin: '0 auto', padding: '64px 20px' }}>
         <h1 style={{ fontFamily: 'Anton, sans-serif', fontSize: '36px', textTransform: 'uppercase', marginBottom: '12px', textAlign: 'center' }}>New Password</h1>

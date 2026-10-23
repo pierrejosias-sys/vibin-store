@@ -6,6 +6,9 @@ import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { FREE_SHIPPING_LABEL } from '../lib/shipping'
 
+// Google/Apple are disabled in Supabase; set NEXT_PUBLIC_ENABLE_OAUTH=true after enabling them.
+const OAUTH_ENABLED = process.env.NEXT_PUBLIC_ENABLE_OAUTH === 'true'
+
 export default function LoginPage() {
   // Supabase client created inside component to avoid cross-user session sharing
   const supabase = createBrowserClient(
@@ -259,6 +262,7 @@ export default function LoginPage() {
                   {isRegister ? 'Get 15% off your first order plus early access to drops.' : 'Enter your details to continue.'}
                 </p>
 
+                {OAUTH_ENABLED && (<>
                 <div style={{display:'flex',flexDirection:'column',gap:'10px',marginBottom:'20px'}}>
                   <button
                     type="button"
@@ -305,6 +309,7 @@ export default function LoginPage() {
                   <span style={{fontSize:'0.75rem',color:'#aaa',letterSpacing:'0.05em'}}>OR</span>
                   <div style={{flex:1,height:'1px',background:'#e0e0e0'}} />
                 </div>
+                </>)}
 
                 <form onSubmit={handleSubmit}>
                   {isRegister && (
