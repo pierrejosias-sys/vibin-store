@@ -325,10 +325,10 @@ export default function HomePage() {
             btn.textContent = 'Sending...';
             btn.disabled = true;
             try {
-              const res = await fetch('/api/mailchimp', {
+              const res = await fetch('/api/waitlist', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, tags: ['homepage-newsletter'] }),
+                body: JSON.stringify({ email, source: 'homepage-newsletter' }),
               });
               if (!res.ok) throw new Error('subscribe failed');
               btn.textContent = '✓ Subscribed';

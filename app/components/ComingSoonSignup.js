@@ -1,11 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '../lib/supabase'
 
 /**
  * "Coming soon" waitlist for items that aren't produced yet.
- * Saves to vibin_signups with source `coming-soon-<slug>`.
+ * Saves via /api/waitlist (waitlist_signups) with source `coming-soon-<slug>`.
  */
 export default function ComingSoonSignup({ slug, name, dark = true }) {
   const [email, setEmail] = useState('')
@@ -16,14 +15,13 @@ export default function ComingSoonSignup({ slug, name, dark = true }) {
     e.stopPropagation()
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setStatus('invalid'); return }
     setStatus('loading')
-    const { error } = await supabase.from('vibin_signups').insert({
-      email: email.trim().toLowerCase(),
-      coupon_code: 'VIBE' + Math.random().toString(36).substring(2, 6).toUpperCase(),
-      source: `coming-soon-${slug}`,
-      metadata: { product: name, slug, page: typeof window !== 'undefined' ? window.location.pathname : null },
-    })
-    // 23505 = email already on the list (emails are unique in vibin_signups)
-    setStatus(!error || error.code === '23505' ? 'done' : 'error')
+    try {
+      const res = await fetch('/api/waitlist', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, source: `coming-soon-${String(slug).toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 28)}` }),
+      })
+      setStatus(res.ok ? 'done' : 'error')
+    } catch { setStatus('error') }
   }
 
   const fg = dark ? '#f6f1e7' : '#0a0a0a'

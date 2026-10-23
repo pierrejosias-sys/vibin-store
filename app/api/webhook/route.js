@@ -1,6 +1,7 @@
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { pieceIdsFromMetadata, releasePieces } from '../../lib/pieces'
+import { markEarlyAccessTokenUsed } from '../../lib/waitlist.mjs'
 import { fulfillWithPrintful } from '../../lib/printful'
 
 export const runtime = 'nodejs'
@@ -92,6 +93,11 @@ export async function POST(request) {
           // A hold lapsed and the piece was re-claimed by another buyer — needs manual follow-up.
           console.error(`⚠️ Order ${orderId}: only ${soldCount}/${pieceIds.length} pieces marked sold (session ${session.id})`)
         }
+      }
+
+      // Waitlist early access: each private token is good for one completed checkout.
+      if (session.metadata?.earlyAccessToken) {
+        await markEarlyAccessTokenUsed(supabase, session.metadata.earlyAccessToken, session.id)
       }
 
       // Print-on-demand: create the Printful order for POD lines (idempotent; never throws).

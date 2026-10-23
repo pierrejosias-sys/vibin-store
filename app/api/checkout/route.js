@@ -8,6 +8,9 @@ import {
 import { resolveCatalogItems, sanitizeItem } from '../../lib/pricing'
 import { getSessionUser } from '../../lib/admin-auth'
 import { shippingFor, FREE_SHIPPING_LABEL } from '../../lib/shipping'
+import { cookies } from 'next/headers'
+import { EARLY_ACCESS_COOKIE } from '../../lib/early-access.mjs'
+import { isValidEarlyAccessToken } from '../../lib/waitlist.mjs'
 
 // Clients are created per request so the build doesn't need secrets
 // (preview environments may not have Stripe/Supabase keys configured).
@@ -39,7 +42,11 @@ export async function POST(request) {
     if (catalogError) return Response.json({ error: catalogError }, { status: catalogStatus || 400 })
 
     // Numbered drop items: validate, price server-side, and hold pieces before payment.
-    const { dropItems, error: dropError, status: dropStatus } = await resolveDropItems(supabase, items)
+    const earlyToken = (await cookies()).get(EARLY_ACCESS_COOKIE)?.value || null
+    const { dropItems, error: dropError, status: dropStatus, usedEarlyAccess } = await resolveDropItems(supabase, items, {
+      // Only consulted during the early-access hour: token must exist and be unused.
+      hasValidEarlyAccess: () => isValidEarlyAccessToken(supabase, earlyToken),
+    })
     if (dropItems?.length && body.preorderAck !== true) {
       return Response.json({ error: 'Please confirm you understand this is a pre-order.' }, { status: 400 })
     }
@@ -118,6 +125,8 @@ export async function POST(request) {
         shipping: String(shippingAmount),
         items: JSON.stringify(items.map(i => ({ id: i.id, name: i.name, qty: i.qty }))),
         ...pieceIdsToMetadata(pieceIds),
+        // Marked used by the webhook on checkout.session.completed (one early checkout per token).
+        ...(usedEarlyAccess && earlyToken ? { earlyAccessToken: earlyToken } : {}),
       },
     })
 

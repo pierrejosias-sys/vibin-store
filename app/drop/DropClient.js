@@ -2,7 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import supabase from '../lib/supabase-public'
+
+/** Server-side sign-up (dedupes by email, issues the private early-access link, syncs to the ESP). */
+async function joinWaitlist(payload) {
+  try {
+    const res = await fetch('/api/waitlist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+    return res.ok ? 'done' : 'error'
+  } catch { return 'error' }
+}
 import { useCart } from '../lib/cart-context'
 import { SIZES } from '../lib/drops'
 import { countdownTarget, formatET } from '../lib/drop-window.mjs'
@@ -48,15 +55,7 @@ function Waitlist({ dropId }) {
     e.preventDefault()
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setStatus('invalid'); return }
     setStatus('loading')
-    const code = 'VIBE' + Math.random().toString(36).substring(2, 6).toUpperCase()
-    const { error } = await supabase.from('vibin_signups').insert({
-      email: email.trim().toLowerCase(),
-      coupon_code: code,
-      source: `${dropId}-waitlist`,
-      metadata: { page: '/drop/01', drop: dropId },
-    })
-    // 23505 = already on the list — treat as success
-    setStatus(!error || error.code === '23505' ? 'done' : 'error')
+    setStatus(await joinWaitlist({ email, source: `${dropId}-waitlist` }))
   }
 
   if (status === 'done') return <p style={{ marginTop: 24 }}>You&apos;re on the list. We&apos;ll email you the second it drops.</p>
@@ -77,13 +76,7 @@ function ComingSoonCard({ drop, style }) {
     e.preventDefault()
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setStatus('invalid'); return }
     setStatus('loading')
-    const { error } = await supabase.from('vibin_signups').insert({
-      email: email.trim().toLowerCase(),
-      coupon_code: 'VIBE' + Math.random().toString(36).substring(2, 6).toUpperCase(),
-      source: `coming-soon-${drop.id}-${style.code}`,
-      metadata: { page: '/drop/01', drop: drop.id, style: style.code, product: style.name },
-    })
-    setStatus(!error || error.code === '23505' ? 'done' : 'error')
+    setStatus(await joinWaitlist({ email, source: `coming-soon-${drop.id}`, style: style.code }))
   }
   return (
     <div style={S.card}>
@@ -162,7 +155,7 @@ function sz_note(left, size) {
   return <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 10 }}>{left} left in {size}</div>
 }
 
-export default function DropClient({ drop: dropProp, phase, serverNow }) {
+export default function DropClient({ drop: dropProp, phase, earlyAccess, serverNow }) {
   const router = useRouter()
   const drop = { ...dropProp, phase }
   const released = phase === 'open'
@@ -200,6 +193,7 @@ export default function DropClient({ drop: dropProp, phase, serverNow }) {
               <>
                 <div style={{ fontSize: 18, marginBottom: 12 }}>Pre-order opens {formatET(drop.releaseAt)}{drop.closesAt ? ` · closes ${formatET(drop.closesAt)}` : ''}</div>
                 {clock}
+                {drop.earlyAccessAt && <p style={{ opacity: 0.8 }}>Waitlist members get a private link to pre-order 1 hour early, from {formatET(drop.earlyAccessAt)}. Join below.</p>}
               </>
             ) : (
               <div style={{ fontSize: 28, fontWeight: 800 }}>Release date: TBA</div>
@@ -211,6 +205,7 @@ export default function DropClient({ drop: dropProp, phase, serverNow }) {
         {phase === 'open' && (
           <section style={{ marginTop: 40 }}>
             <div style={{ fontSize: 18, marginBottom: 12 }}>
+              {earlyAccess && <div style={{ color: '#6f6', marginBottom: 6 }}>★ Waitlist early access — you&apos;re in before the public.</div>}
               <strong>Pre-order open</strong>{drop.closesAt ? `, closes in… (${formatET(drop.closesAt)})` : ''}
             </div>
             {drop.closesAt && clock}

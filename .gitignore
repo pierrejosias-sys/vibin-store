@@ -35,3 +35,6 @@ next-env.d.ts
 
 # generated QR tags (contain secret piece codes)
 /tags/
+
+# waitlist exports (contain private early-access links)
+waitlist-export*.csv

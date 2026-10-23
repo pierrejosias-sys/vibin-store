@@ -3,17 +3,19 @@
  * See supabase/migrations/20261022000001_drops_numbered_pieces.sql
  */
 import { DROPS, SIZES, PIECE_HOLD_MINUTES, isStylePurchasable } from './drops'
-import { dropPhase, serverNow } from './drop-window.mjs'
+import { serverNow } from './drop-window.mjs'
+import { accessPhase, canPreorder } from './early-access.mjs'
 
 export function isDropItem(item) {
   return !!(item && item.drop && item.style)
 }
 
 /** Validates drop cart items and resolves authoritative price/name from the DB (fallback: config). */
-export async function resolveDropItems(supabase, items) {
+export async function resolveDropItems(supabase, items, { hasValidEarlyAccess = async () => false } = {}) {
   const dropItems = items.filter(isDropItem)
   if (!dropItems.length) return { dropItems: [] }
 
+  let usedEarlyAccess = false
   const dropIds = [...new Set(dropItems.map(i => i.drop))]
   const [{ data: drops }, { data: styles }] = await Promise.all([
     supabase.from('drops').select('id, name, release_at, closes_at').in('id', dropIds),
@@ -24,8 +26,11 @@ export async function resolveDropItems(supabase, items) {
     const drop = drops?.find(d => d.id === item.drop)
     if (!drop || !DROPS[item.drop]) return { error: 'Unknown drop.' }
     if (!isStylePurchasable(item.drop, item.style)) return { error: 'This item is not available for purchase yet.', status: 409 }
-    const phase = dropPhase(drop.release_at, drop.closes_at, serverNow())
-    if (phase === 'tba' || phase === 'upcoming') return { error: `${drop.name} pre-order has not opened yet.`, status: 409 }
+    const phase = accessPhase({ earlyAccessAt: DROPS[item.drop].earlyAccessAt, releaseAt: drop.release_at, closesAt: drop.closes_at }, serverNow())
+    if (phase === 'early') {
+      usedEarlyAccess = true
+      if (!canPreorder(phase, await hasValidEarlyAccess())) return { error: `${drop.name} is in waitlist early access. Your private link is missing, invalid, or already used — everyone can pre-order at the public open.`, status: 403 }
+    } else if (phase === 'tba' || phase === 'upcoming') return { error: `${drop.name} pre-order has not opened yet.`, status: 409 }
     if (phase === 'closed') return { error: `${drop.name} pre-order is closed.`, status: 409 }
     if (!SIZES.includes(item.size)) return { error: 'Invalid size.' }
     const qty = Number(item.qty)
@@ -40,7 +45,7 @@ export async function resolveDropItems(supabase, items) {
     item.preorder = true
     item.shipsBy = DROPS[item.drop].shipsBy
   }
-  return { dropItems }
+  return { dropItems, usedEarlyAccess }
 }
 
 /** Claims pieces for every drop item (all-or-nothing). Returns { pieceIds } or { soldOut }. */
