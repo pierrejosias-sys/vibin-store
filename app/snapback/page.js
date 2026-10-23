@@ -17,7 +17,7 @@ export default function SnapbackPage() {
   const [qty, setQty] = useState(1)
   const cw = COLORWAYS[color]
   // Price shown = price charged: checkout re-prices from the products table (slug 'vibin-snapback').
-  const [price, setPrice] = useState(38)
+  const [price, setPrice] = useState(65)
   useEffect(() => {
     import('../lib/supabase-public')
       .then(({ default: supabase }) => supabase.from('products').select('price').eq('slug', 'vibin-snapback').maybeSingle())
