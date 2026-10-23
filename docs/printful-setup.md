@@ -23,7 +23,7 @@ listed in `orders.printful_error` ("Manual fulfillment needed for: …").
 ## Checklist for Josias
 
 ### 1. Apply the migration
-Run `supabase/migrations/20261023000002_orders_printful_fulfillment.sql` against production
+Run `supabase/migrations/20261023000003_orders_printful_fulfillment.sql` against production
 (Supabase SQL editor or `supabase db push`). Do this **before** setting `PRINTFUL_API_TOKEN`.
 Until you set the token, the integration does nothing.
 
