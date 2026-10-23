@@ -8,13 +8,13 @@ export async function middleware(request) {
   // Waitlist early-access link: /drop/01?access=<token> -> cookie, then clean URL.
   // The token itself is validated server-side (drop page + /api/checkout).
   if (pathname.startsWith('/drop/')) {
-    const token = request.nextUrl.searchParams.get('access')
-    if (!token) return NextResponse.next()
+    const accessParam = request.nextUrl.searchParams.get('access')
+    if (!accessParam) return NextResponse.next()
     const clean = request.nextUrl.clone()
     clean.searchParams.delete('access')
     const res = NextResponse.redirect(clean)
-    if (isWellFormedToken(token)) {
-      res.cookies.set(EARLY_ACCESS_COOKIE, token, {
+    if (isWellFormedToken(accessParam)) {
+      res.cookies.set(EARLY_ACCESS_COOKIE, accessParam, {
         httpOnly: true, secure: true, sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 60,
       })
     }

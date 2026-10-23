@@ -6,10 +6,10 @@ import { accessPhase, EARLY_ACCESS_COOKIE } from '../../lib/early-access.mjs'
 import { isValidEarlyAccessToken } from '../../lib/waitlist.mjs'
 
 async function hasEarlyAccess() {
-  const token = (await cookies()).get(EARLY_ACCESS_COOKIE)?.value
+  const accessCookie = (await cookies()).get(EARLY_ACCESS_COOKIE)?.value
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL, key = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!token || !url || !key) return false
-  return isValidEarlyAccessToken(createClient(url, key, { auth: { persistSession: false } }), token)
+  if (!accessCookie || !url || !key) return false
+  return isValidEarlyAccessToken(createClient(url, key, { auth: { persistSession: false } }), accessCookie)
 }
 import DropClient from '../DropClient'
 
