@@ -7,11 +7,42 @@
  * *sync variant id* from the store's synced product) or an object:
  *   { "sync_variant_id": 123 }                       – preferred (design lives in Printful)
  *   { "variant_id": 4016, "files": [{ "url": "…" }] } – catalog variant + print file(s)
- * Example (placeholders until Logistics finishes the Printful product):
- *   {"1:S":0,"1:M":0,"1:L":0,"1:XL":0,"1:2X":0,"1:3X":0}
+ * Only PRINTFUL_PRODUCTS (the hoodie, 'hd') are honoured. Example:
+ *   {"hd:S":{"variant_id":48514,"files":[{"type":"front_dtf","url":"https://…png"}]}, …}
+ * If PRINTFUL_VARIANT_MAP is unset, defaultVariantMap() is used.
  * A value of 0 / null means "known POD item, id not configured yet" — the order
  * is flagged printful_needs_mapping instead of being sent.
  */
+
+/**
+ * Only these products are ever routed to Printful. The Foundation Tee and the
+ * Snapback are fulfilled in-house, so keys for them in PRINTFUL_VARIANT_MAP are ignored.
+ * 'hd' = Drop 01 VOL 01 Hoodie (cart lines carry { drop: 'd01', style: 'hd' }).
+ */
+export const PRINTFUL_PRODUCTS = ['hd']
+
+/**
+ * Lane Seven LS17001 "Unisex Super Heavyweight Hoodie" — Printful catalog product 1540
+ * (techniques: DTF film / embroidery; double-layer hood without drawstrings).
+ * Black catalog variant ids from GET https://api.printful.com/products/1540 (Oct 23, 2026).
+ */
+export const LS17001_PRODUCT_ID = 1540
+export const LS17001_BLACK_VARIANTS = { S: 48514, M: 48520, L: 48526, XL: 48532, '2X': 48538, '3X': 48544 }
+export const HOODIE_PRINT_PLACEMENT = 'front_dtf'
+export const DEFAULT_HOODIE_FILE_URL = 'https://vibinapparel.com/print/d01-hd-front-01-columns-chest-4in.png'
+
+/** Default map when PRINTFUL_VARIANT_MAP is unset: hoodie -> LS17001 Black catalog variants + front DTF file. */
+export function defaultVariantMap(env = {}) {
+  const url = env.PRINTFUL_HOODIE_FILE_URL || DEFAULT_HOODIE_FILE_URL
+  let position
+  if (env.PRINTFUL_HOODIE_FILE_POSITION) {
+    try { position = JSON.parse(env.PRINTFUL_HOODIE_FILE_POSITION) } catch { throw new Error('PRINTFUL_HOODIE_FILE_POSITION is not valid JSON') }
+  }
+  const file = { type: HOODIE_PRINT_PLACEMENT, url, ...(position ? { position } : {}) }
+  const out = {}
+  for (const [size, id] of Object.entries(LS17001_BLACK_VARIANTS)) out[`hd:${size}`] = { variant_id: id, files: [file] }
+  return out
+}
 
 export const SIZE_ALIASES = { XXL: '2X', '2XL': '2X', XXXL: '3X', '3XL': '3X' }
 
@@ -41,12 +72,14 @@ export function parseVariantMap(raw) {
         ? { sync_variant_id: Number(val.sync_variant_id) }
         : { variant_id: Number(val.variant_id), files: Array.isArray(val.files) ? val.files : [] }
     } else throw new Error(`PRINTFUL_VARIANT_MAP["${key}"] must be a number or {sync_variant_id} / {variant_id, files}`)
+    if (!PRINTFUL_PRODUCTS.includes(product)) continue // in-house products are never auto-routed
     out[`${product}:${size}`] = entry
   }
   return out
 }
 
 function productKeys(item) {
+  if (item?.style) return [String(item.style).trim().toLowerCase()] // drop line: key is the style code
   return [item?.id, item?.slug].filter(v => v != null && v !== '').map(v => String(v).trim().toLowerCase())
 }
 
@@ -92,7 +125,10 @@ export function externalIdFor(orderId) {
   return `vibin-${orderId}`
 }
 
-/** Printful v1 POST /orders body. */
+/**
+ * Printful v1 POST /orders body. Deliberately sends no packing_slip, gift message,
+ * insert or QR: the hoodie ships with no certificate/QR insert (Printful default slip only).
+ */
 export function buildOrderPayload({ orderId, recipient, podLines }) {
   return {
     external_id: externalIdFor(orderId),

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import supabase from '../lib/supabase-public'
 import { useCart } from '../lib/cart-context'
-import { SIZES } from '../lib/drops'
+import { sizesForStyle } from '../lib/drops'
 import { countdownTarget, formatET } from '../lib/drop-window.mjs'
 
 const S = {
@@ -127,6 +127,7 @@ function StyleCard({ drop, style, released }) {
     <div style={{ ...S.card, opacity: soldOut ? 0.5 : 1 }}>
       <div style={S.eyebrow}>{drop.id.toUpperCase()}-{style.code.toUpperCase()}</div>
       <h3 style={{ margin: '8px 0' }}>{style.name}</h3>
+      {style.description && <p style={{ fontSize: 14, opacity: 0.8, margin: '0 0 8px' }}>{style.description}</p>}
       <div style={{ opacity: 0.8 }}>{style.price != null ? `$${style.price}` : 'Price TBA'}</div>
       {drop.shipsBy && <div style={{ fontSize: 13, opacity: 0.8, marginTop: 4 }}>Pre-order · Ships by {drop.shipsBy}</div>}
       <div style={{ margin: '12px 0', fontSize: 14 }}>
@@ -137,7 +138,7 @@ function StyleCard({ drop, style, released }) {
       {released && !soldOut && (
         <>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
-            {SIZES.map(sz => {
+            {sizesForStyle(style.code).map(sz => {
               const left = sizeLeft(sz)
               const out = left === 0
               return (
@@ -191,7 +192,7 @@ export default function DropClient({ drop: dropProp, phase, serverNow }) {
         <div style={S.eyebrow}>Vibin Apparel · SS26</div>
         <h1 style={S.h1}>{drop.name}</h1>
         <p style={{ maxWidth: 640, opacity: 0.8 }}>{drop.story}</p>
-        <p style={{ opacity: 0.6, fontSize: 14 }}>Every piece is numbered 1–{drop.piecesPerStyle} with a scannable authenticity tag.</p>
+        <p style={{ opacity: 0.6, fontSize: 14 }}>Every piece is numbered 1–{drop.piecesPerStyle}.</p>
         {drop.shipsBy && <p style={{ fontSize: 16, fontWeight: 700 }}>Numbered pre-order · Ships by {drop.shipsBy}</p>}
 
         {(phase === 'upcoming' || phase === 'tba') && (

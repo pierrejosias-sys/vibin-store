@@ -104,7 +104,7 @@ export default function AmbassadorHub() {
 
   const captions = [
     'Move different. Vibin Apparel SS26 is live. Heavyweight cotton built to last past the season. Use my code [YOURCODE] for 15% off. ✦ #VibinDifferent',
-    'Coral Vol 01 hoodie was MADE for these temps. Last pieces — once gone, gone. Code [YOURCODE] = 15% off. Link in bio. @vibinapparel',
+    'The VOL 01 hoodie was MADE for these temps. Last pieces — once gone, gone. Code [YOURCODE] = 15% off. Link in bio. @vibinapparel',
     "Vibin different isn't a tagline. It's a posture. Confident. Calm. Community. Wear yours — code [YOURCODE]. ✦",
   ]
   const captionLabels = ['Drop 01 · Foundation Tee', 'Drop 01 · Vol 01 Hoodie', 'General · Community']

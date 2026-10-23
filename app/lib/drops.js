@@ -15,6 +15,15 @@ export const STYLE_NAMES = {
 }
 
 export const SIZES = ['S', 'M', 'L', 'XL', 'XXL']
+// Per-style size runs (keys sent to checkout and the Printful variant map).
+export const STYLE_SIZES = { hd: ['S', 'M', 'L', 'XL', '2X', '3X'] }
+export function sizesForStyle(styleCode) {
+  return STYLE_SIZES[styleCode] || SIZES
+}
+
+// VOL 01 Hoodie product copy (drop_styles.description is the source of truth; this is the fallback).
+// Blank: Lane Seven LS17001 via Printful (print-on-demand). No garment-dye or cord claims.
+export const HOODIE_DESCRIPTION = 'Lane Seven heavyweight pullover hoodie (LS17001): 16.5 oz cotton/poly fleece, relaxed fit, raglan sleeves, kangaroo pocket and ribbed cuffs and hem. Double-layer hood with no cords. Front artwork is DTF printed. Printed to order.'
 
 // Hold length for claimed pieces. Spec target is 10 min, but Stripe requires a
 // Checkout Session to live at least 30 min, so the hold must outlast the session
@@ -32,12 +41,12 @@ export const DROPS = {
     releaseAt: '2026-11-13T00:00:00Z',
     closesAt: '2026-11-16T04:59:59Z',
     shipsBy: 'Dec 11–17',
-    story: 'Drop 01 is the first numbered Vibin Apparel run, limited to 50 pieces per style, made in Jacksonville, FL.',
-    careInfo: 'Machine wash cold inside out, hang dry, do not bleach, and iron low away from prints and embroidery.',
+    story: 'Drop 01 is the first numbered Vibin Apparel run, limited to 50 pieces per style, designed in Jacksonville, FL.',
+    careInfo: 'Machine wash cold inside out, hang dry, do not bleach, and do not iron the print.',
     piecesPerStyle: 50,
     // Approved prices (drop_styles.price is the source of truth; this is the fallback).
     styles: [
-      { code: 'hd', name: 'VOL 01 Hoodie', price: 195 },
+      { code: 'hd', name: 'VOL 01 Hoodie', price: 195, description: HOODIE_DESCRIPTION },
       { code: 'cj', name: 'Cargo Jogger', price: 88 },
       { code: 'wb', name: 'Windbreaker', price: 128 },
       { code: 'ns', name: 'Nylon Shorts', price: 58 },
@@ -87,7 +96,7 @@ export async function getDropState(dropId) {
   try {
     const [{ data: drop }, { data: styles }] = await Promise.all([
       supabase.from('drops').select('name, story, release_at, closes_at, pieces_per_style').eq('id', dropId).maybeSingle(),
-      supabase.from('drop_styles').select('style_code, name, price, sort_order').eq('drop_id', dropId).order('sort_order'),
+      supabase.from('drop_styles').select('*').eq('drop_id', dropId).order('sort_order'),
     ])
     if (drop) {
       state.name = drop.name || state.name
@@ -99,7 +108,7 @@ export async function getDropState(dropId) {
     if (styles?.length) {
       state.styles = withAvailability(styles.map(s => {
         const cfg = base.styles.find(c => c.code === s.style_code) || {}
-        return { code: s.style_code, name: s.name, price: s.price != null ? Number(s.price) : cfg.price ?? null, remaining: null, sizes: {} }
+        return { code: s.style_code, name: s.name, price: s.price != null ? Number(s.price) : cfg.price ?? null, description: s.description || cfg.description || null, remaining: null, sizes: {} }
       }))
     }
   } catch (err) {
