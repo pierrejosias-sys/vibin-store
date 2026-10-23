@@ -4,6 +4,7 @@ import './globals.css'
 // direct load of /product/*, /shop, /cart, /drop/* etc. rendered unstyled.
 import './styles.css'
 import { FREE_SHIPPING_LABEL } from './lib/shipping'
+import SupportChat from './components/SupportChat'
 
 export const metadata = {
   metadataBase: new URL('https://vibinapparel.com'),
@@ -48,6 +49,7 @@ export default function RootLayout({ children }) {
         <CartProvider>
           {children}
         </CartProvider>
+        <SupportChat />
       </body>
     </html>
   )

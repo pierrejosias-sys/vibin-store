@@ -10,7 +10,7 @@ export default function SupportAgentPage() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('waiting_for_agent');
+  const [filter, setFilter] = useState('open');
   const [agentName, setAgentName] = useState('');
   const messagesEndRef = useRef(null);
 
@@ -79,7 +79,6 @@ export default function SupportAgentPage() {
       chat_id: selectedChat.id,
       sender: 'agent',
       message: input,
-      agent_name: agentName
     };
 
     const { error } = await supabase
@@ -90,13 +89,13 @@ export default function SupportAgentPage() {
       setMessages([...messages, { ...newMsg, created_at: new Date() }]);
       setInput('');
 
-      // Update chat status to 'in_progress'
+      // Agent replied: status 'answered'
       await supabase
         .from('support_chats')
-        .update({ status: 'in_progress', updated_at: new Date() })
+        .update({ status: 'answered', updated_at: new Date() })
         .eq('id', selectedChat.id);
 
-      setSelectedChat({ ...selectedChat, status: 'in_progress' });
+      setSelectedChat({ ...selectedChat, status: 'answered' });
     }
   }
 
@@ -105,7 +104,7 @@ export default function SupportAgentPage() {
 
     await supabase
       .from('support_chats')
-      .update({ status: 'resolved', updated_at: new Date() })
+      .update({ status: 'closed', updated_at: new Date() })
       .eq('id', selectedChat.id);
 
     alert('Chat resolved!');
@@ -122,8 +121,8 @@ export default function SupportAgentPage() {
   const statusColors = {
     'open': '#3b82f6',
     'waiting_for_agent': '#ef4444',
-    'in_progress': '#f59e0b',
-    'resolved': '#10b981',
+    'answered': '#f59e0b',
+    'closed': '#10b981',
     'pending_verification': '#8b5cf6'
   };
 
@@ -148,7 +147,7 @@ export default function SupportAgentPage() {
               Support <em style={{ fontStyle: 'italic', color: 'var(--coral)' }}>Portal</em>
             </h2>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              {['all', 'waiting_for_agent', 'in_progress', 'resolved'].map(f => (
+              {['all', 'open', 'answered', 'closed'].map(f => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
@@ -322,7 +321,7 @@ export default function SupportAgentPage() {
                 <div style={{ fontSize: '48px', marginBottom: '16px' }}>💬</div>
                 <div style={{ fontSize: '16px' }}>Select a chat to start helping</div>
                 <div style={{ fontSize: '12px', marginTop: '8px' }}>
-                  {chats.filter(c => c.status === 'waiting_for_agent').length} waiting for agent
+                  {chats.filter(c => c.status === 'open').length} open
                 </div>
               </div>
             </div>
