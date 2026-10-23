@@ -4,15 +4,18 @@ import { pieceIdsFromMetadata, releasePieces } from '../../lib/pieces'
 
 export const runtime = 'nodejs'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
-
-// Use service role key — webhook runs server-side, needs to bypass RLS
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
+// Clients are created per request so the build doesn't need secrets
+// (preview environments may not have Stripe/Supabase keys configured).
+// Service role key — runs server-side and needs to bypass RLS.
+function getClients() {
+  return {
+    stripe: new Stripe(process.env.STRIPE_SECRET_KEY),
+    supabase: createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY),
+  }
+}
 
 export async function POST(request) {
+  const { stripe, supabase } = getClients()
   const sig = request.headers.get('stripe-signature')
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 
