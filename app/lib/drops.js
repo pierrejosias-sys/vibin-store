@@ -30,14 +30,15 @@ export const DROPS = {
     // ⚠️ PLACEHOLDER — release time not set yet. null = locked / "TBA".
     // Set the real value in the `drops` table (release_at); this is only a fallback.
     releaseAt: null,
-    story: 'PLACEHOLDER — Drop 01 story copy goes here.',
+    story: 'Drop 01 is the first numbered Vibin Apparel run, limited to 50 pieces per style, made in Jacksonville, FL.',
+    careInfo: 'Machine wash cold inside out, hang dry, do not bleach, and iron low away from prints and embroidery.',
     piecesPerStyle: 50,
-    // ⚠️ PLACEHOLDER prices — confirm before release (drop_styles.price overrides).
+    // Approved prices (drop_styles.price is the source of truth; this is the fallback).
     styles: [
-      { code: 'hd', name: 'Hoodie', price: 85 },
-      { code: 'cj', name: 'Cargo Jogger', price: 75 },
-      { code: 'wb', name: 'Windbreaker', price: 95 },
-      { code: 'ns', name: 'Nylon Shorts', price: 55 },
+      { code: 'hd', name: 'Hoodie', price: 98 },
+      { code: 'cj', name: 'Cargo Jogger', price: 88 },
+      { code: 'wb', name: 'Windbreaker', price: 128 },
+      { code: 'ns', name: 'Nylon Shorts', price: 58 },
     ],
   },
 }
