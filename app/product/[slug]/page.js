@@ -81,6 +81,9 @@ export default function ProductPage() {
   }
 
   const SIZES = ['XS','S','M','L','XL','XXL']
+  // Per-product size runs. Values are the size keys sent to checkout and the
+  // Printful/fulfillment mapping (2X/3X, not XXL/XXXL).
+  const PRODUCT_SIZES = { 'vibin-classic-tee': ['S','M','L','XL','2X','3X'] } // Foundation Tee
 
   if (loading) return (
     <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'sans-serif'}}>
@@ -100,7 +103,7 @@ export default function ProductPage() {
   )
 
   const colorways = getColorways()
-  const sizes = SIZES
+  const sizes = PRODUCT_SIZES[product.slug] || SIZES
 
   return (
     <>
