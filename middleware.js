@@ -1,8 +1,25 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
+import { EARLY_ACCESS_COOKIE, isWellFormedToken } from './app/lib/early-access-cookie.mjs'
 
 export async function middleware(request) {
   const { pathname } = request.nextUrl
+
+  // Waitlist early-access link: /drop/01?access=<token> -> cookie, then clean URL.
+  // The token itself is validated server-side (drop page + /api/checkout).
+  if (pathname.startsWith('/drop/')) {
+    const accessParam = request.nextUrl.searchParams.get('access')
+    if (!accessParam) return NextResponse.next()
+    const clean = request.nextUrl.clone()
+    clean.searchParams.delete('access')
+    const res = NextResponse.redirect(clean)
+    if (isWellFormedToken(accessParam)) {
+      res.cookies.set(EARLY_ACCESS_COOKIE, accessParam, {
+        httpOnly: true, secure: true, sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 60,
+      })
+    }
+    return res
+  }
 
   // Routes that require authentication
   const protectedRoutes = ['/admin', '/ambassador', '/profile']
@@ -65,5 +82,6 @@ export const config = {
     '/admin/:path*',
     '/ambassador/:path*',
     '/profile/:path*',
+    '/drop/:path*',
   ]
 }

@@ -11,6 +11,9 @@ import { shippingFor, FREE_SHIPPING_LABEL } from '../../lib/shipping'
 import { DROPS } from '../../lib/drops'
 import { DROP_CATALOG, enforceDropCatalog } from '../../lib/drop-catalog.mjs'
 import { serverNow } from '../../lib/drop-window.mjs'
+import { cookies } from 'next/headers'
+import { EARLY_ACCESS_COOKIE, accessPhase } from '../../lib/early-access.mjs'
+import { lockEarlyAccessToken, attachEarlyAccessLock, releaseEarlyAccessLock } from '../../lib/waitlist.mjs'
 
 // Clients are created per request so the build doesn't need secrets
 // (preview environments may not have Stripe/Supabase keys configured).
@@ -25,6 +28,7 @@ function getClients() {
 export async function POST(request) {
   const { stripe, supabase } = getClients()
   let pieceIds = []
+  let earlyLockToken = null, lockAttached = false
   try {
     const body = await request.json()
     const { email, ambassadorCode } = body
@@ -47,11 +51,27 @@ export async function POST(request) {
       .select('id, name, release_at, closes_at').in('id', dropIdsForCatalog)
     if (windowErr) throw new Error(windowErr.message)
     const shipsBy = Object.fromEntries(dropIdsForCatalog.map(id => [id, DROPS[id]?.shipsBy || null]))
-    const { error: windowError, status: windowStatus, preorderItems } = enforceDropCatalog(items, windowDrops || [], { now: serverNow(), shipsBy })
+
+    // Waitlist early-access hour: only a valid, unused, unlocked private link may check out.
+    // The link is atomically locked to this checkout (released on session expiry / after the lock TTL).
+    const now = serverNow()
+    const d01 = (windowDrops || []).find(d => d.id === 'd01')
+    const phaseNow = d01 ? accessPhase({ earlyAccessAt: DROPS.d01.earlyAccessAt, releaseAt: d01.release_at, closesAt: d01.closes_at }, now) : 'tba'
+    const touchesDrop = items.some(i => (i.drop && i.style) || DROP_CATALOG.d01.some(c => Number(i.id) === c.productId))
+    let earlyAccessGranted = false
+    if (phaseNow === 'early' && touchesDrop) {
+      earlyLockToken = (await cookies()).get(EARLY_ACCESS_COOKIE)?.value || null
+      earlyAccessGranted = await lockEarlyAccessToken(supabase, earlyLockToken, now)
+      if (!earlyAccessGranted) {
+        earlyLockToken = null
+        return Response.json({ error: 'Drop 01 is in waitlist early access. Your private link is missing, invalid, already used, or in use in another checkout. Everyone can pre-order at 7:00 PM ET.' }, { status: 403 })
+      }
+    }
+    const { error: windowError, status: windowStatus, preorderItems } = enforceDropCatalog(items, windowDrops || [], { now, shipsBy, earlyAccessGranted, earlyAccessAt: { d01: DROPS.d01.earlyAccessAt } })
     if (windowError) return Response.json({ error: windowError }, { status: windowStatus || 400 })
 
     // Numbered drop items: validate, price server-side, and hold pieces before payment.
-    const { dropItems, error: dropError, status: dropStatus } = await resolveDropItems(supabase, items)
+    const { dropItems, error: dropError, status: dropStatus } = await resolveDropItems(supabase, items, { earlyAccessGranted })
     if ((dropItems?.length || preorderItems.length) && body.preorderAck !== true) {
       return Response.json({ error: 'Please confirm you understand this is a pre-order.' }, { status: 400 })
     }
@@ -123,15 +143,22 @@ export async function POST(request) {
       cancel_url: `${request.headers.get('origin')}/cart`,
       customer_email: email,
       // Stripe minimum is 30 minutes; piece holds last slightly longer (PIECE_HOLD_MINUTES).
-      ...(pieceIds.length ? { expires_at: Math.floor(Date.now() / 1000) + STRIPE_SESSION_MINUTES * 60 } : {}),
+      ...(pieceIds.length || earlyLockToken ? { expires_at: Math.floor(Date.now() / 1000) + STRIPE_SESSION_MINUTES * 60 } : {}),
       metadata: {
         orderId: String(order.id),
         ambassadorCode: ambassadorCode || '',
         shipping: String(shippingAmount),
         items: JSON.stringify(items.map(i => ({ id: i.id, name: i.name, qty: i.qty }))),
         ...pieceIdsToMetadata(pieceIds),
+        // Marked used by the webhook on checkout.session.completed (one early checkout per token).
+        ...(earlyLockToken ? { earlyAccessToken: earlyLockToken } : {}),
       },
     })
+
+    if (earlyLockToken) {
+      lockAttached = true // the session exists now; the lock stays until it expires/completes or the TTL passes
+      await attachEarlyAccessLock(supabase, earlyLockToken, session.id)
+    }
 
     if (pieceIds.length) {
       const { error: attachError } = await supabase.rpc('attach_piece_session', {
@@ -146,5 +173,8 @@ export async function POST(request) {
     if (pieceIds.length) await releasePieces(supabase, pieceIds)
     console.error('Checkout error:', error.message)
     return Response.json({ error: error.message }, { status: 500 })
+  } finally {
+    // Any exit before the Stripe session exists frees the private link for another try.
+    if (earlyLockToken && !lockAttached) await releaseEarlyAccessLock(supabase, earlyLockToken, null)
   }
 }
