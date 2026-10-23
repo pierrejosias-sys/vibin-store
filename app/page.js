@@ -113,7 +113,7 @@ export default function HomePage() {
 
       {/* HERO */}
       <section className="hero">
-        <div className="hero-img"></div>
+        <div className="hero-img" role="img" aria-label="Model wearing the black VIBIN. hoodie"></div>
         <div className="hero-grain"></div>
         <div className="hero-content">
           <div className="hero-top">
