@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import supabase from '../lib/supabase-public'
 import { useCart } from '../lib/cart-context'
 import { SIZES } from '../lib/drops'
+import { countdownTarget, formatET } from '../lib/drop-window.mjs'
 
 const S = {
   page: { background: '#0a0a0a', color: '#f5f5f5', minHeight: '100vh', padding: '64px 20px', fontFamily: 'inherit' },
@@ -127,8 +128,9 @@ function StyleCard({ drop, style, released }) {
       <div style={S.eyebrow}>{drop.id.toUpperCase()}-{style.code.toUpperCase()}</div>
       <h3 style={{ margin: '8px 0' }}>{style.name}</h3>
       <div style={{ opacity: 0.8 }}>{style.price != null ? `$${style.price}` : 'Price TBA'}</div>
+      {drop.shipsBy && <div style={{ fontSize: 13, opacity: 0.8, marginTop: 4 }}>Pre-order · Ships by {drop.shipsBy}</div>}
       <div style={{ margin: '12px 0', fontSize: 14 }}>
-        {!released && <span>🔒 Locked until release · {drop.piecesPerStyle} numbered pieces</span>}
+        {!released && <span>🔒 {drop.phase === 'closed' ? 'Pre-order closed' : `Pre-order opens ${formatET(drop.releaseAt)}`} · {drop.piecesPerStyle} numbered pieces</span>}
         {released && soldOut && <strong style={{ color: '#f66' }}>SOLD OUT</strong>}
         {released && !soldOut && style.remaining != null && <span>{style.remaining} of {drop.piecesPerStyle} left</span>}
       </div>
@@ -160,15 +162,28 @@ function sz_note(left, size) {
   return <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 10 }}>{left} left in {size}</div>
 }
 
-export default function DropClient({ drop, released: releasedAtRender, serverNow }) {
+export default function DropClient({ drop: dropProp, phase, serverNow }) {
   const router = useRouter()
-  const countdown = useCountdown(releasedAtRender ? null : drop.releaseAt, serverNow)
-  const released = releasedAtRender
+  const drop = { ...dropProp, phase }
+  const released = phase === 'open'
+  const target = countdownTarget(phase, drop.releaseAt, drop.closesAt)
+  const countdown = useCountdown(target, serverNow)
 
-  // When the countdown hits zero, re-render on the server to unlock products.
+  // When a countdown hits zero, re-render on the server (opens or closes the pre-order).
   useEffect(() => {
-    if (countdown?.done && !released) router.refresh()
-  }, [countdown?.done, released, router])
+    if (countdown?.done) router.refresh()
+  }, [countdown?.done, router])
+
+  const clock = countdown && (
+    <div aria-label={phase === 'open' ? 'Countdown to pre-order close' : 'Countdown to pre-order open'} style={{ fontSize: 40, fontWeight: 800 }}>
+      {['days', 'hours', 'minutes', 'seconds'].map(k => (
+        <span key={k} style={S.countBox}>
+          {String(countdown[k]).padStart(2, '0')}
+          <div style={{ fontSize: 11, letterSpacing: 2, opacity: 0.6, fontWeight: 400 }}>{k.toUpperCase()}</div>
+        </span>
+      ))}
+    </div>
+  )
 
   return (
     <main style={S.page}>
@@ -177,21 +192,35 @@ export default function DropClient({ drop, released: releasedAtRender, serverNow
         <h1 style={S.h1}>{drop.name}</h1>
         <p style={{ maxWidth: 640, opacity: 0.8 }}>{drop.story}</p>
         <p style={{ opacity: 0.6, fontSize: 14 }}>Every piece is numbered 1–{drop.piecesPerStyle} with a scannable authenticity tag.</p>
+        {drop.shipsBy && <p style={{ fontSize: 16, fontWeight: 700 }}>Numbered pre-order · Ships by {drop.shipsBy}</p>}
 
-        {!released && (
+        {(phase === 'upcoming' || phase === 'tba') && (
           <section style={{ marginTop: 40 }}>
-            {countdown ? (
-              <div aria-label="Countdown to release" style={{ fontSize: 40, fontWeight: 800 }}>
-                {['days', 'hours', 'minutes', 'seconds'].map(k => (
-                  <span key={k} style={S.countBox}>
-                    {String(countdown[k]).padStart(2, '0')}
-                    <div style={{ fontSize: 11, letterSpacing: 2, opacity: 0.6, fontWeight: 400 }}>{k.toUpperCase()}</div>
-                  </span>
-                ))}
-              </div>
+            {phase === 'upcoming' ? (
+              <>
+                <div style={{ fontSize: 18, marginBottom: 12 }}>Pre-order opens {formatET(drop.releaseAt)}{drop.closesAt ? ` · closes ${formatET(drop.closesAt)}` : ''}</div>
+                {clock}
+              </>
             ) : (
               <div style={{ fontSize: 28, fontWeight: 800 }}>Release date: TBA</div>
             )}
+            <Waitlist dropId={drop.id} />
+          </section>
+        )}
+
+        {phase === 'open' && (
+          <section style={{ marginTop: 40 }}>
+            <div style={{ fontSize: 18, marginBottom: 12 }}>
+              <strong>Pre-order open</strong>{drop.closesAt ? `, closes in… (${formatET(drop.closesAt)})` : ''}
+            </div>
+            {drop.closesAt && clock}
+          </section>
+        )}
+
+        {phase === 'closed' && (
+          <section style={{ marginTop: 40 }}>
+            <div style={{ fontSize: 28, fontWeight: 800 }}>Pre-order closed</div>
+            <p style={{ opacity: 0.8 }}>Closed {formatET(drop.closesAt)}. Join the list for the next drop.</p>
             <Waitlist dropId={drop.id} />
           </section>
         )}
