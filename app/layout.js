@@ -1,5 +1,8 @@
 import { CartProvider } from './lib/cart-context'
 import './globals.css'
+// Site-wide styles (nav, promo bar, footer, fonts). Previously only imported by some pages, so a
+// direct load of /product/*, /shop, /cart, /drop/* etc. rendered unstyled.
+import './styles.css'
 import { FREE_SHIPPING_LABEL } from './lib/shipping'
 
 export const metadata = {
