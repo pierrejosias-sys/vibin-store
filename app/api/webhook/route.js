@@ -1,6 +1,7 @@
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { pieceIdsFromMetadata, releasePieces } from '../../lib/pieces'
+import { fulfillWithPrintful } from '../../lib/printful'
 
 export const runtime = 'nodejs'
 
@@ -92,6 +93,9 @@ export async function POST(request) {
           console.error(`⚠️ Order ${orderId}: only ${soldCount}/${pieceIds.length} pieces marked sold (session ${session.id})`)
         }
       }
+
+      // Print-on-demand: create the Printful order for POD lines (idempotent; never throws).
+      if (orderId) await fulfillWithPrintful(supabase, session)
 
       // Log notification
       const { error: notifyError } = await supabase

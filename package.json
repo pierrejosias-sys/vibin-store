@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "generate-tags": "node scripts/generate-tags.mjs"
+    "generate-tags": "node scripts/generate-tags.mjs",
+    "test": "node --test tests/"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.3.1",
