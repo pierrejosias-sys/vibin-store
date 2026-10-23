@@ -58,10 +58,12 @@ export default function SupportChat() {
       setMobile(window.innerWidth <= 640)
       const el = fabRef.current
       if (!el || open) { setLift(0); return }
-      const prev = el.style.transform
-      el.style.transform = 'none'
-      const btnRect = el.getBoundingClientRect()
-      el.style.transform = prev
+      // Measure the resting position: undo the current (possibly mid-transition) translateY instead of
+      // toggling the transform, which a CSS transition would ignore.
+      const r = el.getBoundingClientRect()
+      const t = getComputedStyle(el).transform
+      const dy = t && t !== 'none' ? new DOMMatrixReadOnly(t).m42 : 0
+      const btnRect = { top: r.top - dy, bottom: r.bottom - dy, left: r.left, right: r.right }
       const avoid = Array.from(document.querySelectorAll(HELP_AVOID)).map(n => n.getBoundingClientRect())
       setLift(liftFor(btnRect, avoid, window.innerHeight))
     }
