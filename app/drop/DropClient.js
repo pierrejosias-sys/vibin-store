@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import supabase from '../lib/supabase-public'
 import { useCart } from '../lib/cart-context'
 import { sizesForStyle } from '../lib/drops'
+import { DROP_STYLE_IMAGES } from '../lib/drop-catalog.mjs'
 import { countdownTarget, formatET } from '../lib/drop-window.mjs'
 
 const S = {
@@ -87,6 +88,7 @@ function ComingSoonCard({ drop, style }) {
   }
   return (
     <div style={S.card}>
+      {DROP_STYLE_IMAGES[drop.id]?.[style.code]?.[0] && <img src={DROP_STYLE_IMAGES[drop.id][style.code][0]} alt={style.name} loading="lazy" style={{ width: '100%', aspectRatio: '3 / 4', objectFit: 'cover', borderRadius: 8, marginBottom: 12 }} />}
       <div style={S.eyebrow}>{drop.id.toUpperCase()}-{style.code.toUpperCase()}</div>
       <h3 style={{ margin: '8px 0' }}>{style.name}</h3>
       <div style={{ margin: '12px 0', fontSize: 14 }}><strong>Coming soon</strong> · not available to order yet</div>
@@ -113,7 +115,7 @@ function CatalogCard({ drop, item, released }) {
     const cart = JSON.parse(localStorage.getItem('vibin_cart') || '[]')
     const existing = cart.find(i => String(i.id) === String(item.productId) && i.size === size)
     if (existing) existing.qty += 1
-    else cart.push({ id: item.productId, slug: item.slug, name: item.name, price: item.price, color: item.color || 'Black', size, qty: 1, image_url: null, preorder: drop.id })
+    else cart.push({ id: item.productId, slug: item.slug, name: item.name, price: item.price, color: item.color || 'Black', size, qty: 1, image_url: item.images?.[0] || null, preorder: drop.id })
     localStorage.setItem('vibin_cart', JSON.stringify(cart))
     updateCart?.()
     setAdded(true)
@@ -122,6 +124,7 @@ function CatalogCard({ drop, item, released }) {
 
   return (
     <div style={S.card}>
+      {item.images?.[0] && <img src={item.images[0]} alt={item.name} loading="lazy" style={{ width: '100%', aspectRatio: '3 / 4', objectFit: 'cover', borderRadius: 8, marginBottom: 12 }} />}
       <div style={S.eyebrow}>{drop.id.toUpperCase()} · Made in-house</div>
       <h3 style={{ margin: '8px 0' }}>{item.name}</h3>
       <div style={{ opacity: 0.8 }}>${item.price}</div>
@@ -162,7 +165,7 @@ function StyleCard({ drop, style, released }) {
     const id = `${drop.id}-${style.code}`
     const existing = cart.find(i => i.id === id && i.size === size)
     if (existing) existing.qty += 1
-    else cart.push({ id, name: `${style.name} — ${drop.name}`, price: style.price, color: 'Black', size, qty: 1, slug: null, image_url: null, drop: drop.id, style: style.code })
+    else cart.push({ id, name: `${style.name} — ${drop.name}`, price: style.price, color: 'Black', size, qty: 1, slug: null, image_url: DROP_STYLE_IMAGES[drop.id]?.[style.code]?.[0] || null, drop: drop.id, style: style.code })
     localStorage.setItem('vibin_cart', JSON.stringify(cart))
     updateCart?.()
     setAdded(true)
@@ -171,6 +174,7 @@ function StyleCard({ drop, style, released }) {
 
   return (
     <div style={{ ...S.card, opacity: soldOut ? 0.5 : 1 }}>
+      {DROP_STYLE_IMAGES[drop.id]?.[style.code]?.[0] && <img src={DROP_STYLE_IMAGES[drop.id][style.code][0]} alt={style.name} loading="lazy" style={{ width: '100%', aspectRatio: '3 / 4', objectFit: 'cover', borderRadius: 8, marginBottom: 12 }} />}
       <div style={S.eyebrow}>{drop.id.toUpperCase()}-{style.code.toUpperCase()}</div>
       <h3 style={{ margin: '8px 0' }}>{style.name}</h3>
       {style.description && <p style={{ fontSize: 14, opacity: 0.8, margin: '0 0 8px' }}>{style.description}</p>}

@@ -9,7 +9,7 @@ import { resolveCatalogItems, sanitizeItem } from '../../lib/pricing'
 import { getSessionUser } from '../../lib/admin-auth'
 import { shippingFor, FREE_SHIPPING_LABEL } from '../../lib/shipping'
 import { DROPS } from '../../lib/drops'
-import { DROP_CATALOG, enforceDropCatalog } from '../../lib/drop-catalog.mjs'
+import { DROP_CATALOG, enforceDropCatalog, shipsInTwoPackages, TWO_PACKAGES_NOTE } from '../../lib/drop-catalog.mjs'
 import { serverNow } from '../../lib/drop-window.mjs'
 
 // Clients are created per request so the build doesn't need secrets
@@ -102,7 +102,14 @@ export async function POST(request) {
     // Shipping computed server-side from config ($8 flat, free at FREE_SHIPPING_THRESHOLD+).
     const shippingAmount = shippingFor(total)
 
+    // Hoodie (Printful) + tee/snapback (in-house) ship separately: say so on Stripe's page and receipt.
+    const twoPackages = shipsInTwoPackages(items)
+
     const session = await stripe.checkout.sessions.create({
+      ...(twoPackages ? {
+        custom_text: { submit: { message: TWO_PACKAGES_NOTE } },
+        payment_intent_data: { description: `Vibin Apparel order #${order.id}. ${TWO_PACKAGES_NOTE}` },
+      } : {}),
       payment_method_types: ['card'],
       // Needed for Printful fulfillment (US only).
       shipping_address_collection: { allowed_countries: ['US'] },
@@ -128,6 +135,7 @@ export async function POST(request) {
         orderId: String(order.id),
         ambassadorCode: ambassadorCode || '',
         shipping: String(shippingAmount),
+        ...(twoPackages ? { packages: '2' } : {}),
         items: JSON.stringify(items.map(i => ({ id: i.id, name: i.name, qty: i.qty }))),
         ...pieceIdsToMetadata(pieceIds),
       },
