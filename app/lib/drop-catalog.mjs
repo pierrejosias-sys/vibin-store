@@ -7,11 +7,25 @@ import { dropPhase } from './drop-window.mjs'
 
 export const DROP_CATALOG = {
   d01: [
-    { productId: 1, slug: 'vibin-classic-tee', name: 'Foundation Tee', price: 85, sizes: ['S', 'M', 'L', 'XL', '2X', '3X'],
+    { productId: 1, slug: 'vibin-classic-tee', name: 'Foundation Tee', price: 85, sizes: ['S', 'M', 'L', 'XL', '2X', '3X', '4X'],
       images: ['/drop01/tee-shgdd-front.webp'], square: '/drop01/tee-shgdd-front-square.webp' },
     { productId: 10, slug: 'vibin-snapback', name: 'Snapback', price: 65, sizes: ['OS'],
       images: ['/drop01/snapback-6089m-hero.webp', '/drop01/snapback-6089m-hero-flat.webp'] },
   ],
+}
+
+/**
+ * Blank (garment) per size for the Foundation Tee. 3X and up are cut on the SHGD blank.
+ * The tee is fulfilled in-house (manual lines, not Printful), so this is the reference used when
+ * ordering blanks / if the tee is ever moved to Printful.
+ * TODO(printful): SHGD Printful variant ids for 3X and 4X are NOT known in this repo. Look them up
+ * (GET https://api.printful.com/products/<SHGD product id>) and fill in `variant_id` before adding
+ * any `vibin-classic-tee:<size>` keys to PRINTFUL_VARIANT_MAP. Do not guess ids.
+ */
+export const TEE_BLANKS = {
+  S: { blank: 'SHGDD' }, M: { blank: 'SHGDD' }, L: { blank: 'SHGDD' }, XL: { blank: 'SHGDD' }, '2X': { blank: 'SHGDD' },
+  '3X': { blank: 'SHGD', variant_id: null }, // TODO: SHGD 3X Printful variant id unknown
+  '4X': { blank: 'SHGD', variant_id: null }, // TODO: SHGD 4X Printful variant id unknown
 }
 
 /**

@@ -25,8 +25,8 @@ test('window enforced for drop catalog items', () => {
   assert.equal(items[2].preorder, undefined)
 })
 
-test('sizes: tee S–3X, snapback one size', () => {
-  for (const s of ['S', 'M', 'L', 'XL', '2X', '3X']) assert.equal(enforceDropCatalog([tee(s)], drops, { now: OPEN }).error, undefined)
+test('sizes: tee S–4X, snapback one size', () => {
+  for (const s of ['S', 'M', 'L', 'XL', '2X', '3X', '4X']) assert.equal(enforceDropCatalog([tee(s)], drops, { now: OPEN }).error, undefined)
   assert.equal(enforceDropCatalog([tee('XXL')], drops, { now: OPEN }).status, 400)
   assert.equal(enforceDropCatalog([{ ...snap(), size: 'M' }], drops, { now: OPEN }).status, 400)
 })
@@ -41,4 +41,12 @@ test('tee and snapback are manual fulfillment, not Printful', () => {
   const { podLines, manualLines } = splitCart([tee('3X'), snap(), { drop: 'd01', style: 'hd', size: 'M' }], map)
   assert.equal(podLines.length, 1)
   assert.deepEqual(manualLines.map(i => i.id), [1, 10])
+})
+
+test('tee 4X is manual (no Printful routing); hoodie 4X never routes', () => {
+  const map = { 'hd:M': 123, 'hd:3X': 456 }
+  const { podLines, manualLines, unmapped } = splitCart([tee('4X'), { drop: 'd01', style: 'hd', size: '4X' }], map)
+  assert.equal(podLines.length, 0)
+  assert.deepEqual(manualLines.map(i => i.id), [1])
+  assert.equal(unmapped.length, 1)
 })

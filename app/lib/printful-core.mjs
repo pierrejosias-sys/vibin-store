@@ -66,7 +66,7 @@ export function defaultVariantMap(env = {}) {
   return out
 }
 
-export const SIZE_ALIASES = { XXL: '2X', '2XL': '2X', XXXL: '3X', '3XL': '3X' }
+export const SIZE_ALIASES = { XXL: '2X', '2XL': '2X', XXXL: '3X', '3XL': '3X', XXXXL: '4X', '4XL': '4X' }
 
 export function normalizeSize(size) {
   const s = String(size ?? '').trim().toUpperCase()
