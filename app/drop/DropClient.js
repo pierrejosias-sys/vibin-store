@@ -14,7 +14,9 @@ async function joinWaitlist(payload) {
 import { useCart } from '../lib/cart-context'
 import WaitlistThanks from '../components/WaitlistThanks'
 import { sizesForStyle } from '../lib/drops'
-import { DROP_STYLE_IMAGES, activeStyleColors } from '../lib/drop-catalog.mjs'
+import { SHIPPING_FLAT_RATE, FREE_SHIPPING_LABEL } from '../lib/shipping'
+
+import { DROP_STYLE_IMAGES, activeStyleColors, sizeLabel } from '../lib/drop-catalog.mjs'
 import { countdownTarget, formatET } from '../lib/drop-window.mjs'
 
 const S = {
@@ -137,7 +139,7 @@ function CatalogCard({ drop, item, released }) {
           {item.sizes.length > 1 ? (
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
               {item.sizes.map(sz => (
-                <button key={sz} onClick={() => setSize(sz)} style={{ ...S.size, ...(size === sz ? { background: '#f5f5f5', color: '#0a0a0a' } : {}) }}>{sz}</button>
+                <button key={sz} onClick={() => setSize(sz)} style={{ ...S.size, ...(size === sz ? { background: '#f5f5f5', color: '#0a0a0a' } : {}) }}>{sizeLabel(sz)}</button>
               ))}
             </div>
           ) : <div style={{ fontSize: 13, opacity: 0.7, marginBottom: 12 }}>One size</div>}
@@ -196,7 +198,7 @@ function StyleCard({ drop, style, released }) {
               return (
                 <button key={sz} disabled={out} onClick={() => setSize(sz)} title={left != null ? `${left} left` : undefined}
                   style={{ ...S.size, ...(size === sz ? { background: '#f5f5f5', color: '#0a0a0a' } : {}), ...(out ? { textDecoration: 'line-through', opacity: 0.4, cursor: 'not-allowed' } : {}) }}>
-                  {sz}
+                  {sizeLabel(sz)}
                 </button>
               )
             })}
@@ -212,7 +214,7 @@ function StyleCard({ drop, style, released }) {
 }
 
 function sz_note(left, size) {
-  return <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 10 }}>{left} left in {size}</div>
+  return <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 10 }}>{left} left in {sizeLabel(size)}</div>
 }
 
 export default function DropClient({ drop: dropProp, phase, earlyAccess, serverNow }) {
@@ -246,6 +248,7 @@ export default function DropClient({ drop: dropProp, phase, earlyAccess, serverN
         <p style={{ maxWidth: 640, opacity: 0.8 }}>{drop.story}</p>
         <p style={{ opacity: 0.6, fontSize: 14 }}>Every piece is numbered 1–{drop.piecesPerStyle}.</p>
         {drop.shipsBy && <p style={{ fontSize: 16, fontWeight: 700 }}>Numbered pre-order · Ships by {drop.shipsBy}</p>}
+        <p style={{ fontSize: 14, opacity: 0.8 }}>Shipping: ${SHIPPING_FLAT_RATE} flat · free on orders {FREE_SHIPPING_LABEL}+</p>
 
         {(phase === 'upcoming' || phase === 'tba') && (
           <section style={{ marginTop: 40 }}>
