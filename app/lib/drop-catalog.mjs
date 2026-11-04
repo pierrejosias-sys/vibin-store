@@ -5,6 +5,10 @@
  */
 import { dropPhase } from './drop-window.mjs'
 
+/** Display labels for size codes (codes like '2X' stay the cart/checkout/Printful keys). */
+export const SIZE_LABELS = { '2X': '2XL', '3X': '3XL' }
+export const sizeLabel = (sz) => SIZE_LABELS[sz] || sz
+
 export const DROP_CATALOG = {
   d01: [
     { productId: 1, slug: 'vibin-classic-tee', name: 'Foundation Tee', price: 85, sizes: ['S', 'M', 'L', 'XL', '2X', '3X'],

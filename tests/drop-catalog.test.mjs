@@ -42,3 +42,8 @@ test('tee and snapback are manual fulfillment, not Printful', () => {
   assert.equal(podLines.length, 1)
   assert.deepEqual(manualLines.map(i => i.id), [1, 10])
 })
+
+test('size display labels: 2X/3X shown as 2XL/3XL', async () => {
+  const { sizeLabel } = await import('../app/lib/drop-catalog.mjs')
+  assert.equal(sizeLabel('2X'), '2XL'); assert.equal(sizeLabel('3X'), '3XL'); assert.equal(sizeLabel('M'), 'M')
+})

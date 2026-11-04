@@ -16,8 +16,7 @@ import WaitlistThanks from '../components/WaitlistThanks'
 import { sizesForStyle } from '../lib/drops'
 import { SHIPPING_FLAT_RATE, FREE_SHIPPING_LABEL } from '../lib/shipping'
 
-const SIZE_LABELS = { '2X': '2XL', '3X': '3XL' }
-import { DROP_STYLE_IMAGES, activeStyleColors } from '../lib/drop-catalog.mjs'
+import { DROP_STYLE_IMAGES, activeStyleColors, sizeLabel } from '../lib/drop-catalog.mjs'
 import { countdownTarget, formatET } from '../lib/drop-window.mjs'
 
 const S = {
@@ -140,7 +139,7 @@ function CatalogCard({ drop, item, released }) {
           {item.sizes.length > 1 ? (
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
               {item.sizes.map(sz => (
-                <button key={sz} onClick={() => setSize(sz)} style={{ ...S.size, ...(size === sz ? { background: '#f5f5f5', color: '#0a0a0a' } : {}) }}>{sz}</button>
+                <button key={sz} onClick={() => setSize(sz)} style={{ ...S.size, ...(size === sz ? { background: '#f5f5f5', color: '#0a0a0a' } : {}) }}>{sizeLabel(sz)}</button>
               ))}
             </div>
           ) : <div style={{ fontSize: 13, opacity: 0.7, marginBottom: 12 }}>One size</div>}
@@ -199,7 +198,7 @@ function StyleCard({ drop, style, released }) {
               return (
                 <button key={sz} disabled={out} onClick={() => setSize(sz)} title={left != null ? `${left} left` : undefined}
                   style={{ ...S.size, ...(size === sz ? { background: '#f5f5f5', color: '#0a0a0a' } : {}), ...(out ? { textDecoration: 'line-through', opacity: 0.4, cursor: 'not-allowed' } : {}) }}>
-                  {SIZE_LABELS[sz] || sz}
+                  {sizeLabel(sz)}
                 </button>
               )
             })}
@@ -215,7 +214,7 @@ function StyleCard({ drop, style, released }) {
 }
 
 function sz_note(left, size) {
-  return <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 10 }}>{left} left in {SIZE_LABELS[size] || size}</div>
+  return <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 10 }}>{left} left in {sizeLabel(size)}</div>
 }
 
 export default function DropClient({ drop: dropProp, phase, earlyAccess, serverNow }) {
