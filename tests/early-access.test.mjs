@@ -4,16 +4,16 @@ import { accessPhase, canPreorder, newEarlyAccessToken, isWellFormedToken, early
 import { contactPayload, syncSignupToBrevo } from '../app/lib/brevo.mjs'
 import { markEarlyAccessTokenUsed } from '../app/lib/waitlist.mjs'
 
-const D = { earlyAccessAt: '2026-11-12T23:00:00Z', releaseAt: '2026-11-13T00:00:00Z', closesAt: '2026-11-16T04:59:59Z' }
+const D = { earlyAccessAt: '2026-11-19T23:00:00Z', releaseAt: '2026-11-20T00:00:00Z', closesAt: '2026-11-23T04:59:59Z' }
 const at = iso => Date.parse(iso)
 
 test('early-access window phases', () => {
-  assert.equal(accessPhase(D, at('2026-11-12T22:59:59Z')), 'upcoming')
-  assert.equal(accessPhase(D, at('2026-11-12T23:00:00Z')), 'early')
-  assert.equal(accessPhase(D, at('2026-11-12T23:59:59Z')), 'early')
-  assert.equal(accessPhase(D, at('2026-11-13T00:00:00Z')), 'open')
-  assert.equal(accessPhase(D, at('2026-11-16T05:00:00Z')), 'closed')
-  assert.equal(accessPhase({ ...D, earlyAccessAt: null }, at('2026-11-12T23:30:00Z')), 'upcoming')
+  assert.equal(accessPhase(D, at('2026-11-19T22:59:59Z')), 'upcoming')
+  assert.equal(accessPhase(D, at('2026-11-19T23:00:00Z')), 'early')
+  assert.equal(accessPhase(D, at('2026-11-19T23:59:59Z')), 'early')
+  assert.equal(accessPhase(D, at('2026-11-20T00:00:00Z')), 'open')
+  assert.equal(accessPhase(D, at('2026-11-23T05:00:00Z')), 'closed')
+  assert.equal(accessPhase({ ...D, earlyAccessAt: null }, at('2026-11-19T23:30:00Z')), 'upcoming')
 })
 
 test('who can pre-order', () => {

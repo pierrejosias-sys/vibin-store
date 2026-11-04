@@ -42,7 +42,7 @@ const row = extra => ({ id: 1, email: 'a@b.co', early_access_token: TOKEN, token
 
 test('lock: only one concurrent checkout can lock a link', async () => {
   const db = fakeDb([row()])
-  const now = Date.parse('2026-11-12T23:05:00Z')
+  const now = Date.parse('2026-11-19T23:05:00Z')
   const [a, b] = await Promise.all([lockEarlyAccessToken(db, TOKEN, now), lockEarlyAccessToken(db, TOKEN, now)])
   assert.deepEqual([a, b].sort(), [false, true])
   await attachEarlyAccessLock(db, TOKEN, 'cs_1')
@@ -51,7 +51,7 @@ test('lock: only one concurrent checkout can lock a link', async () => {
 })
 
 test('lock: stale lock (> TTL) counts as released', async () => {
-  const now = Date.parse('2026-11-12T23:50:00Z')
+  const now = Date.parse('2026-11-19T23:50:00Z')
   const db = fakeDb([row({ locked_at: new Date(now - EARLY_LOCK_TTL_MS - 1000).toISOString(), locked_session_id: 'cs_old' })])
   assert.equal(await lockEarlyAccessToken(db, TOKEN, now), true)
   assert.equal(db.rows[0].locked_session_id, null)
@@ -126,11 +126,11 @@ test('link email payload + no-op without key', async () => {
 })
 
 test('early-access hour: tee/snapback need a granted link', () => {
-  const drops = [{ id: 'd01', name: 'Drop 01', release_at: '2026-11-13T00:00:00Z', closes_at: '2026-11-16T04:59:59Z' }]
-  const now = Date.parse('2026-11-12T23:30:00Z')
+  const drops = [{ id: 'd01', name: 'Drop 01', release_at: '2026-11-20T00:00:00Z', closes_at: '2026-11-23T04:59:59Z' }]
+  const now = Date.parse('2026-11-19T23:30:00Z')
   const tee = () => ({ id: 1, slug: 'vibin-classic-tee', size: 'M', qty: 1 })
-  const ea = { d01: '2026-11-12T23:00:00Z' }
+  const ea = { d01: '2026-11-19T23:00:00Z' }
   assert.equal(enforceDropCatalog([tee()], drops, { now, earlyAccessAt: ea }).status, 409)
   assert.equal(enforceDropCatalog([tee()], drops, { now, earlyAccessAt: ea, earlyAccessGranted: true }).error, undefined)
-  assert.equal(enforceDropCatalog([tee()], drops, { now: Date.parse('2026-11-12T22:30:00Z'), earlyAccessAt: ea, earlyAccessGranted: true }).status, 409)
+  assert.equal(enforceDropCatalog([tee()], drops, { now: Date.parse('2026-11-19T22:30:00Z'), earlyAccessAt: ea, earlyAccessGranted: true }).status, 409)
 })

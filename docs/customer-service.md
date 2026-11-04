@@ -42,13 +42,13 @@ const { data } = await createClient(URL, SERVICE_ROLE_KEY).from('support_queue_o
 Copy, then adjust the name and order number.
 
 **When does Drop 01 open?**
-> Drop 01 pre-orders open **Thursday, Nov 12 at 7 PM ET** and close **Sunday, Nov 15 at 11:59 PM ET**. Waitlist members get an early hour from **6 to 7 PM ET** on Nov 12 using the private link we email them. Join the waitlist at https://vibinapparel.com/drop/01.
+> Drop 01 pre-orders open **Thursday, Nov 19 at 7 PM ET** and close **Sunday, Nov 22 at 11:59 PM ET**. Waitlist members get an early hour from **6 to 7 PM ET** on Nov 19 using the private link we email them. Join the waitlist at https://vibinapparel.com/drop/01.
 
 **I'm on the waitlist but my early-access link doesn't work.**
-> Each early-access link is personal and works for one checkout during the 6–7 PM ET hour on Nov 12. Open it on the device you'll check out on. If it says it's already been used or isn't valid, reply with the email you signed up with and we'll check it. From 7 PM ET the drop is open to everyone, no link needed.
+> Each early-access link is personal and works for one checkout during the 6–7 PM ET hour on Nov 19. Open it on the device you'll check out on. If it says it's already been used or isn't valid, reply with the email you signed up with and we'll check it. From 7 PM ET the drop is open to everyone, no link needed.
 
 **When will my pre-order ship?**
-> Drop 01 is made to order after the window closes. Pre-orders ship **Dec 11–17**, and you'll get tracking by email when your order leaves us.
+> Drop 01 is made to order after the window closes. Pre-orders ship **by Dec 18**, and you'll get tracking by email when your order leaves us.
 
 **How much is shipping?**
 > Shipping is a flat **$8** in the US, and **free on orders of $125 or more**. We currently ship to US addresses only.
@@ -60,7 +60,7 @@ Copy, then adjust the name and order number.
 > The hoodie is produced and shipped separately from the tee and snapback, so a mixed order **ships in two packages**, each with its own tracking. You pay shipping once.
 
 **Where's my order?** (topic `order` / `shipping`)
-> Thanks, I've looked up order #[ORDER]. [Status: paid, and it ships Dec 11–17 / shipped with tracking …]. You'll get an email with tracking as soon as it ships.
+> Thanks, I've looked up order #[ORDER]. [Status: paid, and it ships by Dec 18 / shipped with tracking …]. You'll get an email with tracking as soon as it ships.
 
 **I didn't get a confirmation email.**
 > Your payment receipt comes from Stripe. Check spam or promotions for "Vibin Apparel". If your order number showed on the confirmation page, your order is in. Reply with it and I'll confirm.
@@ -70,7 +70,7 @@ Copy, then adjust the name and order number.
 > *(Return policy for made-to-order pieces is not set yet: confirm with Josias before promising anything.)*
 
 **Can I change or cancel my pre-order?**
-> Yes, while the pre-order window is open (until Nov 15, 11:59 PM ET). Reply with your order number and the change. After the window closes, production starts and changes may not be possible.
+> Yes, while the pre-order window is open (until Nov 22, 11:59 PM ET). Reply with your order number and the change. After the window closes, production starts and changes may not be possible.
 
 **Contact info**
 > Email hello@vibinapparel.com, call (786) 716-1673, or use the Help chat on any page of vibinapparel.com.

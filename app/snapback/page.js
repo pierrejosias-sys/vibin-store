@@ -399,7 +399,7 @@ export default function SnapbackPage() {
             ${price.toFixed(2)} <span className="tag">NEW</span>
           </div>
 
-          <p style={{ fontWeight: 700, margin: '8px 0' }}>Drop 01 pre-order · opens Thu Nov 12, 7:00 PM ET · Ships by Dec 11–17</p>
+          <p style={{ fontWeight: 700, margin: '8px 0' }}>Drop 01 pre-order · opens Thu Nov 19, 7:00 PM ET · Ships by Dec 18</p>
 
           <p className="desc">
             Structured 6-panel snapback with embroidered VIBIN wordmark on the front crown. Flat brim with tonal stitching. One-size-fits-most snap closure. Built for everyday wear — the cap that goes with everything in Drop 01.

@@ -343,7 +343,7 @@ export default function HomePage() {
                 const b = document.createElement('button'); b.type = 'button'; b.textContent = 'Copy link';
                 b.style.cssText = 'padding:8px 12px;margin-left:8px;font-weight:700;cursor:pointer;';
                 b.onclick = async () => { try { await navigator.clipboard.writeText(data.earlyAccessLink); b.textContent = 'Copied ✓'; } catch {} };
-                const p2 = document.createElement('p'); p2.textContent = 'It works Thu Nov 12, 6:00–7:00 PM ET for one checkout. Keep it private.';
+                const p2 = document.createElement('p'); p2.textContent = 'It works Thu Nov 19, 6:00–7:00 PM ET for one checkout. Keep it private.';
                 box.append(p1, inp, b, p2);
               } else {
                 box.textContent = "You're already on the list. Your link is in your email.";

@@ -64,11 +64,11 @@ NEXT_PUBLIC_SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… BREVO_API_KEY=… BRE
 ```
 This syncs consented rows where `synced_at IS NULL`.
 
-## 6. Sending the early-access email (send by Nov 6)
+## 6. Sending the early-access email (send by Nov 13)
 Create a Brevo campaign to the waitlist list. Insert the link with `{{ contact.EARLY_ACCESS_LINK }}`.
 
 How the early-access hour works:
-- It runs **Thu Nov 12, 2026, 6:00–7:00 PM ET**.
+- It runs **Thu Nov 19, 2026, 6:00–7:00 PM ET**.
 - The link sets a cookie, and `/api/checkout` accepts only valid, **unused** tokens during that hour.
 - Each token covers **one** completed checkout. The Stripe webhook marks it used on `checkout.session.completed`.
 - From 7:00 PM ET, everyone can pre-order.
