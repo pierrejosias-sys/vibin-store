@@ -45,7 +45,7 @@ test('tee and snapback are manual fulfillment, not Printful', () => {
 
 test('size display labels: 2X/3X shown as 2XL/3XL', async () => {
   const { sizeLabel } = await import('../app/lib/drop-catalog.mjs')
-  assert.equal(sizeLabel('2X'), '2XL'); assert.equal(sizeLabel('3X'), '3XL'); assert.equal(sizeLabel('M'), 'M')
+  assert.equal(sizeLabel('2X'), '2XL'); assert.equal(sizeLabel('3X'), '3XL'); assert.equal(sizeLabel('4X'), '4XL'); assert.equal(sizeLabel('M'), 'M')
 })
 
 test('tee 4X is manual (no Printful routing); hoodie 4X never routes', () => {

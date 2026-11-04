@@ -6,7 +6,7 @@
 import { dropPhase } from './drop-window.mjs'
 
 /** Display labels for size codes (codes like '2X' stay the cart/checkout/Printful keys). */
-export const SIZE_LABELS = { '2X': '2XL', '3X': '3XL' }
+export const SIZE_LABELS = { '2X': '2XL', '3X': '3XL', '4X': '4XL' }
 export const sizeLabel = (sz) => SIZE_LABELS[sz] || sz
 
 export const DROP_CATALOG = {
