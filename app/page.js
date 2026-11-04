@@ -1,5 +1,6 @@
 'use client'
 
+import { useDropStatus } from './lib/use-drop-status'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from './lib/supabase'
@@ -9,6 +10,7 @@ import styles from './styles.css'
 import { FREE_SHIPPING_LABEL } from './lib/shipping'
 
 export default function HomePage() {
+  const drop = useDropStatus()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [addedId, setAddedId] = useState(null)
@@ -84,10 +86,10 @@ export default function HomePage() {
       <div className="promo">
         <div className="promo-track">
           <span>Free shipping on orders over {FREE_SHIPPING_LABEL}</span>
-          <span>New SS26 Drop is live</span>
+          <span>{drop.promo}</span>
           <span>Sign up for 15% off your first order</span>
           <span>Free shipping on orders over {FREE_SHIPPING_LABEL}</span>
-          <span>New SS26 Drop is live</span>
+          <span>{drop.promo}</span>
           <span>Sign up for 15% off your first order</span>
         </div>
       </div>
@@ -145,11 +147,11 @@ export default function HomePage() {
       {/* MARQUEE */}
       <div className="marquee">
         <div className="marquee-track">
-          <span>SS26 IS LIVE</span>
+          <span>{drop.live ? 'SS26 IS LIVE' : 'DROP 01 · NOV 19'}</span>
           <span><em>The Foundation</em></span>
           <span>NEW ARRIVALS</span>
           <span>FREE SHIPPING {FREE_SHIPPING_LABEL}+</span>
-          <span>SS26 IS LIVE</span>
+          <span>{drop.live ? 'SS26 IS LIVE' : 'DROP 01 · NOV 19'}</span>
           <span><em>The Foundation</em></span>
           <span>NEW ARRIVALS</span>
           <span>FREE SHIPPING {FREE_SHIPPING_LABEL}+</span>

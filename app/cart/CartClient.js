@@ -1,11 +1,13 @@
 'use client'
 
+import { useDropStatus } from '../lib/use-drop-status'
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useCart } from '../lib/cart-context'
 import { shippingFor, FREE_SHIPPING_THRESHOLD, FREE_SHIPPING_LABEL } from '../lib/shipping'
 
 export default function CartPage() {
+  const drop = useDropStatus()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [ambassadorCode, setAmbassadorCode] = useState(null)
@@ -92,8 +94,8 @@ export default function CartPage() {
     <>
       <div className="promo">
         <div className="promo-track">
-          <span>Free shipping over {FREE_SHIPPING_LABEL}</span><span>SS26 Drop is live</span><span>15% off your first order</span>
-          <span>Free shipping over {FREE_SHIPPING_LABEL}</span><span>SS26 Drop is live</span><span>15% off your first order</span>
+          <span>Free shipping over {FREE_SHIPPING_LABEL}</span><span>{drop.promo}</span><span>15% off your first order</span>
+          <span>Free shipping over {FREE_SHIPPING_LABEL}</span><span>{drop.promo}</span><span>15% off your first order</span>
         </div>
       </div>
 

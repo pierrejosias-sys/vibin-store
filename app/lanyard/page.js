@@ -1,5 +1,6 @@
 'use client'
 
+import { useDropStatus } from '../lib/use-drop-status'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { FREE_SHIPPING_LABEL } from '../lib/shipping'
@@ -12,6 +13,7 @@ const COLORWAYS = [
 ]
 
 export default function LanyardPage() {
+  const drop = useDropStatus()
   const [color, setColor] = useState(0)
   const [added, setAdded] = useState(false)
   const [qty, setQty] = useState(1)
@@ -297,7 +299,7 @@ export default function LanyardPage() {
       `}</style>
 
       {/* PROMO */}
-      <div className="promo">✦ Drop 01 — Lanyard Now Live · Free Shipping on Orders {FREE_SHIPPING_LABEL}+ ✦</div>
+      <div className="promo">✦ Drop 01 — Lanyard · {drop.live ? 'Now Live' : drop.promo} · Free Shipping on Orders {FREE_SHIPPING_LABEL}+ ✦</div>
 
       {/* NAV */}
       <nav>
