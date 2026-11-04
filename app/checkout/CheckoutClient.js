@@ -4,11 +4,11 @@ import { shipsInTwoPackages } from '../lib/drop-catalog.mjs'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { STATUS_COPY } from '../lib/order-status.mjs'
 import { loadStripe } from '@stripe/stripe-js'
 import { useCart } from '../lib/cart-context'
 import styles from '../styles.css'
 import { shippingFor, FREE_SHIPPING_LABEL } from '../lib/shipping'
-import { STATUS_COPY } from '../lib/order-status.mjs'
 
 const STRIPE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 const stripePromise = STRIPE_PUBLISHABLE_KEY ? loadStripe(STRIPE_PUBLISHABLE_KEY) : Promise.resolve(null)
