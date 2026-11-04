@@ -295,7 +295,7 @@ export default function HomePage() {
       {/* DROP COUNTDOWN */}
       <section className="drop-block">
         <div className="drop-left">
-          <div className="drop-eye">Coming Next · Drop 02</div>
+          <div className="drop-eye">Coming Next · Drop 01 · Thu Nov 19, 7 PM ET</div>
           <h2 className="drop-title">Vol. <em>02</em></h2>
           <p className="drop-info">
             The next chapter. Pieces designed for late nights, sunrises, and everything in between. Sign up to get early access — drops always sell out before retail.
@@ -419,16 +419,16 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {/* COUNTDOWN SCRIPT — Fix: hardcoded to July 4 2026, not today+30 */}
+      {/* COUNTDOWN SCRIPT — Drop 01 opens Thu Nov 19, 2026 7:00 PM ET (keep in sync with app/lib/drops.js releaseAt) */}
       <script dangerouslySetInnerHTML={{ __html: `
-        const DROP02_TARGET = new Date('2026-07-04T00:00:00-05:00');
+        const DROP02_TARGET = new Date('2026-11-20T00:00:00Z');
 
         function updateCountdown() {
           const now = new Date().getTime();
           const diff = DROP02_TARGET.getTime() - now;
 
           if (diff <= 0) {
-            document.getElementById('countdown').innerHTML = '<a href="/shop" style="color:#f6f1e7;font-size:24px;font-family:Anton,sans-serif;text-transform:uppercase;">Drop 02 is LIVE. Shop Now →</a>';
+            document.getElementById('countdown').innerHTML = '<a href="/drop/01" style="color:#f6f1e7;font-size:24px;font-family:Anton,sans-serif;text-transform:uppercase;">Drop 01 pre-order is open. Shop Now →</a>';
             return;
           }
 
