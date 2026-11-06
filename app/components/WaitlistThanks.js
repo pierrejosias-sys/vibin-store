@@ -25,7 +25,7 @@ export default function WaitlistThanks({ result, dark = true }) {
           {copied ? 'Copied ✓' : 'Copy link'}
         </button>
       </div>
-      <p style={{ margin: '8px 0 0', opacity: 0.8 }}>It works Thu Nov 12, 6:00–7:00 PM ET for one checkout. Keep it private. From 7:00 PM ET everyone can pre-order.</p>
+      <p style={{ margin: '8px 0 0', opacity: 0.8 }}>It works Thu Nov 19, 6:00–7:00 PM ET for one checkout. Keep it private. From 7:00 PM ET everyone can pre-order.</p>
     </div>
   )
 }

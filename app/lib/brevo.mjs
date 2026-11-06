@@ -49,9 +49,9 @@ export function linkEmailPayload({ email, link }, senderEmail = DEFAULT_SENDER) 
     subject: 'Your Drop 01 early-access link',
     htmlContent: `<p>You're on the Vibin Apparel Drop 01 waitlist.</p>
 <p>Your private early-access link: <a href="${link}">${link}</a></p>
-<p>It works <strong>Thu Nov 12, 6:00–7:00 PM ET</strong> for <strong>one checkout</strong>. From 7:00 PM ET, the pre-order is open to everyone.</p>
+<p>It works <strong>Thu Nov 19, 6:00–7:00 PM ET</strong> for <strong>one checkout</strong>. From 7:00 PM ET, the pre-order is open to everyone.</p>
 <p>Keep this link private. It's tied to your email.</p>`,
-    textContent: `Your private Drop 01 early-access link: ${link}\nIt works Thu Nov 12, 6:00–7:00 PM ET for one checkout. From 7:00 PM ET the pre-order is open to everyone. Keep it private.`,
+    textContent: `Your private Drop 01 early-access link: ${link}\nIt works Thu Nov 19, 6:00–7:00 PM ET for one checkout. From 7:00 PM ET the pre-order is open to everyone. Keep it private.`,
     tags: ['waitlist-link-resend'],
   }
 }

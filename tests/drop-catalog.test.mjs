@@ -3,8 +3,8 @@ import assert from 'node:assert/strict'
 import { enforceDropCatalog, dropCatalogEntry } from '../app/lib/drop-catalog.mjs'
 import { splitCart } from '../app/lib/printful-core.mjs'
 
-const drops = [{ id: 'd01', name: 'Drop 01', release_at: '2026-11-13T00:00:00Z', closes_at: '2026-11-16T04:59:59Z' }]
-const OPEN = Date.parse('2026-11-14T00:00:00Z')
+const drops = [{ id: 'd01', name: 'Drop 01', release_at: '2026-11-20T00:00:00Z', closes_at: '2026-11-23T04:59:59Z' }]
+const OPEN = Date.parse('2026-11-21T00:00:00Z')
 const tee = size => ({ id: 1, slug: 'vibin-classic-tee', size, qty: 1, price: 85 })
 const snap = () => ({ id: 10, slug: 'vibin-snapback', size: 'OS', qty: 1, price: 65 })
 
@@ -15,13 +15,13 @@ test('tee + snapback belong to Drop 01; others do not', () => {
 })
 
 test('window enforced for drop catalog items', () => {
-  assert.equal(enforceDropCatalog([tee('M')], drops, { now: Date.parse('2026-11-12T23:59:59Z') }).status, 409)
-  assert.equal(enforceDropCatalog([snap()], drops, { now: Date.parse('2026-11-16T05:00:00Z') }).status, 409)
+  assert.equal(enforceDropCatalog([tee('M')], drops, { now: Date.parse('2026-11-19T23:59:59Z') }).status, 409)
+  assert.equal(enforceDropCatalog([snap()], drops, { now: Date.parse('2026-11-23T05:00:00Z') }).status, 409)
   const items = [tee('3X'), snap(), { id: 4, slug: 'x', size: 'M' }]
-  const r = enforceDropCatalog(items, drops, { now: OPEN, shipsBy: { d01: 'Dec 11–17' } })
+  const r = enforceDropCatalog(items, drops, { now: OPEN, shipsBy: { d01: 'Dec 18' } })
   assert.equal(r.error, undefined)
   assert.equal(r.preorderItems.length, 2)
-  assert.equal(items[0].preorder, true); assert.equal(items[0].shipsBy, 'Dec 11–17')
+  assert.equal(items[0].preorder, true); assert.equal(items[0].shipsBy, 'Dec 18')
   assert.equal(items[2].preorder, undefined)
 })
 

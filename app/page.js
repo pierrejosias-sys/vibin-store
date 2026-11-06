@@ -295,7 +295,7 @@ export default function HomePage() {
       {/* DROP COUNTDOWN */}
       <section className="drop-block">
         <div className="drop-left">
-          <div className="drop-eye">Coming Next · Drop 02</div>
+          <div className="drop-eye">Coming Next · Drop 01 · Thu Nov 19, 7 PM ET</div>
           <h2 className="drop-title">Vol. <em>02</em></h2>
           <p className="drop-info">
             The next chapter. Pieces designed for late nights, sunrises, and everything in between. Sign up to get early access — drops always sell out before retail.
@@ -343,7 +343,7 @@ export default function HomePage() {
                 const b = document.createElement('button'); b.type = 'button'; b.textContent = 'Copy link';
                 b.style.cssText = 'padding:8px 12px;margin-left:8px;font-weight:700;cursor:pointer;';
                 b.onclick = async () => { try { await navigator.clipboard.writeText(data.earlyAccessLink); b.textContent = 'Copied ✓'; } catch {} };
-                const p2 = document.createElement('p'); p2.textContent = 'It works Thu Nov 12, 6:00–7:00 PM ET for one checkout. Keep it private.';
+                const p2 = document.createElement('p'); p2.textContent = 'It works Thu Nov 19, 6:00–7:00 PM ET for one checkout. Keep it private.';
                 box.append(p1, inp, b, p2);
               } else {
                 box.textContent = "You're already on the list. Your link is in your email.";
@@ -419,16 +419,16 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {/* COUNTDOWN SCRIPT — Fix: hardcoded to July 4 2026, not today+30 */}
+      {/* COUNTDOWN SCRIPT — Drop 01 opens Thu Nov 19, 2026 7:00 PM ET (keep in sync with app/lib/drops.js releaseAt) */}
       <script dangerouslySetInnerHTML={{ __html: `
-        const DROP02_TARGET = new Date('2026-07-04T00:00:00-05:00');
+        const DROP02_TARGET = new Date('2026-11-20T00:00:00Z');
 
         function updateCountdown() {
           const now = new Date().getTime();
           const diff = DROP02_TARGET.getTime() - now;
 
           if (diff <= 0) {
-            document.getElementById('countdown').innerHTML = '<a href="/shop" style="color:#f6f1e7;font-size:24px;font-family:Anton,sans-serif;text-transform:uppercase;">Drop 02 is LIVE. Shop Now →</a>';
+            document.getElementById('countdown').innerHTML = '<a href="/drop/01" style="color:#f6f1e7;font-size:24px;font-family:Anton,sans-serif;text-transform:uppercase;">Drop 01 pre-order is open. Shop Now →</a>';
             return;
           }
 

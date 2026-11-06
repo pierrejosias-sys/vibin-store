@@ -17,7 +17,7 @@ export function countdownTarget(phase, opensAt, closesAt) {
   return null
 }
 
-/** Formats an instant in US Eastern time, e.g. "Thu, Nov 12, 7:00 PM ET". */
+/** Formats an instant in US Eastern time, e.g. "Thu, Nov 19, 7:00 PM ET". */
 export function formatET(iso) {
   if (!iso) return ''
   return new Date(iso).toLocaleString('en-US', {

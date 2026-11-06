@@ -190,7 +190,7 @@ export default function ProductPage() {
 
           {/* PRICE */}
           {product.slug === 'vibin-classic-tee' && (
-            <p style={{ fontWeight: 700, margin: '8px 0' }}>Drop 01 pre-order · opens Thu Nov 12, 7:00 PM ET · Ships by Dec 11–17</p>
+            <p style={{ fontWeight: 700, margin: '8px 0' }}>Drop 01 pre-order · opens Thu Nov 19, 7:00 PM ET · Ships by Dec 18</p>
           )}
           <div className="price-row">
             <span className="current">${Number(product.price).toFixed(2)}</span>
