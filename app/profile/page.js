@@ -1,5 +1,6 @@
 'use client'
 
+import { useDropStatus } from '../lib/use-drop-status'
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -7,6 +8,7 @@ import { createBrowserClient } from '@supabase/ssr'
 import { FREE_SHIPPING_LABEL } from '../lib/shipping'
 
 export default function ProfilePage() {
+  const drop = useDropStatus()
   const supabase = useMemo(() => createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -71,7 +73,7 @@ export default function ProfilePage() {
     <div style={{background:'#0a0a0a', minHeight:'100vh', color:'#f6f1e7', fontFamily:'Manrope, sans-serif'}}>
       {/* Promo Bar */}
       <div style={{background:'#111', borderBottom:'1px solid #1e1e1e', padding:'8px', textAlign:'center', fontSize:'12px', color:'#888', letterSpacing:'.05em'}}>
-        Free shipping over {FREE_SHIPPING_LABEL} &nbsp;·&nbsp; SS26 Drop is live &nbsp;·&nbsp; 15% off your first order
+        Free shipping over {FREE_SHIPPING_LABEL} &nbsp;·&nbsp; {drop.promo} &nbsp;·&nbsp; 15% off your first order
       </div>
 
       {/* Nav */}

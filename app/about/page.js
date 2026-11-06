@@ -1,11 +1,13 @@
 
 'use client'
 
+import { useDropStatus } from '../lib/use-drop-status'
 import { useCart } from '../lib/cart-context'
 import styles from '../styles.css'
 import { FREE_SHIPPING_LABEL } from '../lib/shipping'
 
 export default function AboutPage() {
+  const drop = useDropStatus()
   const { cartCount } = useCart()
 
   return (
@@ -15,10 +17,10 @@ export default function AboutPage() {
       <div className="promo">
         <div className="promo-track">
           <span>Free shipping on orders over {FREE_SHIPPING_LABEL}</span>
-          <span>New SS26 Drop is live</span>
+          <span>{drop.promo}</span>
           <span>Sign up for 15% off your first order</span>
           <span>Free shipping on orders over {FREE_SHIPPING_LABEL}</span>
-          <span>New SS26 Drop is live</span>
+          <span>{drop.promo}</span>
           <span>Sign up for 15% off your first order</span>
         </div>
       </div>
