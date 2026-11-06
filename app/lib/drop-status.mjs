@@ -5,7 +5,7 @@
  */
 import { accessPhase, canPreorder } from './early-access.mjs'
 
-/** "Nov 12, 7 PM ET" (minutes shown only when non-zero). */
+/** "Nov 19, 7 PM ET" (minutes shown only when non-zero). */
 export function shortOpenLabel(iso) {
   if (!iso) return ''
   const d = new Date(iso)

@@ -423,11 +423,11 @@ export default function HomePage() {
 
       {/* COUNTDOWN SCRIPT — Drop 01 opens Thu Nov 19, 2026 7:00 PM ET (keep in sync with app/lib/drops.js releaseAt) */}
       <script dangerouslySetInnerHTML={{ __html: `
-        const DROP02_TARGET = new Date('2026-11-20T00:00:00Z');
+        const DROP01_TARGET = new Date('2026-11-20T00:00:00Z');
 
         function updateCountdown() {
           const now = new Date().getTime();
-          const diff = DROP02_TARGET.getTime() - now;
+          const diff = DROP01_TARGET.getTime() - now;
 
           if (diff <= 0) {
             document.getElementById('countdown').innerHTML = '<a href="/drop/01" style="color:#f6f1e7;font-size:24px;font-family:Anton,sans-serif;text-transform:uppercase;">Drop 01 pre-order is open. Shop Now →</a>';
