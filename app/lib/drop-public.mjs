@@ -9,5 +9,8 @@ export const DROP_01 = {
   opensAt: '2027-01-15T00:00:00Z', // Thu Jan 14, 2027 7:00 PM ET
   closesAt: '2027-01-18T04:59:59Z', // Sun Jan 17, 2027 11:59 PM ET (close time confirmed by Josias, Nov 18)
   earlyAccessAt: '2027-01-14T23:00:00Z', // Thu Jan 14, 2027 6:00 PM ET (waitlist hour)
+  // Approved launch lineup (Oct 22, 2026): only hd is for sale; 'hidden' styles are not shown at all.
+  // Enforced at checkout through drops.js isStylePurchasable().
+  availability: { hd: 'available', cj: 'coming-soon', wb: 'coming-soon', ns: 'hidden' },
   shipsBy: null, // No public ship date until vendor proof is in; copy leaves the line out while this is empty
 }

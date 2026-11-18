@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '../lib/supabase'
 import { productImage } from '../lib/product-image'
 import { DROP_STYLE_IMAGES } from '../lib/drop-catalog.mjs'
+import { DROP_01 } from '../lib/drop-public.mjs'
+import { formatPrice } from '../lib/shop-filters.mjs'
 import ProductThumb from '../components/ProductThumb'
 import SiteHeader from '../components/SiteHeader'
 import SiteFooter from '../components/SiteFooter'
@@ -64,8 +66,9 @@ function SearchContent() {
     return () => { alive = false }
   }, [])
 
-  const catalog = useMemo(() => {
-    const items = (products || []).map(p => ({
+  // Products: the same rows /shop lists. Drop 01 styles are not shop products (they are sold on
+  // /drop/01), so they get their own section, and hidden styles are left out.
+  const catalog = useMemo(() => (products || []).map(p => ({
       key: `p-${p.id}`,
       name: p.name,
       price: p.price,
@@ -74,22 +77,25 @@ function SearchContent() {
       href: `/product/${p.slug || p.id}`,
       image: productImage(p),
       hay: [p.name, p.category, p.color, p.slug, ...(Array.isArray(p.tags) ? p.tags : [])].filter(Boolean).join(' '),
-    }))
-    const dropItems = styles.map(s => ({
+    })), [products])
+
+  const dropCatalog = useMemo(() => styles
+    .map(s => ({ s, availability: s.drop_id === DROP_01.id ? (DROP_01.availability[s.style_code] || 'hidden') : 'hidden' }))
+    .filter(({ availability }) => availability !== 'hidden')
+    .map(({ s, availability }) => ({
       key: `d-${s.drop_id}-${s.style_code}`,
       name: s.name,
       price: s.price,
       color: null,
-      sub: `Drop ${s.drop_id.replace(/^d/, '')}`,
-      href: `/drop/${s.drop_id.replace(/^d/, '')}`,
+      sub: `Drop ${s.drop_id.replace(/^d/, '')}${availability === 'coming-soon' ? ' · Coming soon' : ' · Pre-order'}`,
+      href: `/drop/${s.drop_id.replace(/^d/, '')}#style-${s.style_code}`,
       image: DROP_STYLE_IMAGES[s.drop_id]?.[s.style_code]?.[0] || null,
       hay: `${s.name} drop ${s.drop_id} pre-order`,
-    }))
-    return [...items, ...dropItems]
-  }, [products, styles])
+    })), [styles])
 
   const words = q.toLowerCase().split(/\s+/).filter(Boolean)
   const results = words.length ? catalog.filter(c => matches(c.hay, words)) : []
+  const dropResults = words.length ? dropCatalog.filter(c => matches(c.hay, words)) : []
   const pageHits = words.length ? PAGES.filter(p => matches(`${p.title} ${p.words}`, words)) : []
   const loading = products === null
 
@@ -116,15 +122,22 @@ function SearchContent() {
 
       {words.length > 0 && (
         <div className="srch-meta">
-          {loading ? 'Searching…' : `${results.length} ${results.length === 1 ? 'result' : 'results'} for “${q}”`}
+          {loading ? 'Searching…' : `${results.length + dropResults.length} ${results.length + dropResults.length === 1 ? "result" : "results"} for “${q}”`}
         </div>
       )}
 
-      {words.length > 0 && !loading && results.length === 0 && pageHits.length === 0 && (
+      {words.length > 0 && !loading && results.length === 0 && dropResults.length === 0 && pageHits.length === 0 && (
         <p className="srch-empty">Nothing matched. Try “hoodie”, “tee”, “snapback” or “shorts”, or browse everything below.</p>
       )}
 
       {results.length > 0 && <ItemGrid items={results} />}
+
+      {dropResults.length > 0 && (
+        <>
+          <h2 className="srch-h2">Drop 01</h2>
+          <ItemGrid items={dropResults} />
+        </>
+      )}
 
       {pageHits.length > 0 && (
         <>
@@ -135,10 +148,16 @@ function SearchContent() {
         </>
       )}
 
-      {(!words.length || (!loading && results.length === 0)) && !loading && (
+      {(!words.length || (!loading && results.length === 0 && dropResults.length === 0)) && !loading && (
         <>
           <h2 className="srch-h2">{words.length ? 'Browse everything' : 'All pieces'}</h2>
           <ItemGrid items={catalog} />
+          {dropCatalog.length > 0 && (
+            <>
+              <h2 className="srch-h2">Drop 01</h2>
+              <ItemGrid items={dropCatalog} />
+            </>
+          )}
         </>
       )}
     </main>
@@ -154,7 +173,7 @@ function ItemGrid({ items }) {
             <ProductThumb src={it.image} name={it.name} color={it.color} />
           </div>
           <div className="srch-name">{it.name}</div>
-          <div className="srch-sub">{it.sub}{it.price != null ? ` · $${Number(it.price).toFixed(0)}` : ''}</div>
+          <div className="srch-sub">{it.sub}{it.price != null ? ` · ${formatPrice(it.price)}` : ''}</div>
         </Link>
       ))}
     </div>

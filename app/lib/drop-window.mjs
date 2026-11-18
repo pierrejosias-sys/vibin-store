@@ -10,6 +10,16 @@ export function dropPhase(opensAt, closesAt, now = Date.now()) {
   return 'open'
 }
 
+/**
+ * Can a shopper add Drop 01 pieces to the bag / start checkout right now?
+ * Opens at the waitlist early-access time when there is one (checkout still requires a valid private
+ * link during that hour, see /api/checkout), else at the public open. Closes at closesAt.
+ */
+export function preorderBuyOpen(drop, now = Date.now()) {
+  if (!drop) return true
+  return dropPhase(drop.earlyAccessAt || drop.opensAt, drop.closesAt, now) === 'open'
+}
+
 /** Countdown target for a phase: open time before open, close time while open. */
 export function countdownTarget(phase, opensAt, closesAt) {
   if (phase === 'upcoming') return opensAt

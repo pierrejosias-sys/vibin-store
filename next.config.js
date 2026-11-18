@@ -9,6 +9,8 @@ const nextConfig = {
       // easy to undo.
       { source: '/snapback', destination: '/product/vibin-snapback', permanent: false },
       { source: '/lanyard', destination: '/product/lanyard', permanent: false },
+      // The FAQ lives at /qa (footer already links there); people and AI tools still guess /faq.
+      { source: '/faq', destination: '/qa', permanent: true },
     ]
   },
   images: {
