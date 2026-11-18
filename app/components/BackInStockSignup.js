@@ -57,7 +57,7 @@ export default function BackInStockSignup({ product, size, color }) {
     <form onSubmit={submit} style={box} noValidate>
       <div style={label}>Notify me when back in stock</div>
       <div style={{ fontSize: 13, marginBottom: 10 }}>
-        {what ? <>For <strong>{what}</strong>. Pick another size above to ask about that one instead.</> : 'Get one email when it’s back.'}
+        {what ? <>For <strong>{what}</strong>.{sizeLabel ? ' Pick another size above to ask about that one instead.' : ''}</> : 'Get one email when it’s back.'}
       </div>
       <div style={{ display: 'flex', gap: 8 }}>
         <input
