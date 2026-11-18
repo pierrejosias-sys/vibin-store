@@ -6,6 +6,7 @@ import { createBrowserClient } from '@supabase/ssr'
 import { FREE_SHIPPING_LABEL } from '../lib/shipping'
 import SiteHeader from '../components/SiteHeader'
 import SiteFooter from '../components/SiteFooter'
+import { afterLogin } from '../auth/redirects.mjs'
 
 // Google/Apple are disabled in Supabase; set NEXT_PUBLIC_ENABLE_OAUTH=true after enabling them.
 const OAUTH_ENABLED = process.env.NEXT_PUBLIC_ENABLE_OAUTH === 'true'
@@ -53,9 +54,9 @@ export default function LoginPage() {
       .select('is_admin, is_ambassador')
       .eq('id', user.id)
       .single()
-    if (profile?.is_admin) router.push('/admin')
-    else if (profile?.is_ambassador) router.push('/ambassador')
-    else router.push('/profile')
+    // Honor ?next (set by the middleware when it sent the visitor here), else the role's home page.
+    const next = new URLSearchParams(window.location.search).get('next')
+    router.push(afterLogin({ next, profile }))
   }
 
   async function signInWithOAuth(provider) {
