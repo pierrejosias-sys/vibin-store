@@ -15,7 +15,7 @@ export const metadata = {
 }
 
 // Products are read on the server, so the grid, the category chips and the piece count are all in
-// the first HTML (no "Loading..." or "0 pieces" flash). Reading ?cat= makes this render per request.
+// the first HTML (no "Loading..." or "0 pieces" flash). Reading ?cat= (or ?category=) makes this render per request.
 export default async function ShopPage({ searchParams }) {
   const params = await searchParams
   let products = []
@@ -29,7 +29,7 @@ export default async function ShopPage({ searchParams }) {
   return (
     <>
       <SiteHeader dark />
-      <ShopClient products={orderForDisplay(products)} initialFilter={normalizeFilter(params?.cat)} loadError={loadError} comingSoon={comingSoonTiles(COMING_SOON_SPECS)} />
+      <ShopClient products={orderForDisplay(products)} initialFilter={normalizeFilter(params?.cat ?? params?.category)} loadError={loadError} comingSoon={comingSoonTiles(COMING_SOON_SPECS)} />
       <SiteFooter />
     </>
   )

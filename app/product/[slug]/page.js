@@ -47,13 +47,16 @@ export default async function ProductPage({ params }) {
   const hit = dropCatalogEntry({ id: product.id, slug: product.slug })
   const windowInfo = hit ? await getDropWindow(hit.dropId) : null
   const drop = windowInfo ? { ...windowInfo, shortName: windowInfo.name.split(':')[0] } : null
+  // Everything else is locked until the store opens with Drop 01's public open.
+  const storeWindow = hit ? null : await getDropWindow('d01')
+  const opensAt = storeWindow?.opensAt || null
   // Hats, bags and lanyards are one size; everything else uses the standard run.
   const sizes = hit ? hit.entry.sizes : productKind(product) === 'accessories' ? ['OS'] : null
 
   return (
     <>
       <SiteHeader />
-      <ProductClient product={product} sizes={sizes} drop={drop} serverNow={serverNow()} />
+      <ProductClient product={product} sizes={sizes} drop={drop} storeOpensAt={opensAt} serverNow={serverNow()} />
       <SiteFooter />
     </>
   )

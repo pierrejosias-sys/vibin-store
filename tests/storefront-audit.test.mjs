@@ -49,3 +49,37 @@ test('/faq redirects to /qa', async () => {
   const r = await cfg.redirects()
   assert.ok(r.some(x => x.source === '/faq' && x.destination === '/qa'))
 })
+
+test('audit 2: ?category= works like ?cat=, FAQ says US only, About is consistent, lanyard slot pending', async () => {
+  const { normalizeFilter } = await import('../app/lib/shop-filters.mjs')
+  assert.equal(normalizeFilter('accessories'), 'accessories')
+  assert.match(read('app/shop/page.js'), /normalizeFilter\(params\?\.cat \?\? params\?\.category\)/)
+  const faq = read('app/qa/QAClient.js')
+  assert.doesNotMatch(faq, /worldwide/i)
+  assert.match(faq, /US addresses only/)
+  const about = read('app/about/page.js')
+  assert.match(about, /Born in Miami\. Built in <em>Jacksonville\.<\/em>/)
+  assert.doesNotMatch(about, /Shipping everywhere/)
+  const { PRODUCT_EXTRAS, galleryItems } = await import('../app/lib/product-extras.mjs')
+  const lan = PRODUCT_EXTRAS.lanyard
+  assert.ok(lan.gallery.every(s => s.ready === false))
+  assert.ok(lan.specs.every(s => s.value === null))
+  const items = galleryItems({ slug: 'lanyard', name: 'Vibin Lanyard' }, [])
+  assert.equal(items.length, 1)
+  assert.equal(items[0].placeholder, true)
+})
+
+test('store lock: regular products open with the Drop 01 public open (7 PM ET Jan 14)', async () => {
+  const { storeOpen } = await import('../app/lib/drop-window.mjs')
+  assert.equal(storeOpen(DROP_01.opensAt, at('2026-11-18T22:00:00Z')), false)
+  assert.equal(storeOpen(DROP_01.opensAt, at('2027-01-14T23:30:00Z')), false) // waitlist hour: drop pieces only
+  assert.equal(storeOpen(DROP_01.opensAt, at('2027-01-15T00:00:00Z')), true)
+  assert.equal(storeOpen(DROP_01.opensAt, at('2027-02-01T00:00:00Z')), true) // stays open after the drop closes
+  assert.equal(storeOpen(null), true)
+  const pdp = read('app/product/[slug]/ProductClient.js')
+  assert.match(pdp, /!storeOpensAt \|\| now >= new Date\(storeOpensAt\)\.getTime\(\)/)
+  assert.match(read('app/product/[slug]/page.js'), /storeOpensAt=\{opensAt\}/)
+  const api = read('app/api/checkout/route.js')
+  assert.match(api, /if \(hasRegular && !storeOpen\(storeOpensAt, now\)\)/)
+  assert.match(read('app/checkout/CheckoutClient.js'), /storeOpen\(DROP_01\.opensAt, now\)/)
+})

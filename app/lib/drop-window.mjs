@@ -20,6 +20,17 @@ export function preorderBuyOpen(drop, now = Date.now()) {
   return dropPhase(drop.earlyAccessAt || drop.opensAt, drop.closesAt, now) === 'open'
 }
 
+/**
+ * Regular catalog products (everything that isn't a Drop 01 pre-order piece) are locked until the
+ * store opens with Drop 01's public open (Thu Jan 14, 2027 7:00 PM ET), per Josias Nov 18.
+ * opensAt null/absent means no lock.
+ */
+export function storeOpen(opensAt, now = Date.now()) {
+  if (!opensAt) return true
+  const t = typeof now === 'number' ? now : new Date(now).getTime()
+  return t >= new Date(opensAt).getTime()
+}
+
 /** Countdown target for a phase: open time before open, close time while open. */
 export function countdownTarget(phase, opensAt, closesAt) {
   if (phase === 'upcoming') return opensAt

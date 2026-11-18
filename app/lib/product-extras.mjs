@@ -43,6 +43,20 @@ export const PRODUCT_EXTRAS = {
     hideStoredDescription: true,
     hideStoredColor: true,
   },
+  lanyard: {
+    // No lanyard photo in the repo yet. When one arrives, save it as public/products/lanyard/lanyard-01.webp
+    // and set ready: true.
+    gallery: [
+      { file: 'lanyard-01.webp', label: 'Vibin Lanyard', ready: false, alt: 'Vibin Lanyard' },
+    ],
+    specs: [
+      { label: 'Material', value: null },
+      { label: 'Length', value: null },
+      { label: 'Clip', value: null },
+      { label: 'Care', value: null },
+    ],
+    features: [],
+  },
 }
 
 /** The extras entry for a product, matched by slug. null when it has none. */
