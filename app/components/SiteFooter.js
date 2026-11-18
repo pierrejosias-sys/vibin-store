@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-const LEGAL = { color: '#888', textDecoration: 'none', fontSize: '13px', marginRight: '20px', fontFamily: 'JetBrains Mono, monospace' }
+const LEGAL = { color: '#888', textDecoration: 'none', fontSize: '13px', marginRight: '20px', marginBottom: '8px', display: 'inline-block', whiteSpace: 'nowrap', fontFamily: 'JetBrains Mono, monospace' }
 
 /** Footer shared by every storefront page (same columns as the home page footer). */
 export default function SiteFooter() {
