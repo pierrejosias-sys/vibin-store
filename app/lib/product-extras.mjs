@@ -17,13 +17,13 @@ export const SPEC_PENDING_LABEL = 'Coming soon'
 export const PRODUCT_EXTRAS = {
   'vibin-tote-bag': {
     gallery: [
-      { file: 'tote-01-back.webp', label: 'Back view', ready: false,
+      { file: 'tote-01-back.webp', label: 'Back view', ready: true,
         alt: 'Back of the Vibin Tote Bag: black canvas with a turquoise star in the center and the Vibin Apparel wordmark below it.' },
-      { file: 'tote-02-inside.webp', label: 'Inside view', ready: false,
-        alt: 'Looking straight down into the open Vibin Tote Bag: rectangular, black lining, one flat slip pocket on the inner wall.' },
-      { file: 'tote-03-magnetic-snap.webp', label: 'Magnetic snap closure', ready: false,
+      { file: 'tote-02-inside.webp', label: 'Inside view', ready: true,
+        alt: 'Looking straight down into the open Vibin Tote Bag: black lining, one flat slip pocket on the inner wall.' },
+      { file: 'tote-03-magnetic-snap.webp', label: 'Magnetic snap closure', ready: true,
         alt: 'Close-up of the top of the Vibin Tote Bag showing the black magnetic snap closure.' },
-      { file: 'tote-04-what-fits.webp', label: 'What fits', ready: false,
+      { file: 'tote-04-what-fits.webp', label: 'What fits', ready: true,
         alt: 'The Vibin Tote Bag standing upright and full, with a hoodie, a water bottle, sunglasses and a phone inside.' },
     ],
     specs: [

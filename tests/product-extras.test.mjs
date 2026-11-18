@@ -33,10 +33,26 @@ test('a slot is marked ready only when its file is in public/', () => {
 })
 
 test('galleryItems keeps product photos first and adds placeholder slots', () => {
-  const items = galleryItems(tote, ['https://example.com/a.png'])
-  assert.equal(items.length, 5)
-  assert.deepEqual(items[0], { src: 'https://example.com/a.png', alt: 'Vibin Tote Bag', label: null, placeholder: false })
-  assert.ok(items.slice(1).every(i => i.placeholder && i.src === null && i.label && i.alt))
+  const slots = PRODUCT_EXTRAS['vibin-tote-bag'].gallery
+  const was = slots.map(s => s.ready)
+  slots.forEach(s => { s.ready = false })
+  try {
+    const items = galleryItems(tote, ['https://example.com/a.png'])
+    assert.equal(items.length, 5)
+    assert.deepEqual(items[0], { src: 'https://example.com/a.png', alt: 'Vibin Tote Bag', label: null, placeholder: false })
+    assert.ok(items.slice(1).every(i => i.placeholder && i.src === null && i.label && i.alt))
+  } finally { slots.forEach((s, i) => { s.ready = was[i] }) }
+})
+
+test('the tote ships with all four real photos in order', () => {
+  const items = galleryItems(tote, [])
+  assert.deepEqual(items.map(i => i.src), [
+    '/products/vibin-tote-bag/tote-01-back.webp',
+    '/products/vibin-tote-bag/tote-02-inside.webp',
+    '/products/vibin-tote-bag/tote-03-magnetic-snap.webp',
+    '/products/vibin-tote-bag/tote-04-what-fits.webp',
+  ])
+  assert.ok(items.every(i => !i.placeholder))
 })
 
 test('galleryItems leaves other products alone', () => {
