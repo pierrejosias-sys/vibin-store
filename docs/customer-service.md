@@ -43,7 +43,7 @@ Copy, then adjust the name and order number.
 
 **When does Drop 01 open?**
 > Drop 01 pre-orders open **Thursday, Jan 14 at 7 PM ET** and close **Sunday, Jan 17 at 11:59 PM ET**. Waitlist members get an early hour from **6 to 7 PM ET** on Jan 14 using the private link we email them. Join the waitlist at https://vibinapparel.com/drop/01.
-> *(Drop 01 was postponed from Nov 19 to Jan 14, 2027. The Jan 17 close time is not final: confirm with Josias before quoting it.)*
+> *(Drop 01 was postponed from Nov 19 to Jan 14, 2027.)*
 
 **I'm on the waitlist but my early-access link doesn't work.**
 > Each early-access link is personal and works for one checkout during the 6–7 PM ET hour on Jan 14. Open it on the device you'll check out on. If it says it's already been used or isn't valid, reply with the email you signed up with and we'll check it. From 7 PM ET the drop is open to everyone, no link needed.
