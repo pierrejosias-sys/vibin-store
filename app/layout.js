@@ -3,6 +3,8 @@ import './globals.css'
 // Site-wide styles (nav, promo bar, footer, fonts). Previously only imported by some pages, so a
 // direct load of /product/*, /shop, /cart, /drop/* etc. rendered unstyled.
 import './styles.css'
+// Shared header/footer, 404, search and product-tile styles (loaded after styles.css).
+import './site-chrome.css'
 import { FREE_SHIPPING_LABEL } from './lib/shipping'
 import SupportChat from './components/SupportChat'
 

@@ -1,9 +1,9 @@
-
 'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
-import styles from '../styles.css'
+import SiteHeader from '../components/SiteHeader'
+import SiteFooter from '../components/SiteFooter'
 
 export default function FAQPage() {
   const [openIndex, setOpenIndex] = useState(0)
@@ -23,20 +23,17 @@ export default function FAQPage() {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles }} />
-      <header>
-        <Link href="/" className="hdr-logo">VIBIN</Link>
-      </header>
+      <SiteHeader />
 
       <div className="faq-hero">
-        <h1> Fragen & <em>Antworten</em></h1>
+        <h1>Questions &amp; <em>Answers</em></h1>
         <p>Everything you need to know</p>
       </div>
 
       <div className="faq-list">
         {faqs.map((faq, i) => (
-          <div 
-            key={i} 
+          <div
+            key={i}
             className={`faq-item ${openIndex === i ? 'on' : ''}`}
             onClick={() => setOpenIndex(openIndex === i ? -1 : i)}
           >
@@ -48,13 +45,10 @@ export default function FAQPage() {
 
       <div className="faq-cta">
         <p>Still have questions?</p>
-        <Link href="/returns">Contact Us →</Link>
+        <Link href="/contact">Contact Us →</Link>
       </div>
 
-      <footer>
-        <div className="foot-logo">VIBIN</div>
-      </footer>
+      <SiteFooter />
     </>
   )
 }
-
