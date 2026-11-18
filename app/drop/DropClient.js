@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import SiteHeader from '../components/SiteHeader'
 import SiteFooter from '../components/SiteFooter'
 import ProductThumb from '../components/ProductThumb'
+import { getCampaign } from '../lib/campaign.mjs'
 
 /** Server-side sign-up (dedupes by email, issues the private early-access link, syncs to the ESP). */
 async function joinWaitlist(payload) {
@@ -18,7 +19,6 @@ async function joinWaitlist(payload) {
 import { useCart } from '../lib/cart-context'
 import WaitlistThanks from '../components/WaitlistThanks'
 import { sizesForStyle } from '../lib/drops'
-import { getCampaign } from '../lib/campaign.mjs'
 import { DROP_STYLE_IMAGES, activeStyleColors } from '../lib/drop-catalog.mjs'
 import { countdownTarget, formatET } from '../lib/drop-window.mjs'
 
