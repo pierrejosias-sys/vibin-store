@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import SiteHeader from '../components/SiteHeader'
 import SiteFooter from '../components/SiteFooter'
 import ProductThumb from '../components/ProductThumb'
+import { getCampaign } from '../lib/campaign.mjs'
 
 /** Server-side sign-up (dedupes by email, issues the private early-access link, syncs to the ESP). */
 async function joinWaitlist(payload) {
@@ -58,12 +59,14 @@ function Waitlist({ dropId }) {
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState('idle')
   const [result, setResult] = useState(null)
+  // Capture the first-touch campaign on landing, so it survives in-visit navigation.
+  useEffect(() => { getCampaign() }, [])
 
   async function submit(e) {
     e.preventDefault()
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setStatus('invalid'); return }
     setStatus('loading')
-    const r = await joinWaitlist({ email, source: `${dropId}-waitlist` })
+    const r = await joinWaitlist({ email, source: `${dropId}-waitlist`, ...getCampaign() })
     setResult(r.result); setStatus(r.status)
   }
 
