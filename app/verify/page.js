@@ -48,6 +48,8 @@ function normalize(raw) {
 const VERIFY_CSS = `
 .verify-wrap { max-width: 1060px; margin: 0 auto; padding: 0 20px 72px; }
 .verify-hero { padding: 40px 0 8px; }
+/* The site stylesheet styles every bare <header> as the sticky 64px dark nav bar; this hero is a plain block. */
+.verify-wrap header.verify-hero { position: static; z-index: auto; display: block; height: auto; background: transparent; color: inherit; border-bottom: 0; }
 .verify-hero h1 { font-size: clamp(46px, 9vw, 92px); line-height: .98; margin: 0; text-transform: uppercase; }
 .verify-hero h1 .turq { color: #0a9a87; }
 .verify-hero p.lede { font-size: clamp(17px, 2.4vw, 20px); color: #4c483c; max-width: 620px; margin: 18px 0 0; font-weight: 500; }
