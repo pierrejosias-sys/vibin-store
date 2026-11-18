@@ -10,7 +10,7 @@ import { canOptimizeImage } from '../lib/product-image'
  * or it fails to load. Photos from hosts next/image is not configured for are shown as-is
  * instead of crashing the page.
  */
-export default function ProductThumb({ src, name, color, sizes = '(max-width: 600px) 50vw, 280px', priority = false, alt }) {
+export default function ProductThumb({ src, name, color, sizes = '(max-width: 600px) 50vw, 280px', priority = false, alt, fit = 'cover', background = null }) {
   const [failed, setFailed] = useState(false)
   if (!src || failed) {
     return (
@@ -30,7 +30,7 @@ export default function ProductThumb({ src, name, color, sizes = '(max-width: 60
       priority={priority}
       unoptimized={!canOptimizeImage(src)}
       onError={() => setFailed(true)}
-      style={{ objectFit: 'cover' }}
+      style={{ objectFit: fit === 'contain' ? 'contain' : 'cover', ...(background ? { background } : {}) }}
     />
   )
 }

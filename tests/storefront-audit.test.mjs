@@ -60,13 +60,30 @@ test('audit 2: ?category= works like ?cat=, FAQ says US only, About is consisten
   const about = read('app/about/page.js')
   assert.match(about, /Born in Miami\. Built in <em>Jacksonville\.<\/em>/)
   assert.doesNotMatch(about, /Shipping everywhere/)
-  const { PRODUCT_EXTRAS, galleryItems } = await import('../app/lib/product-extras.mjs')
-  const lan = PRODUCT_EXTRAS.lanyard
-  assert.ok(lan.gallery.every(s => s.ready === false))
-  assert.ok(lan.specs.every(s => s.value === null))
-  const items = galleryItems({ slug: 'lanyard', name: 'Vibin Lanyard' }, [])
+  const { PRODUCT_EXTRAS } = await import('../app/lib/product-extras.mjs')
+  assert.ok(PRODUCT_EXTRAS.lanyard.specs.every(s => s.value === null))
+})
+
+test('lanyard: mockup image on the page and the shop card, short description, specs still Coming soon', async () => {
+  const { existsSync } = await import('node:fs')
+  const { PRODUCT_EXTRAS, galleryItems, coverImage, withExtras, specRows } = await import('../app/lib/product-extras.mjs')
+  const lanyard = { slug: 'lanyard', name: 'Vibin Lanyard', description: null }
+  const items = galleryItems(lanyard, [])
   assert.equal(items.length, 1)
-  assert.equal(items[0].placeholder, true)
+  assert.equal(items[0].src, '/products/lanyard/lanyard-01.webp')
+  assert.equal(items[0].label, 'Mockup')
+  assert.equal(items[0].fit, 'contain')
+  assert.ok(existsSync(new URL('../public/products/lanyard/lanyard-01.webp', import.meta.url)))
+  assert.deepEqual(coverImage(lanyard), { src: '/products/lanyard/lanyard-01.webp', fit: 'contain', background: '#f3efec' })
+  assert.equal(withExtras(lanyard).description, 'The Vibin Lanyard. One size. Image shown is a mockup.')
+  // A real description in the table wins over the fallback
+  assert.equal(withExtras({ ...lanyard, description: 'From the table' }).description, 'From the table')
+  assert.ok(specRows(lanyard).every(r => r.pending))
+  // The tote still hides its stale stored copy
+  assert.equal(withExtras({ slug: 'vibin-tote-bag', description: 'old', color: 'Natural' }).description, null)
+  assert.equal(coverImage({ slug: 'nope' }), null)
+  assert.match(read('app/shop/ShopClient.js'), /coverImage\(p\)/)
+  assert.equal(PRODUCT_EXTRAS.lanyard.gallery[0].ready, true)
 })
 
 test('store lock: regular products open with the Drop 01 public open (7 PM ET Jan 14)', async () => {

@@ -11,6 +11,11 @@
  * Spec values are null until they are confirmed. A null value shows as "Coming soon" on the page.
  * Never fill one in with a guess.
  *
+ * fit / background (optional, per slot): a wide shot can set fit: 'contain' so the whole picture shows
+ * in the square or 3:4 frame, with background filling the edges.
+ *
+ * description (optional): shown when the products table has no description of its own.
+ *
  * hideStoredDescription / hideStoredColor: the products table still holds old copy for this product
  * that no longer matches it. While true, the product page ignores those columns (the Details block
  * carries the specs instead). Set false once the table is corrected.
@@ -44,11 +49,12 @@ export const PRODUCT_EXTRAS = {
     hideStoredColor: true,
   },
   lanyard: {
-    // No lanyard photo in the repo yet. When one arrives, save it as public/products/lanyard/lanyard-01.webp
-    // and set ready: true.
+    // Mockup image (not a product photo), from Muse by email to Josias, Nov 18 2026.
     gallery: [
-      { file: 'lanyard-01.webp', label: 'Vibin Lanyard', ready: false, alt: 'Vibin Lanyard' },
+      { file: 'lanyard-01.webp', label: 'Mockup', ready: true, fit: 'contain', background: '#f3efec',
+        alt: 'Mockup of two Vibin lanyards: one black and turquoise with a star and VIBIN printed along it, one turquoise with a star pattern.' },
     ],
+    description: 'The Vibin Lanyard. One size. Image shown is a mockup.',
     specs: [
       { label: 'Material', value: null },
       { label: 'Length', value: null },
@@ -71,12 +77,29 @@ export function extrasFor(product) {
  */
 export function withExtras(product) {
   const extras = extrasFor(product)
-  if (!extras || (!extras.hideStoredDescription && !extras.hideStoredColor)) return product
+  if (!extras) return product
+  const stored = typeof product.description === 'string' && product.description.trim() ? product.description : null
+  const keepStored = stored && !extras.hideStoredDescription
+  const fallback = typeof extras.description === 'string' && extras.description.trim() ? extras.description : null
+  const description = keepStored ? stored : fallback
+  const changeDescription = description !== (product.description ?? null)
+  if (!changeDescription && !extras.hideStoredColor) return product
   return {
     ...product,
-    ...(extras.hideStoredDescription ? { description: null } : {}),
+    ...(changeDescription ? { description } : {}),
     ...(extras.hideStoredColor ? { color: null } : {}),
   }
+}
+
+/**
+ * Card image for a product that has no photo in the products table: its first ready gallery slot.
+ * Returns { src, fit, background } or null.
+ */
+export function coverImage(product) {
+  const extras = extrasFor(product)
+  const slot = extras && (extras.gallery || []).find(s => s.ready)
+  if (!slot) return null
+  return { src: slotPath(product.slug, slot.file), fit: slot.fit || 'cover', background: slot.background || null }
 }
 
 /** Public path for a gallery slot's file. */
@@ -98,7 +121,7 @@ export function galleryItems(product, photos = []) {
   for (const slot of extras.gallery || []) {
     const src = slot.ready ? slotPath(product.slug, slot.file) : null
     if (src && items.some(i => i.src === src)) continue
-    items.push({ src, alt: slot.alt, label: slot.label, placeholder: !src })
+    items.push({ src, alt: slot.alt, label: slot.label, placeholder: !src, fit: slot.fit || 'cover', background: slot.background || null })
   }
   return items
 }
