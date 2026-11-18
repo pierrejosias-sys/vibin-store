@@ -5,6 +5,8 @@ import { getProducts } from '../lib/catalog'
 import { normalizeFilter } from '../lib/shop-filters.mjs'
 import { orderForDisplay } from '../lib/home-helpers.mjs'
 import { FREE_SHIPPING_LABEL } from '../lib/shipping'
+import { comingSoonTiles } from '../lib/coming-soon.mjs'
+import { COMING_SOON_SPECS } from '../lib/coming-soon-specs'
 
 export const metadata = {
   title: 'Shop',
@@ -27,7 +29,7 @@ export default async function ShopPage({ searchParams }) {
   return (
     <>
       <SiteHeader dark />
-      <ShopClient products={orderForDisplay(products)} initialFilter={normalizeFilter(params?.cat)} loadError={loadError} />
+      <ShopClient products={orderForDisplay(products)} initialFilter={normalizeFilter(params?.cat)} loadError={loadError} comingSoon={comingSoonTiles(COMING_SOON_SPECS)} />
       <SiteFooter />
     </>
   )

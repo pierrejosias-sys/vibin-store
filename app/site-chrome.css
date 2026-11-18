@@ -103,6 +103,8 @@ footer .foot-col a { color: inherit; text-decoration: none; }
 @media (hover: hover) { .sp-card:hover .sp-photo img { transform: scale(1.04); } }
 .sp-card.is-sold .sp-photo img { opacity: .45; }
 .sp-tag { position: absolute; top: 10px; left: 10px; z-index: 1; padding: 4px 8px; background: var(--coral); color: var(--cream); font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+.sp-soon { margin-top: 64px; }
+.sp-desc { margin: 6px 0 10px; font-size: 13px; line-height: 1.45; color: #888; }
 .sp-tag--out { background: var(--cream); color: var(--ink); }
 .sp-meta { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 12px 2px 0; }
 .sp-name { font-size: 14px; font-weight: 600; }

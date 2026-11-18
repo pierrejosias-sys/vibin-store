@@ -4,13 +4,15 @@ import { useState } from 'react'
 import Link from 'next/link'
 import ProductThumb from '../components/ProductThumb'
 import { productImage } from '../lib/product-image'
+import ComingSoonSignup from '../components/ComingSoonSignup'
+import { colorSummary } from '../lib/coming-soon.mjs'
 import { filterProducts, visibleFilters, productSubtitle, formatPrice } from '../lib/shop-filters.mjs'
 
 /**
  * Shop grid + category chips. The products arrive already loaded from the server, so there is no
  * loading state: the tiles, the chip counts and the "N pieces" label are in the first paint.
  */
-export default function ShopClient({ products, initialFilter = 'all', loadError = false }) {
+export default function ShopClient({ products, initialFilter = 'all', loadError = false, comingSoon = [] }) {
   const [active, setActive] = useState(initialFilter)
   const chips = visibleFilters(products)
   const shown = filterProducts(products, active)
@@ -78,6 +80,32 @@ export default function ShopClient({ products, initialFilter = 'all', loadError 
           })
         )}
       </div>
+
+      {comingSoon.length > 0 && (
+        <section className="sp-soon" aria-labelledby="sp-soon-title">
+          <div className="sp-head">
+            <div className="sp-eye">Coming soon</div>
+            <h2 id="sp-soon-title" className="sp-title">Totes &amp; Keychains</h2>
+          </div>
+          <div className="sp-grid">
+            {comingSoon.map(p => (
+              <div key={p.slug} className="sp-card sp-card--soon">
+                <div className="pt sp-photo">
+                  <ProductThumb src={null} name={p.name} />
+                  <span className="sp-tag">Coming soon</span>
+                </div>
+                <div className="sp-meta">
+                  <div className="sp-name">{p.name}</div>
+                  <div className="sp-price">{p.priceLabel}</div>
+                  {colorSummary(p.colors) ? <div className="sp-sub">{colorSummary(p.colors)}</div> : null}
+                  <p className="sp-desc">{p.description}</p>
+                </div>
+                <ComingSoonSignup slug={p.slug} name={p.name} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </main>
   )
 }
