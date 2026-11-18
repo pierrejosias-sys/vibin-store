@@ -32,13 +32,13 @@ export default async function sitemap() {
     )
     const { data: products } = await supabase
       .from('products')
-      .select('id, updated_at')
+      .select('id, slug, created_at')
       .order('created_at', { ascending: false })
 
     if (products && products.length > 0) {
       productEntries = products.map((p) => ({
-        url: `${BASE_URL}/product/${p.id}`,
-        lastModified: new Date(p.updated_at || Date.now()),
+        url: `${BASE_URL}/product/${p.slug || p.id}`,
+        lastModified: new Date(p.created_at || Date.now()),
         changeFrequency: 'weekly',
         priority: 0.8
       }))

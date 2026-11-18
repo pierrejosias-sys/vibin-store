@@ -1,15 +1,28 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '../lib/cart-context'
-import { shippingFor, FREE_SHIPPING_THRESHOLD, FREE_SHIPPING_LABEL } from '../lib/shipping'
+import { shippingFor, FREE_SHIPPING_THRESHOLD } from '../lib/shipping'
+import { canOptimizeImage } from '../lib/product-image'
+import SiteHeader from '../components/SiteHeader'
+import SiteFooter from '../components/SiteFooter'
+
+// Cart photo with a fallback tile. Carts live in the shopper's browser, so the image address could be
+// anything: only a real string is rendered, and a photo that fails to load falls back to the initials.
+function CartThumb({ src, name }) {
+  const [failed, setFailed] = useState(false)
+  const initials = String(name || 'V').substring(0, 2).toUpperCase()
+  if (typeof src !== 'string' || !src || failed) return <div className="cart-item-initials">{initials}</div>
+  return <Image src={src} alt={name || ''} fill sizes="100px" quality={60} unoptimized={!canOptimizeImage(src)} onError={() => setFailed(true)} style={{ objectFit: 'cover' }} />
+}
 
 export default function CartPage() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [ambassadorCode, setAmbassadorCode] = useState(null)
-  const { cartCount, updateCart } = useCart()
+  const { updateCart } = useCart()
   const initialized = useRef(false)
 
   useEffect(() => {
@@ -82,36 +95,9 @@ export default function CartPage() {
   const shipping = shippingFor(subtotal)
   const total = subtotal + shipping
 
-  if (loading) return (
-    <div className="cart-page">
-      <div className="cart-empty">Loading...</div>
-    </div>
-  )
-
   return (
     <>
-      <div className="promo">
-        <div className="promo-track">
-          <span>Free shipping over {FREE_SHIPPING_LABEL}</span><span>SS26 Drop is live</span><span>15% off your first order</span>
-          <span>Free shipping over {FREE_SHIPPING_LABEL}</span><span>SS26 Drop is live</span><span>15% off your first order</span>
-        </div>
-      </div>
-
-      <nav>
-        <Link href="/" className="logo">VIBIN</Link>
-        <div className="nav-links">
-          <Link href="/shop">Shop</Link>
-          <Link href="/shop">New Drop</Link>
-          <Link href="/lookbook">Lookbook</Link>
-          <Link href="/about">About</Link>
-        </div>
-        <div className="nav-actions">
-          <Link href="/login" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>👤</Link>
-          <Link href="/cart" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>
-            🛒{cartCount > 0 && <span className="cart-dot">{cartCount}</span>}
-          </Link>
-        </div>
-      </nav>
+      <SiteHeader />
 
       <div className="cart-page">
         <h1 className="cart-title">Your Bag
@@ -128,7 +114,10 @@ export default function CartPage() {
           </div>
         )}
 
-        {items.length === 0 ? (
+        {loading ? (
+          // The page frame is already on screen; this only holds the space until the bag is read.
+          <div className="cart-skel" aria-hidden="true" />
+        ) : items.length === 0 ? (
           <div className="cart-empty">
             <div style={{fontSize:'2.5rem',marginBottom:'1rem'}}>🛒</div>
             <p>Your bag is empty.</p>
@@ -142,24 +131,13 @@ export default function CartPage() {
               {items.map(item => (
                 <div key={`${item.id}-${item.color}-${item.size}`} className="cart-item">
 
-                  <div className="cart-item-img" style={{overflow:'hidden',borderRadius:'8px',background:'#111'}}>
-                    {item.image_url ? (
-                      <img
-                        src={item.image_url}
-                        alt={item.name}
-                        loading="lazy"
-                        style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}}
-                      />
-                    ) : (
-                      <div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontWeight:'700',fontSize:'0.9rem',letterSpacing:'0.05em'}}>
-                        {item.name.substring(0, 2).toUpperCase()}
-                      </div>
-                    )}
+                  <div className="cart-item-img">
+                    <CartThumb src={item.image_url} name={item.name} />
                   </div>
 
                   <div className="cart-item-info">
                     <div className="cart-item-name">{item.name}</div>
-                    <div className="cart-item-variant">{item.color} · {item.size}</div>
+                    <div className="cart-item-variant">{[item.color, item.size].filter(Boolean).join(' · ')}</div>
                     <button
                       onClick={() => removeItem(item.id, item.color, item.size)}
                       style={{background:'none',border:'none',color:'#888',fontSize:'0.72rem',padding:'0',marginTop:'6px',cursor:'pointer',textDecoration:'underline',fontFamily:'inherit'}}
@@ -209,36 +187,7 @@ export default function CartPage() {
         )}
       </div>
 
-      <footer>
-        <div className="foot-top">Vibin <em>Different.</em></div>
-        <div className="foot-cols">
-          <div className="foot-brand">
-            <div className="foot-logo">VIBIN</div>
-            <div className="foot-tagline">A lifestyle streetwear brand from Jacksonville, FL. A subsidiary of HVD Holdings.</div>
-          </div>
-          <div className="foot-col">
-            <h4>Help</h4>
-            <ul>
-              <li><a href="/shipping">Shipping</a></li>
-              <li><a href="/returns">Returns</a></li>
-              <li><a href="/qa">FAQ</a></li>
-              <li><a href="/returns">Contact</a></li>
-            </ul>
-          </div>
-          <div className="foot-col">
-            <h4>Connect</h4>
-            <ul>
-              <li><a href="https://instagram.com/vibinapparel" target="_blank" rel="noopener">Instagram</a></li>
-              <li><a href="https://tiktok.com/@vibinapparel" target="_blank" rel="noopener">TikTok</a></li>
-              <li><a href="https://twitter.com/vibinapparel" target="_blank" rel="noopener">Twitter / X</a></li>
-              <li><a href="/lookbook">Lookbook</a></li>
-            </ul>
-          </div>
-        </div>
-        <div className="foot-bottom">
-          <div>© 2026 Vibin Apparel · A subsidiary of HVD Holdings, LLC · Jacksonville, FL</div>
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   )
 }

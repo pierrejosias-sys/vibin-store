@@ -83,3 +83,74 @@ footer .foot-col a { color: inherit; text-decoration: none; }
 .srch-page { border: 1.5px solid var(--ink); padding: 10px 16px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; text-decoration: none; color: var(--ink); }
 .srch-page:hover { background: var(--ink); color: var(--cream); }
 @media (max-width: 600px) { .srch-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* ---- Shop ---- */
+.sp { background: var(--ink); color: var(--cream); min-height: 70vh; padding: 56px 24px 80px; }
+.sp-head, .sp-bar, .sp-grid { max-width: 1280px; margin-left: auto; margin-right: auto; }
+.sp-eye { margin-bottom: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #888; }
+.sp-title { margin-bottom: 28px; font-family: 'Anton', sans-serif; font-size: clamp(36px, 6vw, 72px); line-height: 1; letter-spacing: .02em; text-transform: uppercase; }
+.sp-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
+.sp-chips { display: flex; flex: 1; gap: 10px; min-width: 0; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.sp-chips::-webkit-scrollbar { display: none; }
+.sp-chip { flex: none; display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border: 1px solid #333; border-radius: 2px; background: transparent; color: var(--cream); cursor: pointer; font-family: 'Manrope', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: .05em; transition: background .18s, color .18s, border-color .18s; }
+.sp-chip span { font-family: 'JetBrains Mono', monospace; font-size: 10px; opacity: .6; }
+.sp-chip:hover { border-color: var(--cream); }
+.sp-chip.on { background: var(--cream); border-color: var(--cream); color: var(--ink); }
+.sp-count { flex: none; font-size: 13px; color: #888; }
+.sp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 28px 14px; }
+.sp-card { display: block; color: inherit; text-decoration: none; }
+.sp-photo img { transition: transform .5s ease; }
+@media (hover: hover) { .sp-card:hover .sp-photo img { transform: scale(1.04); } }
+.sp-card.is-sold .sp-photo img { opacity: .45; }
+.sp-tag { position: absolute; top: 10px; left: 10px; z-index: 1; padding: 4px 8px; background: var(--coral); color: var(--cream); font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+.sp-tag--out { background: var(--cream); color: var(--ink); }
+.sp-meta { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 12px 2px 0; }
+.sp-name { font-size: 14px; font-weight: 600; }
+.sp-price { text-align: right; font-size: 14px; font-weight: 700; }
+.sp-price s { margin-right: 6px; color: #777; font-weight: 400; }
+.sp-sub { grid-column: 1 / -1; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .04em; color: #888; }
+.sp-empty { grid-column: 1 / -1; padding: 72px 16px; text-align: center; color: #888; line-height: 1.8; }
+.sp-link { border: 0; border-bottom: 1px solid var(--cream); background: none; padding: 0 0 2px; color: var(--cream); cursor: pointer; font: inherit; text-decoration: none; }
+@media (max-width: 700px) {
+  .sp { padding: 36px 16px 56px; }
+  .sp-grid { grid-template-columns: repeat(2, 1fr); gap: 22px 10px; }
+  .sp-bar { flex-direction: column-reverse; align-items: stretch; gap: 10px; }
+  .sp-meta { grid-template-columns: 1fr; }
+  .sp-price { text-align: left; }
+}
+
+/* ---- Product page ---- */
+.pdp-gal { min-width: 0; }
+.pdp-main { position: relative; width: 100%; max-width: 640px; border-radius: 12px; background: #111; overflow: hidden; }
+.pdp-badge { position: absolute; top: 14px; left: 14px; z-index: 1; padding: 4px 10px; background: var(--coral); color: var(--cream); font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+.pdp-fallback { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; color: var(--cream); font-family: 'Anton', sans-serif; text-transform: uppercase; }
+.pdp-fallback-brand { margin-bottom: 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .15em; color: #777; }
+.pdp-fallback-name { font-size: clamp(28px, 6vw, 44px); line-height: 1; }
+.pdp-fallback-color { margin-top: 8px; font-size: 20px; font-style: italic; color: var(--coral); }
+.pdp-thumbs { display: flex; gap: 10px; margin-top: 12px; overflow-x: auto; }
+.pdp-thumb { position: relative; flex: none; width: 64px; height: 80px; padding: 0; border: 2px solid transparent; border-radius: 6px; background: #111; overflow: hidden; cursor: pointer; }
+.pdp-thumb.on { border-color: var(--ink); }
+.pdp-drop { margin: 8px 0; font-weight: 700; line-height: 1.5; }
+.pdp-viewbag { display: inline-block; margin: 0 0 18px; color: var(--coral); font-size: 13px; font-weight: 700; text-decoration: none; }
+.color { box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .18); }
+.atc-row .qty { min-height: 52px; }
+.atc-row .btn-atc { min-height: 52px; padding: 0 16px; }
+.btn-atc:disabled { opacity: .45; cursor: not-allowed; }
+.btn-atc:disabled:hover { background: var(--ink); border-color: var(--ink); }
+.perks-strip { margin-top: 24px; }
+
+/* ---- Cart: the Checkout link is an <a>, so it needs to be a block or it sits on top of the Total ---- */
+.btn-checkout { display: block; box-sizing: border-box; text-align: center; text-decoration: none; }
+.cart-item-img { position: relative; flex: none; overflow: hidden; border-radius: 8px; background: #111; }
+.cart-item-initials { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: var(--cream); font-family: 'Anton', sans-serif; font-size: 20px; letter-spacing: .05em; }
+.cart-item-info { min-width: 0; }
+.cart-skel { height: 140px; border-radius: 8px; background: var(--cream2); opacity: .6; }
+@media (max-width: 700px) {
+  .cart-page { padding: 28px 16px 48px; }
+  .cart-title { margin-bottom: 24px; font-size: 36px; }
+  .cart-item { grid-template-columns: 84px 1fr auto; grid-template-areas: "img info info" "img qty price"; gap: 10px 14px; padding: 14px; align-items: start; }
+  .cart-item-img { grid-area: img; width: 84px; height: 108px; }
+  .cart-item-info { grid-area: info; }
+  .cart-item-qty { grid-area: qty; align-self: end; }
+  .cart-item-price { grid-area: price; align-self: end; justify-self: end; }
+}
