@@ -6,8 +6,8 @@
 export const DROP_01 = {
   id: 'd01',
   shortName: 'Drop 01',
-  opensAt: '2026-11-20T00:00:00Z', // Thu Nov 19, 2026 7:00 PM ET
-  closesAt: '2026-11-23T04:59:59Z', // Sun Nov 22, 2026 11:59 PM ET
-  earlyAccessAt: '2026-11-19T23:00:00Z', // Thu Nov 19, 2026 6:00 PM ET (waitlist hour)
-  shipsBy: 'Dec 18',
+  opensAt: '2027-01-15T00:00:00Z', // Thu Jan 14, 2027 7:00 PM ET
+  closesAt: '2027-01-18T04:59:59Z', // Sun Jan 17, 2027 11:59 PM ET (end time still to be confirmed)
+  earlyAccessAt: '2027-01-14T23:00:00Z', // Thu Jan 14, 2027 6:00 PM ET (waitlist hour)
+  shipsBy: null, // No public ship date until vendor proof is in; copy leaves the line out while this is empty
 }

@@ -111,7 +111,7 @@ export async function POST(request) {
         product_data: {
           name: item.name,
           description: item.preorder
-            ? `Pre-order · Ships by ${item.shipsBy} · Size ${item.size}`
+            ? `Pre-order${item.shipsBy ? ` · Ships by ${item.shipsBy}` : ''} · Size ${item.size}`
             : `${item.color} / ${item.size}`,
         },
         unit_amount: Math.round(item.price * 100),

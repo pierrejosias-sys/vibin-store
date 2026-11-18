@@ -39,11 +39,11 @@ export const DROPS = {
     slug: '01',
     name: 'Drop 01: The Foundation',
     // Pre-order window (source of truth: drops.release_at / drops.closes_at; this is the fallback).
-    // Opens Thu Nov 19, 2026 7:00 PM ET; closes Sun Nov 22, 2026 11:59 PM ET.
+    // Opens Thu Jan 14, 2027 7:00 PM ET; closes Sun Jan 17, 2027 11:59 PM ET.
     // The times live in drop-public.mjs so the browser can use them without loading this file.
     releaseAt: DROP_01.opensAt,
     closesAt: DROP_01.closesAt,
-    // Private waitlist early access: Thu Nov 19, 2026 6:00 PM ET (1 hour before public open).
+    // Private waitlist early access: Thu Jan 14, 2027 6:00 PM ET (1 hour before public open).
     earlyAccessAt: DROP_01.earlyAccessAt,
     shipsBy: DROP_01.shipsBy,
     story: 'Drop 01 is the first numbered Vibin Apparel run, limited to 50 pieces per style, designed in Jacksonville, FL.',

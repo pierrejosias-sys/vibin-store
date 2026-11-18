@@ -6,6 +6,8 @@ import './styles.css'
 // Shared header/footer, 404, search and product-tile styles (loaded after styles.css).
 import './site-chrome.css'
 import { FREE_SHIPPING_LABEL } from './lib/shipping'
+import { DROP_01 } from './lib/drop-public.mjs'
+import { windowLabelShort } from './lib/drop-copy.mjs'
 import SupportChat from './components/SupportChat'
 
 export const metadata = {
@@ -30,7 +32,7 @@ export const metadata = {
     url: 'https://vibinapparel.com',
     siteName: 'Vibin Apparel',
     title: 'Vibin Apparel — Jacksonville Streetwear SS26',
-    description: `Heavyweight cotton streetwear built for those who move different. SS26 Drop 01: The Foundation, pre-order Nov 19 to 22. Free shipping on orders ${FREE_SHIPPING_LABEL}+.`,
+    description: `Heavyweight cotton streetwear built for those who move different. SS26 Drop 01: The Foundation, pre-order ${windowLabelShort(DROP_01)}. Free shipping on orders ${FREE_SHIPPING_LABEL}+.`,
     images: [{ url: '/og-default.jpg', width: 1200, height: 630, alt: 'Vibin Apparel SS26 Drop 01 — The Foundation Collection' }]
   },
   twitter: {
@@ -38,7 +40,7 @@ export const metadata = {
     site: '@vibinapparel',
     creator: '@vibinapparel',
     title: 'Vibin Apparel — Jacksonville Streetwear SS26',
-    description: 'Heavyweight cotton streetwear built for those who move different. SS26 Drop 01: The Foundation, pre-order Nov 19 to 22.',
+    description: `Heavyweight cotton streetwear built for those who move different. SS26 Drop 01: The Foundation, pre-order ${windowLabelShort(DROP_01)}.`,
     images: ['/og-default.jpg']
   },
   alternates: { canonical: 'https://vibinapparel.com' }

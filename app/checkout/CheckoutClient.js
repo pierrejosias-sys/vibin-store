@@ -9,6 +9,7 @@ import { useCart } from '../lib/cart-context'
 import SiteHeader from '../components/SiteHeader'
 import SiteFooter from '../components/SiteFooter'
 import { shippingFor } from '../lib/shipping'
+import { DROP_01 } from '../lib/drop-public.mjs'
 
 const STRIPE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 const stripePromise = STRIPE_PUBLISHABLE_KEY ? loadStripe(STRIPE_PUBLISHABLE_KEY) : Promise.resolve(null)
@@ -198,7 +199,7 @@ export default function CheckoutPage() {
             {items.some(i => i.drop || i.preorder) && (
               <label style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', margin: '16px 0', fontSize: '14px' }}>
                 <input type="checkbox" checked={preorderAck} onChange={e => setPreorderAck(e.target.checked)} required />
-                <span>I understand this is a pre-order shipping by Dec 18.</span>
+                <span>{DROP_01.shipsBy ? `I understand this is a pre-order shipping by ${DROP_01.shipsBy}.` : 'I understand this is a pre-order.'}</span>
               </label>
             )}
             <button className="btn-atc" onClick={handleStripeCheckout} disabled={loading || (items.some(i => i.drop || i.preorder) && !preorderAck)}>
