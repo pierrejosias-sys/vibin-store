@@ -2,13 +2,15 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import { canOptimizeImage } from '../lib/product-image'
 
 /**
  * Product photo that fills a .pt box (3:4). Next/Image serves a resized WebP, so a 2 MB source
  * photo costs the shopper tens of KB. Falls back to a branded name tile when there is no photo
- * or it fails to load.
+ * or it fails to load. Photos from hosts next/image is not configured for are shown as-is
+ * instead of crashing the page.
  */
-export default function ProductThumb({ src, name, color, sizes = '(max-width: 600px) 50vw, 280px', priority = false }) {
+export default function ProductThumb({ src, name, color, sizes = '(max-width: 600px) 50vw, 280px', priority = false, alt }) {
   const [failed, setFailed] = useState(false)
   if (!src || failed) {
     return (
@@ -21,11 +23,12 @@ export default function ProductThumb({ src, name, color, sizes = '(max-width: 60
   return (
     <Image
       src={src}
-      alt={name || ''}
+      alt={alt ?? name ?? ''}
       fill
       sizes={sizes}
       quality={70}
       priority={priority}
+      unoptimized={!canOptimizeImage(src)}
       onError={() => setFailed(true)}
       style={{ objectFit: 'cover' }}
     />
