@@ -20,6 +20,32 @@ nav.site-nav--dark .nav-links a:hover { color: var(--coral); }
 /* ---- Footer links: shared footer markup, keep links on-brand instead of default blue ---- */
 footer .foot-col a { color: inherit; text-decoration: none; }
 
+/* ---- Lookbook page ---- */
+.lk { background: var(--ink); color: var(--cream); }
+.lk-hero { padding: 72px 24px 40px; text-align: center; }
+.lk-eye { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--coral); margin-bottom: 14px; }
+.lk-title { font-family: 'Anton', sans-serif; font-size: clamp(48px, 9vw, 96px); line-height: .9; text-transform: uppercase; }
+.lk-title em { font-style: italic; color: var(--coral); }
+.lk-sub { margin-top: 14px; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: rgba(246,241,231,.6); }
+.lk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px 20px; max-width: 1200px; margin: 0 auto; padding: 0 24px 80px; }
+.lk-card { display: flex; flex-direction: column; }
+.lk-card--wide { grid-column: 1 / -1; }
+.lk-photo { position: relative; display: block; aspect-ratio: 3 / 4; background: #111; overflow: hidden; }
+.lk-card--wide .lk-photo { aspect-ratio: 16 / 9; }
+.lk-tag { position: absolute; left: 14px; bottom: 14px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .15em; text-transform: uppercase; background: var(--cream); color: var(--ink); padding: 5px 10px; }
+.lk-meta { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 2px 0; }
+.lk-name { font-family: 'Anton', sans-serif; font-size: 24px; letter-spacing: .02em; text-transform: uppercase; }
+.lk-detail { margin-top: 4px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: rgba(246,241,231,.6); }
+.lk-cta { flex: none; border: 1.5px solid var(--cream); padding: 10px 14px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--cream); text-decoration: none; }
+.lk-cta:hover { background: var(--cream); color: var(--ink); }
+@media (max-width: 700px) {
+  .lk-hero { padding: 48px 20px 28px; }
+  .lk-grid { grid-template-columns: 1fr; padding: 0 16px 56px; }
+  .lk-card--wide .lk-photo { aspect-ratio: 4 / 5; }
+  .lk-meta { flex-direction: column; align-items: stretch; }
+  .lk-cta { text-align: center; }
+}
+
 /* ---- Home hero: keep "DIFFERENT." inside narrow phones ---- */
 @media (max-width: 480px) {
   .hero-title { font-size: clamp(56px, 20vw, 80px); }
