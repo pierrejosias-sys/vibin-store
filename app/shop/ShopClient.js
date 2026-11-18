@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import ProductThumb from '../components/ProductThumb'
 import { productImage } from '../lib/product-image'
+import { coverImage } from '../lib/product-extras.mjs'
 import ComingSoonSignup from '../components/ComingSoonSignup'
 import { colorSummary } from '../lib/coming-soon.mjs'
 import { filterProducts, visibleFilters, productSubtitle, formatPrice } from '../lib/shop-filters.mjs'
@@ -64,10 +65,13 @@ export default function ShopClient({ products, initialFilter = 'all', loadError 
             const soldOut = p.in_stock === false
             const isNew = Array.isArray(p.tags) && p.tags.includes('new')
             const onSale = Number(p.compare_price) > Number(p.price)
+            // No photo in the table: use the product's own gallery image (e.g. the lanyard mockup).
+            const stored = productImage(p)
+            const cover = stored ? null : coverImage(p)
             return (
               <Link key={p.id} href={`/product/${p.slug || p.id}`} prefetch={false} className={`sp-card${soldOut ? ' is-sold' : ''}`}>
                 <div className="pt sp-photo">
-                  <ProductThumb src={productImage(p)} name={p.name} alt="" sizes="(max-width: 700px) 50vw, (max-width: 1100px) 33vw, 25vw" priority={i < 2} />
+                  <ProductThumb src={stored || cover?.src || null} fit={cover?.fit} background={cover?.background} name={p.name} alt="" sizes="(max-width: 700px) 50vw, (max-width: 1100px) 33vw, 25vw" priority={i < 2} />
                   {soldOut ? <span className="sp-tag sp-tag--out">Sold out</span> : isNew ? <span className="sp-tag">New</span> : null}
                 </div>
                 <div className="sp-meta">

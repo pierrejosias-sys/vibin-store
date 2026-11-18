@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '../lib/supabase'
 import { productImage } from '../lib/product-image'
+import { coverImage } from '../lib/product-extras.mjs'
 import { DROP_STYLE_IMAGES } from '../lib/drop-catalog.mjs'
 import { DROP_01 } from '../lib/drop-public.mjs'
 import { formatPrice } from '../lib/shop-filters.mjs'
@@ -75,7 +76,7 @@ function SearchContent() {
       color: p.color,
       sub: p.category,
       href: `/product/${p.slug || p.id}`,
-      image: productImage(p),
+      image: productImage(p) || coverImage(p)?.src || null,
       hay: [p.name, p.category, p.color, p.slug, ...(Array.isArray(p.tags) ? p.tags : [])].filter(Boolean).join(' '),
     })), [products])
 

@@ -108,7 +108,7 @@ export default function ProductClient({ product, sizes: runSizes = null, drop = 
 
       <div className="pdp">
         <div className="pdp-gal">
-          <div className="pdp-main" style={{ aspectRatio: hasHero ? '3 / 4' : '1 / 1' }}>
+          <div className="pdp-main" style={{ aspectRatio: hasHero ? '3 / 4' : '1 / 1', ...(mainPhoto && mainItem.background ? { background: mainItem.background } : {}) }}>
             {mainPhoto ? (
               <Image
                 src={mainPhoto}
@@ -118,7 +118,7 @@ export default function ProductClient({ product, sizes: runSizes = null, drop = 
                 quality={75}
                 sizes="(max-width: 1000px) 100vw, 640px"
                 unoptimized={!canOptimizeImage(mainPhoto)}
-                style={{ objectFit: 'cover' }}
+                style={{ objectFit: mainItem.fit === 'contain' ? 'contain' : 'cover' }}
               />
             ) : mainItem && mainItem.placeholder ? (
               <div className="pdp-fallback pdp-slot" role="img" aria-label={mainItem.alt}>
