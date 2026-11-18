@@ -1,0 +1,33 @@
+{
+  "product": "Vibin Magnetic Charms",
+  "sku_prefix": "VB-ACC-MAG",
+  "collection": "Drop 01 target (Thu Jan 14, 2027), pending vendor proof",
+  "category": "accessories",
+  "status": "coming_soon",
+  "buyable": false,
+  "description": "Magnetic charms that snap onto your Vibin Tote. Swap them out whenever.",
+  "variant_note": "Charm designs and lineup TBD",
+  "mockup_views": [
+    "on_tote",
+    "detail"
+  ],
+  "variants": [
+    {
+      "name": "Standard",
+      "sku": "VB-ACC-MAG-STD"
+    }
+  ],
+  "material": "TBD",
+  "dimensions": "TBD",
+  "weight": "TBD",
+  "care": "TBD",
+  "vendor": "TBD",
+  "moq": "TBD",
+  "lead_time": "TBD",
+  "ship_date": "TBD",
+  "images": [],
+  "image_note": "Placeholders only. Real Vibin photos replace them before launch. No stock photos.",
+  "price": "TBD",
+  "compare_price": null,
+  "slug": "vibin-magnetic-charms"
+}

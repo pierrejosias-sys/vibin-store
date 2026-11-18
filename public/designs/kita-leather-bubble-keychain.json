@@ -1,0 +1,44 @@
+{
+  "product": "Vibin Leather Bubble Keychain",
+  "sku_prefix": "VB-KEY-LTHR",
+  "collection": "Drop 01 target (Thu Jan 14, 2027), pending vendor proof",
+  "category": "accessories",
+  "status": "coming_soon",
+  "buyable": false,
+  "description": "The VIBIN bubble letters in leather, cut for the guys. Chocolate, tan or black.",
+  "audience": "men's",
+  "lettering": "bubble letters spelling VIBIN, no EST text",
+  "est_text": "none (EST year waits on Josias)",
+  "mockup_views": [
+    "front",
+    "hardware_detail",
+    "color_lineup"
+  ],
+  "variants": [
+    {
+      "name": "Chocolate",
+      "sku": "VB-KEY-LTHR-CHO"
+    },
+    {
+      "name": "Tan",
+      "sku": "VB-KEY-LTHR-TAN"
+    },
+    {
+      "name": "Black",
+      "sku": "VB-KEY-LTHR-BLK"
+    }
+  ],
+  "material": "TBD",
+  "dimensions": "TBD",
+  "weight": "TBD",
+  "care": "TBD",
+  "vendor": "TBD",
+  "moq": "TBD",
+  "lead_time": "TBD",
+  "ship_date": "TBD",
+  "images": [],
+  "image_note": "Placeholders only. Real Vibin photos replace them before launch. No stock photos.",
+  "price": "TBD",
+  "compare_price": null,
+  "slug": "vibin-leather-bubble-keychain"
+}

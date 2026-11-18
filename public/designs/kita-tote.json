@@ -1,0 +1,47 @@
+{
+  "product": "Vibin Tote",
+  "sku_prefix": "VB-BAG-TOTE",
+  "collection": "Drop 01 target (Thu Jan 14, 2027), pending vendor proof",
+  "category": "accessories",
+  "status": "coming_soon",
+  "buyable": false,
+  "description": "Chocolate brown tote with VIBIN across the front in cream, all caps. Built to carry your day and wear your chains.",
+  "closure": "magnetic snap (built-in or clip-on: TBD)",
+  "branding": [
+    {
+      "placement": "front_center",
+      "artwork": "VIBIN wordmark, all caps",
+      "color": "cream"
+    }
+  ],
+  "pending_picks": [
+    "Plum colorway letter color: cream, gold or lime (Kita's call)"
+  ],
+  "charms": "Chains only for now. All other charms are off.",
+  "mockup_views": [
+    "front",
+    "back",
+    "inside",
+    "magnetic_snap",
+    "what_fits"
+  ],
+  "variants": [
+    {
+      "name": "Chocolate / Cream VIBIN",
+      "sku": "VB-BAG-TOTE-CHO"
+    }
+  ],
+  "material": "TBD",
+  "dimensions": "TBD",
+  "weight": "TBD",
+  "care": "TBD",
+  "vendor": "TBD",
+  "moq": "TBD",
+  "lead_time": "TBD",
+  "ship_date": "TBD",
+  "images": [],
+  "image_note": "Placeholders only. Real Vibin photos replace them before launch. No stock photos.",
+  "price": "TBD",
+  "compare_price": null,
+  "slug": "vibin-tote-chocolate"
+}
