@@ -7,11 +7,11 @@ import { FREE_SHIPPING_LABEL } from '../lib/shipping'
 
 /* ==========================================================================
    Vibin Verify — /verify
-   Frontend-only demo. No backend calls, no Supabase calls, no secrets.
-   TODO (Dev): swap the DEMO_REGISTRY below for the real endpoints in the
-   Dev spec on this page — GET /api/verify/:code, POST /api/claim,
-   POST /api/redeem. Claude is building the Supabase schema separately.
-   Points in this version are session-only (in-memory) by design.
+   Hang-tag QR -> /verify?c=CODE. Authenticity is checked against the live registry
+   (GET /api/verify/:code — no account needed). An email is only asked for when claiming
+   points (POST /api/claim) or spending them (POST /api/redeem). Claims, balances and
+   reward codes all live server-side in Supabase; this page keeps nothing but the last
+   balance the server reported. The browser never talks to the database directly.
    ========================================================================== */
 
 const CONFIG = {
@@ -23,14 +23,6 @@ const CONFIG = {
     { id: 't25', label: '$25 off your next order', detail: 'Reward code at checkout', cost: 400, codeTag: 'VIBIN25' },
     { id: 't50', label: '$50 off + early access', detail: 'First shot at the next drop, before it opens', cost: 750, codeTag: 'VIBIN50' },
   ],
-}
-
-/* Demo registry — production replaces this with GET /api/verify/:code */
-const DEMO_REGISTRY = {
-  'VBN-TCH5-2601': { product: 'Tech Shorts', drop: 'Drop 01 — SS26', colorway: 'Black / Gasoline Turquoise', size: 'L', points: 150, limited: true, claimed: false },
-  'VBN-HDE8-2601': { product: 'Heavyweight Oversized Hoodie', drop: 'Drop 01 — SS26', colorway: 'Black', size: 'XL', points: 100, limited: false, claimed: false },
-  'VBN-BRF3-2601': { product: 'Long-Leg Boxer Briefs', drop: 'Drop 01 — SS26', colorway: 'Black / Turquoise waistband', size: 'M', points: 100, limited: false, claimed: false },
-  'VBN-MDV9-2601': { product: 'Move Different Tee', drop: 'Drop 01 — SS26', colorway: 'Deep Green', size: 'L', points: 100, limited: false, claimed: true, claimedAt: 'Nov 12, 2026' },
 }
 
 const QR_DATA_URI = 'data:image/png;base64,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'
@@ -52,51 +44,6 @@ function normalize(raw) {
   if (s.length > 4) out += '-' + s.slice(4, 8)
   return out
 }
-
-const SPEC_TEXT = [
-  '# Vibin Verify — Dev Spec',
-  '',
-  'Customer flow: hang tag QR → vibinapparel.com/verify?c=<CODE> → page auto-verifies → first scan claims points.',
-  '',
-  '## Code format',
-  'VBN-XXXX-XXXX (brand prefix + 8 chars from the full A–Z/0–9 alphabet; print in a mono font with a slashed/dotted zero). Case-insensitive.',
-  'Codes are generated per production run and stored in the registry BEFORE product ships.',
-  'A code not in the registry = not issued by Vibin. Never auto-create records on scan.',
-  '',
-  '## Registry record (one row per piece)',
-  '- code (PK, unique)',
-  '- product_name / sku',
-  '- drop / colorway / size (shown on the verified card)',
-  '- points_value (100 standard, 150 limited colorways)',
-  '- status: unclaimed → claimed (one-way)',
-  '- claimed_by / claimed_at',
-  '- scan_count / last_scan_at (every lookup counts)',
-  '',
-  '## Endpoints',
-  "GET  /api/verify/:code → 200 { status, product, drop, colorway, size, points_value } | 404 { status: 'not_found' }. Side effect: scan_count+1.",
-  'POST /api/claim { code, account_or_email } → 200 { points_awarded, new_balance } | 409 already claimed. MUST be atomic.',
-  'POST /api/redeem { account, tier_id } → 200 { reward_code } | 402 insufficient balance. Deduct in the same transaction.',
-  '',
-  '## Points config (launch)',
-  '- Verify standard piece: +100 pts. Limited colorway: +150 pts. First-ever verify bonus: +50 pts.',
-  '- Tiers: 200 pts → $10 off · 400 pts → $25 off · 750 pts → $50 off + early access to next drop.',
-  '- Points expire 12 months after earning. Reward codes single-use, tied to account.',
-  '',
-  '## Anti-counterfeit rules',
-  '- First scan claims; points move exactly once per code.',
-  '- Rate-limit verify lookups per IP/device.',
-  '- Flag codes with high scan_count or scans in far-apart places in a short window (copied tag signal) in an admin view.',
-  "- One generic 'not found' answer — never reveal which part of a wrong code failed.",
-  '- Audit log for claims/redemptions; support reversals only from the log, with a reason.',
-  '',
-  '## Launch checklist',
-  '- [ ] Registry live; test batch of 50 codes printed on sample tags',
-  '- [ ] QR artwork from final URLs; scan-tested on iPhone + Android',
-  '- [ ] Claim/redeem atomic under double-tap',
-  "- [ ] Support macros for 'already claimed' and 'not found' (copy lives in the page FAQ)",
-  '- [ ] Admin view for flagged codes before Drop 01 ships',
-  '',
-].join('\n')
 
 const VERIFY_CSS = `
 .verify-wrap { max-width: 1060px; margin: 0 auto; padding: 0 20px 72px; }
@@ -163,86 +110,145 @@ const VERIFY_CSS = `
 .verify-earn { margin: 14px 0 0; padding: 0; list-style: none; }
 .verify-earn li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1.5px solid #d8d0ba; font-size: 15px; }
 .verify-earn li b { font-family: monospace; white-space: nowrap; }
+.verify-input.email { text-transform: none; font-size: 17px; font-weight: 500; letter-spacing: 0; }
+.verify-claim { margin-top: 16px; padding-top: 14px; border-top: 1.5px solid rgba(18,17,13,.18); }
+.verify-claim .verify-points { margin: 0 0 12px; font-size: 24px; }
+.verify-acct { margin: 0 0 16px; }
+.verify-fine { margin: 8px 0 0; font-size: 13px; color: #4c483c; }
+.verify-error { margin: 10px 0 0; font-size: 14px; font-weight: 600; color: #b3372a; }
 .verify-faq { border-top: 1.5px solid #d8d0ba; padding: 6px 0; }
 .verify-faq summary { font-weight: 800; padding: 12px 0; cursor: pointer; min-height: 44px; display: flex; align-items: center; }
 .verify-faq p { margin: 0 0 14px; color: #4c483c; font-size: 15px; }
-.verify-dev { margin-top: 40px; border: 2px solid #12110d; border-radius: 14px; overflow: hidden; }
-.verify-dev-head { background: #12110d; color: #f2ecdd; padding: 22px 26px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center; }
-.verify-dev-head h2 { font-size: 28px; margin: 0; text-transform: uppercase; color: #f2ecdd; }
-.verify-dev-head p { margin: 4px 0 0; font-size: 14px; opacity: .85; max-width: 560px; }
-.verify-dev-body { padding: 26px; background: #faf6ea; }
-.verify-dev-body h3 { font-size: 20px; margin: 26px 0 8px; text-transform: uppercase; }
-.verify-dev-body h3:first-child { margin-top: 0; }
-.verify-dev-body p, .verify-dev-body li { font-size: 15px; color: #4c483c; }
-.verify-dev-body strong { color: #12110d; }
-.verify-dev-body ul { margin: 6px 0; padding-left: 20px; }
-.verify-dev-body li { margin: 4px 0; }
-.verify-todo { background: #f3e7c8; border: 2px solid #9a6a12; border-radius: 10px; padding: 14px 16px; margin-bottom: 18px; color: #12110d; font-size: 15px; }
-.verify-codeblock { background: #12110d; color: #e9f5f1; border-radius: 10px; padding: 16px; overflow-x: auto; font-family: monospace; font-size: 13px; line-height: 1.6; margin: 10px 0; white-space: pre; }
-.verify-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 10px 0; }
-.verify-table th, .verify-table td { text-align: left; padding: 9px 10px; border-bottom: 1.5px solid #d8d0ba; vertical-align: top; }
-.verify-table th { font-family: monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #4c483c; }
-.verify-table td:first-child { font-family: monospace; font-weight: 600; white-space: nowrap; }
-.verify-checklist { list-style: none; padding: 0; margin: 8px 0; }
-.verify-checklist li { padding: 7px 0 7px 30px; position: relative; border-top: 1.5px solid #d8d0ba; }
 `
+
+const API = {
+  verify: (c) => '/api/verify/' + encodeURIComponent(c),
+  claim: '/api/claim',
+  redeem: '/api/redeem',
+}
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const EMAIL_KEY = 'vibin_verify_email'
+
+/* One small JSON round-trip. Never throws; status 0 means the network failed. */
+async function callApi(url, body) {
+  try {
+    const res = await fetch(url, body
+      ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+      : undefined)
+    let data = null
+    try { data = await res.json() } catch (e) { /* non-JSON error page */ }
+    return { status: res.status, data }
+  } catch (e) {
+    return { status: 0, data: null }
+  }
+}
+
+function fmtDate(iso) {
+  const d = iso ? new Date(iso) : null
+  if (!d || Number.isNaN(d.getTime())) return 'an earlier date'
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' })
+}
+
+function trouble(status) {
+  if (status === 429) return 'Too many tries from this connection. Wait a few minutes, then try again.'
+  if (status === 503) return 'This is briefly unavailable. Try again in a few minutes.'
+  return "We couldn't reach Vibin just now. Check your connection and try again."
+}
+
+function remember(email) {
+  try { window.localStorage.setItem(EMAIL_KEY, email) } catch (e) { /* private mode: fine */ }
+}
+
+const notFound = (c) => ({ kind: 'bad', phase: 'missing', title: 'Code not found', body: c + " isn't in the Vibin registry. Check for lookalike letters (O/0, I/1) — and if it still isn't found, the piece wasn't issued by Vibin.", item: null, code: c, earned: null })
+const alreadyClaimed = (item, c, at) => ({ kind: 'warn', phase: 'already', title: 'Real piece — points already claimed', body: 'This code was claimed on ' + fmtDate(at) + '. The piece checks out as genuine Vibin, but each code pays its points once, to the first claim. Bought it new and seeing this? Send a photo of the tag plus your order confirmation to the brand.', item, code: c, earned: null })
 
 export default function VerifyPage() {
   const { cartCount } = useCart()
   const [code, setCode] = useState('')
   const [result, setResult] = useState(null)
-  const [balance, setBalance] = useState(0)
-  const [claimed, setClaimed] = useState({})
-  const [welcomed, setWelcomed] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [claimEmail, setClaimEmail] = useState('')
+  const [claimError, setClaimError] = useState('')
+  const [account, setAccount] = useState('')
+  const [balance, setBalance] = useState(null) // last balance the server reported; null = none seen yet
+  const [pointsNote, setPointsNote] = useState('')
   const [reward, setReward] = useState(null)
   const [copied, setCopied] = useState(false)
-  const [specCopied, setSpecCopied] = useState(false)
   const autoRan = useRef(false)
+  const seq = useRef(0) // answers to superseded lookups are ignored
 
-  function verify(raw) {
+  async function verify(raw) {
     const formatted = normalize(raw)
     setCode(formatted)
+    setClaimError('')
     const plain = formatted.replace(/-/g, '')
     if (plain.length < 11) {
-      setResult({ kind: 'bad', title: 'That code looks short', body: 'Tag codes are VBN-XXXX-XXXX — 8 characters after the VBN. Check the tag and try again.', item: null, code: formatted, earned: null })
+      seq.current += 1
+      setBusy(false)
+      setResult({ kind: 'bad', phase: 'short', title: 'That code looks short', body: 'Tag codes are VBN-XXXX-XXXX — 8 characters after the VBN. Check the tag and try again.', item: null, code: formatted, earned: null })
       return
     }
-    const item = DEMO_REGISTRY[formatted]
-    if (!item) {
-      setResult({ kind: 'bad', title: 'Code not found', body: formatted + " isn't in the Vibin registry. Check for lookalike letters (O/0, I/1) — and if it still isn't found, the piece wasn't issued by Vibin.", item: null, code: formatted, earned: null })
+    const mine = ++seq.current
+    setBusy(true)
+    const { status, data } = await callApi(API.verify(formatted))
+    if (mine !== seq.current) return
+    setBusy(false)
+    if (status === 404) { setResult(notFound(formatted)); return }
+    if (status !== 200 || !data) {
+      setResult({ kind: 'warn', phase: 'error', title: "Couldn't check that code", body: trouble(status), item: null, code: formatted, earned: null })
       return
     }
-    if (claimed[formatted]) {
-      setResult({ kind: 'ok', title: 'Verified — yours', body: 'You already claimed this piece in this session, so its points are in your balance. The piece is genuine.', item, code: formatted, earned: null })
-      return
-    }
-    if (item.claimed) {
-      setResult({ kind: 'warn', title: 'Real piece — points already claimed', body: 'This code was claimed on ' + (item.claimedAt || 'an earlier date') + '. The piece checks out as genuine Vibin, but each code pays its points once, to the first scan. Bought it new and seeing this? Send a photo of the tag plus your order confirmation to the brand.', item, code: formatted, earned: null })
-      return
-    }
-    let earned = item.points
-    let bonusNote = ''
-    if (!welcomed) {
-      setWelcomed(true)
-      earned += CONFIG.welcomeBonus
-      bonusNote = ' Includes your +50 first-verify welcome bonus.'
-    }
-    setClaimed((prev) => ({ ...prev, [formatted]: true }))
-    setBalance((prev) => prev + earned)
+    const item = { product: data.product, drop: data.drop, colorway: data.colorway, size: data.size }
+    if (data.status === 'claimed') { setResult(alreadyClaimed(item, formatted, data.claimed_at)); return }
     setResult({
       kind: 'ok',
+      phase: 'verified',
       title: "Verified — it's real Vibin",
-      body: 'This piece is genuine and its points are now claimed to you. Nobody else can claim this code. ' + (item.limited ? 'Limited colorway — paid the 150-point rate.' : 'Standard piece — 100 points.') + bonusNote,
+      body: 'This piece is genuine Vibin — no account needed to know that. Add your email below to bank its points. The first claim wins, then the code is locked.',
       item,
       code: formatted,
-      earned,
+      earned: null,
+      points: data.points_value,
     })
   }
 
-  /* Auto-verify from QR landing (?c=CODE) */
+  async function claim(e) {
+    if (e) e.preventDefault()
+    if (busy || !result || result.phase !== 'verified') return
+    const email = claimEmail.trim()
+    if (!EMAIL_RE.test(email)) { setClaimError('Enter a valid email so your points have somewhere to live.'); return }
+    setClaimError('')
+    setBusy(true)
+    const { status, data } = await callApi(API.claim, { code: result.code, account_or_email: email })
+    setBusy(false)
+    if (status === 200 && data) {
+      remember(email)
+      setAccount(email)
+      setBalance(data.new_balance)
+      setPointsNote('')
+      setResult({
+        ...result,
+        kind: 'ok',
+        phase: 'claimed',
+        title: "Verified — it's yours",
+        body: 'This piece is genuine and its points are now banked to ' + email + '. Nobody else can claim this code.' + (data.bonus_awarded > 0 ? ' Includes your +50 first-verify welcome bonus.' : ''),
+        earned: data.points_awarded,
+      })
+      return
+    }
+    if (status === 409) { setResult(alreadyClaimed(result.item, result.code, data && data.claimed_at)); return }
+    if (status === 404) { setResult(notFound(result.code)); return }
+    setClaimError(status === 400 ? "That email doesn't look right. Check it and try again." : trouble(status))
+  }
+
+  /* Auto-verify from QR landing (?c=CODE); remember the email the customer used last time */
   useEffect(() => {
     if (autoRan.current) return
     autoRan.current = true
+    try {
+      const saved = window.localStorage.getItem(EMAIL_KEY)
+      if (saved && EMAIL_RE.test(saved)) { setAccount(saved); setClaimEmail(saved) }
+    } catch (e) { /* storage blocked: fine */ }
     try {
       const params = new URLSearchParams(window.location.search)
       const c = params.get('c')
@@ -251,22 +257,27 @@ export default function VerifyPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  function redeem(tier) {
-    if (balance < tier.cost) return
-    setBalance((prev) => prev - tier.cost)
-    const rand = Math.random().toString(36).slice(2, 6).toUpperCase()
-    setReward({ code: tier.codeTag + '-' + rand, label: tier.label })
-  }
-
-  function downloadSpec() {
-    const blob = new Blob([SPEC_TEXT], { type: 'text/markdown' })
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = 'vibin-verify-dev-spec.md'
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    setTimeout(() => URL.revokeObjectURL(a.href), 2000)
+  async function redeem(tier) {
+    if (busy) return
+    const email = account.trim()
+    if (!EMAIL_RE.test(email)) { setPointsNote('Enter the email your points are held under, then tap Redeem.'); return }
+    setPointsNote('')
+    setBusy(true)
+    const { status, data } = await callApi(API.redeem, { account: email, tier_id: tier.codeTag })
+    setBusy(false)
+    if (status === 200 && data) {
+      remember(email)
+      setBalance(data.new_balance)
+      setReward({ code: data.reward_code, label: data.label || tier.label })
+      return
+    }
+    if (status === 402 && data) {
+      remember(email)
+      setBalance(data.balance)
+      setPointsNote('You have ' + data.balance + ' points. ' + tier.label + ' needs ' + data.points_needed + '.')
+      return
+    }
+    setPointsNote(status === 400 ? "That email doesn't look right." : trouble(status))
   }
 
   function copyText(text, setter) {
@@ -341,7 +352,7 @@ export default function VerifyPage() {
                   value={code}
                   onChange={(e) => setCode(normalize(e.target.value))}
                 />
-                <button className="verify-btn turq" type="submit">Verify piece</button>
+                <button className="verify-btn turq" type="submit" disabled={busy}>{busy ? 'Checking…' : 'Verify piece'}</button>
               </div>
               <p className="sub" style={{ margin: '10px 0 0', fontSize: 13 }}>Scanning the tag QR opens this page with your code already filled in.</p>
             </form>
@@ -374,6 +385,29 @@ export default function VerifyPage() {
                       <div><dt>Code</dt><dd style={{ fontFamily: 'monospace' }}>{result.code}</dd></div>
                     </dl>
                   )}
+                  {result.phase === 'verified' && (
+                    <form className="verify-claim" onSubmit={claim} noValidate>
+                      <div className="verify-points">+<span className="n">{result.points}</span> points waiting</div>
+                      <label className="verify-label" htmlFor="claimEmail">Your email — holds your points</label>
+                      <div className="verify-row">
+                        <input
+                          id="claimEmail"
+                          className="verify-input email"
+                          type="email"
+                          inputMode="email"
+                          autoComplete="email"
+                          autoCapitalize="none"
+                          spellCheck="false"
+                          placeholder="you@email.com"
+                          value={claimEmail}
+                          onChange={(e) => setClaimEmail(e.target.value)}
+                        />
+                        <button className="verify-btn turq" type="submit" disabled={busy}>{busy ? 'Claiming…' : 'Claim points'}</button>
+                      </div>
+                      {claimError && <p className="verify-error" role="alert">{claimError}</p>}
+                      <p className="verify-fine">The first piece you ever verify also adds a +50 welcome bonus.</p>
+                    </form>
+                  )}
                   {result.earned != null && (
                     <div className="verify-points">+<span className="n">{result.earned}</span> points banked</div>
                   )}
@@ -403,7 +437,7 @@ export default function VerifyPage() {
         <div className="verify-steps">
           <div className="verify-step"><div className="num">01</div><h3>Find your code</h3><p>Every piece has a hang tag with a QR and a printed code underneath — one code, one piece, never reused.</p></div>
           <div className="verify-step"><div className="num">02</div><h3>Scan or type it</h3><p>Point your camera at the QR, or enter the code above. No account needed to check authenticity.</p></div>
-          <div className="verify-step"><div className="num">03</div><h3>Get verified + points</h3><p>A real code confirms your piece and claims its points to you. First scan claims them — after that the code is locked.</p></div>
+          <div className="verify-step"><div className="num">03</div><h3>Get verified + points</h3><p>A real code confirms your piece. Add your email to claim its points — the first claim wins, then the code is locked.</p></div>
         </div>
 
         <div className="verify-grid">
@@ -413,28 +447,46 @@ export default function VerifyPage() {
             <p className="sub">Verifying a piece doesn&apos;t just prove it&apos;s real — it pays you back. Points stack across every piece you own.</p>
             <div className="verify-balance">
               <div>
-                <div className="bal-label">Your balance this session</div>
-                <div className="bal-num">{balance} <small style={{ fontSize: 18, letterSpacing: '.06em' }}>PTS</small></div>
+                <div className="bal-label">Your balance</div>
+                <div className="bal-num">{balance == null ? '—' : balance} <small style={{ fontSize: 18, letterSpacing: '.06em' }}>PTS</small></div>
               </div>
-              <div style={{ fontFamily: 'monospace', fontSize: 13, maxWidth: 220 }}>Verify a demo piece on the left to watch the balance move.</div>
+              <div style={{ fontFamily: 'monospace', fontSize: 13, maxWidth: 220 }}>{balance == null ? 'Claim a piece to bank points. They live on your account, not in this tab.' : 'Held on your account — still here next visit.'}</div>
+            </div>
+            <div className="verify-acct">
+              <label className="verify-label" htmlFor="acctEmail">Email your points are held under</label>
+              <input
+                id="acctEmail"
+                className="verify-input email"
+                style={{ width: '100%', boxSizing: 'border-box' }}
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                autoCapitalize="none"
+                spellCheck="false"
+                placeholder="you@email.com"
+                value={account}
+                onChange={(e) => setAccount(e.target.value)}
+              />
             </div>
             {CONFIG.tiers.map((t) => {
-              const can = balance >= t.cost
+              const known = balance != null
+              const afford = known && balance >= t.cost
               return (
                 <div key={t.id} className="verify-tier">
                   <div className="t-info"><strong>{t.label}</strong><span>{t.detail}</span></div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <span className="t-cost">{t.cost} PTS</span>
-                    <button className={`verify-btn ${can ? 'turq' : 'ghost'} small`} type="button" disabled={!can} onClick={() => redeem(t)}>Redeem</button>
+                    <button className={`verify-btn ${afford ? 'turq' : 'ghost'} small`} type="button" disabled={busy || (known && !afford)} onClick={() => redeem(t)}>Redeem</button>
                   </div>
                 </div>
               )
             })}
+            {pointsNote && <p className="verify-error" role="status">{pointsNote}</p>}
             {reward && (
               <div className="verify-reward">
                 <div style={{ fontFamily: 'monospace', fontSize: 11, letterSpacing: '.16em', textTransform: 'uppercase', color: '#4c483c' }}>Your reward code</div>
                 <div className="code">{reward.code}</div>
-                <p style={{ margin: '8px 0 12px', color: '#4c483c', fontSize: 14 }}>{reward.label} — single-use, tied to your account. (Demo code: production issues these from POST /api/redeem.)</p>
+                <p style={{ margin: '8px 0 12px', color: '#4c483c', fontSize: 14 }}>{reward.label} — single-use, tied to your account. Keep it safe.</p>
                 <button className="verify-btn ghost small" type="button" onClick={() => copyText(reward.code, setCopied)}>{copied ? 'Copied ✓' : 'Copy code'}</button>
               </div>
             )}
@@ -468,77 +520,6 @@ export default function VerifyPage() {
           </section>
         </div>
 
-        {/* Dev handoff */}
-        <div className="verify-dev" id="dev">
-          <div className="verify-dev-head">
-            <div>
-              <h2>Hand-off for Dev</h2>
-              <p>Everything needed to take this page from working prototype to production on vibinapparel.com. The customer flow above is the spec — build the backend to match it.</p>
-            </div>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <button className="verify-btn turq" type="button" onClick={downloadSpec}>Download spec (.md)</button>
-              <button className="verify-btn ghost" type="button" style={{ color: '#f2ecdd', borderColor: '#f2ecdd' }} onClick={() => copyText(SPEC_TEXT, setSpecCopied)}>{specCopied ? 'Copied ✓' : 'Copy spec'}</button>
-            </div>
-          </div>
-          <div className="verify-dev-body">
-            <div className="verify-todo">
-              <strong>TODO — Dev, frontend-only demo:</strong> This page is a working prototype with an in-memory demo registry. Points are session-only and reset on reload. There are no backend calls, no Supabase calls, and no secrets in this PR. Claude is building the Supabase schema separately — wire this page to <strong>GET /api/verify/:code</strong>, <strong>POST /api/claim</strong>, and <strong>POST /api/redeem</strong> per the spec below before Drop 01 ships.
-            </div>
-            <h3>1 — How it works in production</h3>
-            <p>Each hang tag carries a <strong>unique code</strong> and a QR that encodes <strong>https://vibinapparel.com/verify?c=&lt;CODE&gt;</strong>. This page already reads the <strong>?c=</strong> parameter on load and auto-verifies, so a scan lands the customer on the result with zero typing. Codes are generated per production run, printed on tags, and stored in the registry <strong>before</strong> product ships. A code that isn&apos;t in the registry is treated as fake — never auto-create records on scan.</p>
-
-            <h3>2 — Code format</h3>
-            <div className="verify-codeblock">{'VBN-XXXX-XXXX        e.g. VBN-TCH5-2601\nAlphabet: full A–Z + 0–9 (36 chars). Print in a mono font\nwith a slashed/dotted zero so O/0 and I/1 stay readable.\nCodes are case-insensitive; the page uppercases and re-dashes input.'}</div>
-
-            <h3>3 — Registry record (one row per piece)</h3>
-            <div style={{ overflowX: 'auto' }}>
-              <table className="verify-table">
-                <thead><tr><th>Field</th><th>Notes</th></tr></thead>
-                <tbody>
-                  <tr><td>code</td><td>Primary key, unique. The full printed code.</td></tr>
-                  <tr><td>product_name / sku</td><td>e.g. “Tech Shorts”, plus internal SKU.</td></tr>
-                  <tr><td>drop / colorway / size</td><td>Shown on the verified result card.</td></tr>
-                  <tr><td>points_value</td><td>100 standard, 150 limited colorways.</td></tr>
-                  <tr><td>status</td><td>unclaimed → claimed. One-way. Never reset silently.</td></tr>
-                  <tr><td>claimed_by / claimed_at</td><td>Account or email that claimed, timestamp.</td></tr>
-                  <tr><td>scan_count / last_scan_at</td><td>Every lookup counts, claimed or not — spikes on one code = copied tag signal.</td></tr>
-                </tbody>
-              </table>
-            </div>
-
-            <h3>4 — Endpoints to build</h3>
-            <div className="verify-codeblock">{'GET  /api/verify/:code\n     → 200 { status, product, drop, colorway, size, points_value }\n     → 404 { status: "not_found" }\n     Side effect: scan_count + 1, last_scan_at = now.\n\nPOST /api/claim   { code, account_or_email }\n     → 200 { points_awarded, new_balance }\n     → 409 if already claimed (return claimed_at, no points)\n     Must be atomic — two simultaneous claims, only one wins.\n\nPOST /api/redeem  { account, tier_id }\n     → 200 { reward_code }  (single-use, tied to account)\n     → 402 if balance < tier cost. Deduct points in same transaction.'}</div>
-
-            <h3>5 — Anti-counterfeit rules</h3>
-            <ul>
-              <li><strong>First scan claims.</strong> Points move exactly once per code, ever.</li>
-              <li><strong>Rate-limit</strong> verify lookups per IP/device — code guessing must be impractical.</li>
-              <li><strong>Watch scan_count.</strong> A code scanned in two far-apart places in a short window is a copied tag — flag it in an admin view.</li>
-              <li><strong>Never confirm</strong> which part of a wrong code is wrong. One generic “not found” answer.</li>
-              <li>Keep an <strong>audit log</strong> of claims and redemptions; support can reverse a claim only from the log, with a reason.</li>
-            </ul>
-
-            <h3>6 — Points program (launch config)</h3>
-            <p>All numbers live in one config object at the top of this page (<strong>CONFIG</strong>) so they can change without a redesign: <strong>100 pts</strong> per standard piece, <strong>150 pts</strong> limited colorways, <strong>+50</strong> first-ever verify. Redemption tiers: <strong>200 pts → $10 off</strong>, <strong>400 pts → $25 off</strong>, <strong>750 pts → $50 off + early access to the next drop</strong>. Points expire 12 months after they&apos;re earned.</p>
-
-            <h3>7 — What this prototype already does</h3>
-            <ul>
-              <li>Full customer flow with all four states: <strong>verified, already claimed, not found, bad format</strong> — test them with the demo codes above.</li>
-              <li>Reads <strong>?c=</strong> from the URL and auto-verifies (the QR landing behavior).</li>
-              <li>Working points balance and redemption-code generation, in-memory for the session.</li>
-              <li>Swap the demo registry for the two API calls in section 4 and the front end is production-shaped — same states, same layout.</li>
-            </ul>
-
-            <h3>8 — Launch checklist</h3>
-            <ul className="verify-checklist">
-              <li>Registry table live; test batch of 50 codes generated and printed on sample tags.</li>
-              <li>QR artwork exported from final production URLs — scan-test with iPhone + Android cameras.</li>
-              <li>Claim + redeem endpoints atomic under double-tap / double-scan.</li>
-              <li>Support macro written for “already claimed” and “not found” cases (copy is in the FAQ above).</li>
-              <li>Admin view for flagged codes (high scan_count) before Drop 01 ships.</li>
-            </ul>
-          </div>
-        </div>
       </div>
 
       {/* FOOTER */}
