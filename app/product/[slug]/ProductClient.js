@@ -10,6 +10,7 @@ import { colorwaysFor, defaultColor } from '../../lib/colors.mjs'
 import { productSubtitle } from '../../lib/shop-filters.mjs'
 import { dropPhase, formatET } from '../../lib/drop-window.mjs'
 import BackInStockSignup from '../../components/BackInStockSignup'
+import { galleryItems, specRows, featureList } from '../../lib/product-extras.mjs'
 
 const DEFAULT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
@@ -29,7 +30,9 @@ export default function ProductClient({ product, sizes: runSizes = null, drop = 
   const { updateCart } = useCart()
   const colorways = colorwaysFor(product)
   const sizes = runSizes && runSizes.length ? runSizes : DEFAULT_SIZES
-  const photos = galleryImages(product)
+  const gallery = galleryItems(product, galleryImages(product))
+  const specs = specRows(product)
+  const features = featureList(product)
   const hasHero = Array.isArray(product.images) && product.images.some(i => i && i.kind === 'hero' && i.url)
   const soldOut = product.in_stock === false
 
@@ -83,7 +86,8 @@ export default function ProductClient({ product, sizes: runSizes = null, drop = 
   const price = Number(product.price)
   const onSale = Number(product.compare_price) > price
   const isNew = Array.isArray(product.tags) && product.tags.includes('new')
-  const mainPhoto = photos[photo] || null
+  const mainItem = gallery[photo] || null
+  const mainPhoto = mainItem && mainItem.src ? mainItem.src : null
 
   return (
     <>
@@ -97,7 +101,7 @@ export default function ProductClient({ product, sizes: runSizes = null, drop = 
             {mainPhoto ? (
               <Image
                 src={mainPhoto}
-                alt={product.name}
+                alt={mainItem.alt || product.name}
                 fill
                 priority
                 quality={75}
@@ -105,6 +109,12 @@ export default function ProductClient({ product, sizes: runSizes = null, drop = 
                 unoptimized={!canOptimizeImage(mainPhoto)}
                 style={{ objectFit: 'cover' }}
               />
+            ) : mainItem && mainItem.placeholder ? (
+              <div className="pdp-fallback pdp-slot" role="img" aria-label={mainItem.alt}>
+                <div className="pdp-fallback-brand">Photo coming soon</div>
+                <div className="pdp-fallback-name">{mainItem.label}</div>
+                <div className="pdp-slot-alt">{mainItem.alt}</div>
+              </div>
             ) : (
               <div className="pdp-fallback">
                 <div className="pdp-fallback-brand">Vibin Apparel</div>
@@ -115,11 +125,15 @@ export default function ProductClient({ product, sizes: runSizes = null, drop = 
             {isNew && <div className="pdp-badge">New</div>}
           </div>
 
-          {photos.length > 1 && (
+          {gallery.length > 1 && (
             <div className="pdp-thumbs">
-              {photos.map((src, i) => (
-                <button key={src} type="button" className={`pdp-thumb${photo === i ? ' on' : ''}`} aria-label={`Photo ${i + 1}`} aria-pressed={photo === i} onClick={() => setPhoto(i)}>
-                  <Image src={src} alt="" fill sizes="64px" quality={60} unoptimized={!canOptimizeImage(src)} style={{ objectFit: 'cover' }} />
+              {gallery.map((item, i) => (
+                <button key={item.src || `slot-${i}`} type="button" className={`pdp-thumb${photo === i ? ' on' : ''}`} aria-label={item.label ? `Photo ${i + 1}: ${item.label}` : `Photo ${i + 1}`} aria-pressed={photo === i} onClick={() => setPhoto(i)}>
+                  {item.src ? (
+                    <Image src={item.src} alt="" fill sizes="64px" quality={60} unoptimized={!canOptimizeImage(item.src)} style={{ objectFit: 'cover' }} />
+                  ) : (
+                    <span className="pdp-thumb-slot" aria-hidden="true">{item.label}</span>
+                  )}
                 </button>
               ))}
             </div>
@@ -146,6 +160,27 @@ export default function ProductClient({ product, sizes: runSizes = null, drop = 
           </div>
 
           {product.description ? <p className="details-desc">{product.description}</p> : null}
+
+          {(specs.length > 0 || features.length > 0) && (
+            <div className="pdp-specs">
+              <div className="option-label"><span>Details</span></div>
+              {features.length > 0 && (
+                <ul className="pdp-features">
+                  {features.map(f => <li key={f}>{f}</li>)}
+                </ul>
+              )}
+              {specs.length > 0 && (
+                <dl className="pdp-spec-list">
+                  {specs.map(s => (
+                    <div key={s.label} className="pdp-spec-row">
+                      <dt>{s.label}</dt>
+                      <dd className={s.pending ? 'pending' : undefined}>{s.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+            </div>
+          )}
 
           {colorways.length > 0 && (
             <div className="option-section">
