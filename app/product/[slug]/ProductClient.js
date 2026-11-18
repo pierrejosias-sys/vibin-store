@@ -9,6 +9,7 @@ import { productImage, galleryImages, canOptimizeImage } from '../../lib/product
 import { colorwaysFor, defaultColor } from '../../lib/colors.mjs'
 import { productSubtitle } from '../../lib/shop-filters.mjs'
 import { dropPhase, formatET } from '../../lib/drop-window.mjs'
+import BackInStockSignup from '../../components/BackInStockSignup'
 
 const DEFAULT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
@@ -192,6 +193,7 @@ export default function ProductClient({ product, sizes: runSizes = null, drop = 
             </button>
           </div>
           {added && <Link href="/cart" className="pdp-viewbag">View bag →</Link>}
+          <BackInStockSignup product={product} size={size} color={color} />
 
           <div className="perks-strip">
             <div className="perk">
