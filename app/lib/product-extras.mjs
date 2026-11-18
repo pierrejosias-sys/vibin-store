@@ -10,6 +10,10 @@
  *
  * Spec values are null until they are confirmed. A null value shows as "Coming soon" on the page.
  * Never fill one in with a guess.
+ *
+ * hideStoredDescription / hideStoredColor: the products table still holds old copy for this product
+ * that no longer matches it. While true, the product page ignores those columns (the Details block
+ * carries the specs instead). Set false once the table is corrected.
  */
 
 export const SPEC_PENDING_LABEL = 'Coming soon'
@@ -35,6 +39,9 @@ export const PRODUCT_EXTRAS = {
       { label: 'Care', value: null },
     ],
     features: ['Magnetic snap closure'],
+    // Old row says "12oz canvas, interior zip pocket, 100% organic cotton" and color Natural; none of it is confirmed.
+    hideStoredDescription: true,
+    hideStoredColor: true,
   },
 }
 
@@ -42,6 +49,20 @@ export const PRODUCT_EXTRAS = {
 export function extrasFor(product) {
   const slug = product && typeof product.slug === 'string' ? product.slug : null
   return (slug && PRODUCT_EXTRAS[slug]) || null
+}
+
+/**
+ * The product as the product page should show it: stored description and color dropped where the
+ * extras say the table's copy is stale. Returns the same object when nothing is hidden.
+ */
+export function withExtras(product) {
+  const extras = extrasFor(product)
+  if (!extras || (!extras.hideStoredDescription && !extras.hideStoredColor)) return product
+  return {
+    ...product,
+    ...(extras.hideStoredDescription ? { description: null } : {}),
+    ...(extras.hideStoredColor ? { color: null } : {}),
+  }
 }
 
 /** Public path for a gallery slot's file. */

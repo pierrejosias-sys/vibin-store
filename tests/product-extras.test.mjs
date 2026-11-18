@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { existsSync } from 'node:fs'
 import {
-  PRODUCT_EXTRAS, SPEC_PENDING_LABEL, extrasFor, slotPath, galleryItems, specRows, featureList,
+  PRODUCT_EXTRAS, SPEC_PENDING_LABEL, extrasFor, slotPath, galleryItems, specRows, featureList, withExtras,
 } from '../app/lib/product-extras.mjs'
 
 const tote = { id: 11, slug: 'vibin-tote-bag', name: 'Vibin Tote Bag' }
@@ -82,4 +82,15 @@ test('spec values are never invented: all tote specs show Coming soon', () => {
 test('magnetic closure is listed as a feature', () => {
   assert.deepEqual(featureList(tote), ['Magnetic snap closure'])
   assert.deepEqual(featureList(tee), [])
+})
+
+test('the tote page drops the stale stored description and color', () => {
+  const stored = { ...tote, description: 'Heavy-duty 12oz canvas tote, interior zip pocket.', color: 'Natural', price: 24.99 }
+  const shown = withExtras(stored)
+  assert.equal(shown.description, null)
+  assert.equal(shown.color, null)
+  assert.equal(shown.price, 24.99)
+  assert.equal(stored.description.includes('12oz'), true, 'the stored row is not mutated')
+  const teeRow = { ...tee, description: 'Heavyweight tee', color: 'Black' }
+  assert.equal(withExtras(teeRow), teeRow)
 })

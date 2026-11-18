@@ -7,6 +7,7 @@ import { dropCatalogEntry } from '../../lib/drop-catalog.mjs'
 import { serverNow } from '../../lib/drop-window.mjs'
 import { productImage } from '../../lib/product-image'
 import { productKind } from '../../lib/shop-filters.mjs'
+import { withExtras } from '../../lib/product-extras.mjs'
 
 // Product pages are cached for a minute at the edge and rebuilt in the background, so a shopper gets
 // the page immediately (no "Loading..." step) and an admin edit shows up within about a minute.
@@ -19,7 +20,8 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
-  const product = await getProduct(slug)
+  const stored = await getProduct(slug)
+  const product = stored ? withExtras(stored) : null
   if (!product) return { title: 'Product not found', robots: { index: false, follow: false } }
   const path = `/product/${product.slug || product.id}`
   const description = (product.description || `${product.name} from Vibin Apparel, Jacksonville streetwear. Free shipping on orders over $125.`).slice(0, 160)
@@ -35,8 +37,9 @@ export async function generateMetadata({ params }) {
 
 export default async function ProductPage({ params }) {
   const { slug } = await params
-  const product = await getProduct(slug)
-  if (!product) notFound()
+  const stored = await getProduct(slug)
+  if (!stored) notFound()
+  const product = withExtras(stored)
   // Old links and the sitemap used the numeric id; send them to the slug address.
   if (/^\d+$/.test(slug) && product.slug) redirect(`/product/${product.slug}`)
 
