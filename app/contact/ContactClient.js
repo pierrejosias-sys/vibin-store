@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useCart } from '../lib/cart-context'
-import styles from '../styles.css'
 import { TOPIC_OPTIONS, createTicket, saveThread } from '../lib/support-client'
+import SiteHeader from '../components/SiteHeader'
+import SiteFooter from '../components/SiteFooter'
 
 const CONTACT_EMAIL = 'hello@vibinapparel.com'
 const PHONE_DISPLAY = '(786) 716-1673'
@@ -15,7 +15,6 @@ const field = { width: '100%', padding: '14px', border: '1px solid var(--ink)', 
 const h3 = { fontFamily: 'Anton, sans-serif', fontSize: '24px', textTransform: 'uppercase', marginBottom: '16px', color: 'var(--coral)' }
 
 export default function ContactPage() {
-  const { cartCount } = useCart() || {}
   const [form, setForm] = useState({ name: '', email: '', orderNumber: '', topic: '', message: '', website: '' })
   const [sent, setSent] = useState(null)
   const [error, setError] = useState(null)
@@ -40,25 +39,7 @@ export default function ContactPage() {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles }} />
-
-      <nav>
-        <Link href="/" className="logo">VIBIN</Link>
-        <div className="nav-links">
-          <Link href="/shop">Shop</Link>
-          <Link href="/drop/01">New Drop</Link>
-          <Link href="/lookbook">Lookbook</Link>
-          <Link href="/about">About</Link>
-          <Link href="/contact">Contact</Link>
-        </div>
-        <div className="nav-actions">
-          <Link href="/qa" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>🔍</Link>
-          <Link href="/login" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>👤</Link>
-          <Link href="/cart" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>
-            🛒{cartCount > 0 && <span className="cart-dot">{cartCount}</span>}
-          </Link>
-        </div>
-      </nav>
+      <SiteHeader />
 
       <div className="breadcrumb">
         <Link href="/">Home</Link> / <span className="current">Contact</span>
@@ -111,6 +92,8 @@ export default function ContactPage() {
           {sent && <p role="status" style={{marginTop:'16px'}}>Thanks, we got it{sent !== 'received' ? <> (ticket <strong>{sent}</strong>)</> : null}. We reply within 1 business day. You can follow the conversation anytime in the <strong>Help</strong> chat at the bottom right of this site on this device, or email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.</p>}
         </div>
       </section>
+
+      <SiteFooter />
     </>
   )
 }

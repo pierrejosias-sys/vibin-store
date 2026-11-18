@@ -1,37 +1,13 @@
-
-'use client'
-
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useCart } from '../lib/cart-context'
-import styles from '../styles.css'
 import { FREE_SHIPPING_LABEL, SHIPPING_FLAT_RATE } from '../lib/shipping'
+import SiteHeader from '../components/SiteHeader'
+import SiteFooter from '../components/SiteFooter'
 
 export default function ShippingPage() {
-  const { cart } = useCart()
-  const cartCount = cart?.length || 0
-
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles }} />
       
-      <nav>
-        <Link href="/" className="logo">VIBIN</Link>
-        <div className="nav-links">
-          <Link href="/shop">Shop</Link>
-          <Link href="/shop">New Drop</Link>
-          <Link href="/lookbook">Lookbook</Link>
-          <Link href="/about">About</Link>
-          <Link href="/returns">Stockists</Link>
-        </div>
-        <div className="nav-actions">
-          <Link href="/qa" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>🔍</Link>
-          <Link href="/login" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>👤</Link>
-          <Link href="/cart" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>
-            🛒{cartCount > 0 && <span className="cart-dot">{cartCount}</span>}
-          </Link>
-        </div>
-      </nav>
+      <SiteHeader />
 
       <div className="breadcrumb">
         <Link href="/">Home</Link> / <span className="current">Shipping</span>
@@ -75,43 +51,7 @@ export default function ShippingPage() {
         </div>
       </section>
 
-      <footer>
-        <div className="foot-top">Vibin <em>Different.</em></div>
-        <div className="foot-cols">
-          <div className="foot-brand">
-            <div className="foot-logo">VIBIN</div>
-            <div className="foot-tagline">A lifestyle streetwear brand based in Jacksonville, FL. A subsidiary of HVD Holdings.</div>
-          </div>
-          <div className="foot-col">
-            <h4>Shop</h4>
-            <ul>
-              <li><a href="/shop">All Products</a></li>
-              <li><a href="/lookbook">Lookbook</a></li>
-              <li><a href="/ambassador">Ambassador</a></li>
-            </ul>
-          </div>
-          <div className="foot-col">
-            <h4>Help</h4>
-            <ul>
-              <li><a href="/shipping">Shipping</a></li>
-              <li><a href="/returns">Returns</a></li>
-              <li><a href="/qa">FAQ</a></li>
-              <li><a href="/returns">Contact</a></li>
-            </ul>
-          </div>
-          <div className="foot-col">
-            <h4>Connect</h4>
-            <ul>
-              <li><a href="https://instagram.com/vibinapparel" target="_blank" rel="noopener">Instagram</a></li>
-              <li><a href="https://tiktok.com/@vibinapparel" target="_blank" rel="noopener">TikTok</a></li>
-              <li><a href="/lookbook">Lookbook</a></li>
-            </ul>
-          </div>
-        </div>
-        <div className="foot-bottom">
-          <div>© 2026 Vibin Apparel · A subsidiary of HVD Holdings, LLC · Jacksonville, FL</div>
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   )
 }

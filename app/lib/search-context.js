@@ -68,8 +68,8 @@ function SearchModal() {
     const pages = [
       { name: 'Shop', url: '/shop', desc: 'Browse all products' },
       { name: 'Drop 01', url: '/drop/01', desc: 'Numbered limited drop' },
-      { name: 'Snapback', url: '/snapback', desc: 'Vibin Snapback hat' },
-      { name: 'Lanyard', url: '/lanyard', desc: 'Vibin Lanyard' },
+      { name: 'Snapback', url: '/product/vibin-snapback', desc: 'Vibin Snapback hat' },
+      { name: 'Lanyard', url: '/product/lanyard', desc: 'Vibin Lanyard' },
       { name: 'Shipping', url: '/shipping', desc: 'Shipping info' },
       { name: 'Lookbook', url: '/lookbook', desc: 'Style inspiration' },
       { name: 'About', url: '/about', desc: 'Our story' },

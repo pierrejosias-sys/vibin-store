@@ -4,7 +4,8 @@ import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
-import { FREE_SHIPPING_LABEL } from '../lib/shipping'
+import SiteHeader from '../components/SiteHeader'
+import SiteFooter from '../components/SiteFooter'
 
 export default function ProfilePage() {
   const supabase = useMemo(() => createBrowserClient(
@@ -69,23 +70,9 @@ export default function ProfilePage() {
 
   return (
     <div style={{background:'#0a0a0a', minHeight:'100vh', color:'#f6f1e7', fontFamily:'Manrope, sans-serif'}}>
-      {/* Promo Bar */}
-      <div style={{background:'#111', borderBottom:'1px solid #1e1e1e', padding:'8px', textAlign:'center', fontSize:'12px', color:'#888', letterSpacing:'.05em'}}>
-        Free shipping over {FREE_SHIPPING_LABEL} &nbsp;·&nbsp; SS26 Drop is live &nbsp;·&nbsp; 15% off your first order
-      </div>
+      <SiteHeader dark />
 
-      {/* Nav */}
-      <nav style={{padding:'20px 40px', borderBottom:'1px solid #1e1e1e', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-        <Link href="/" style={{fontFamily:'Anton, sans-serif', fontSize:'32px', color:'#f6f1e7', textDecoration:'none'}}>VIBIN</Link>
-        <div style={{display:'flex', gap:'24px', alignItems:'center'}}>
-          <Link href="/shop" style={{color:'#888', textDecoration:'none', fontSize:'14px'}}>Shop</Link>
-          <Link href="/print" style={{color:'#888', textDecoration:'none', fontSize:'14px'}}>Custom Print</Link>
-          <Link href="/ambassador" style={{color:'#888', textDecoration:'none', fontSize:'14px'}}>Ambassador</Link>
-          <Link href="/cart" style={{color:'#f6f1e7', textDecoration:'none', fontSize:'20px'}}>🛒</Link>
-        </div>
-      </nav>
-
-      <div style={{maxWidth:'900px', margin:'0 auto', padding:'40px 20px'}}>
+      <div style={{maxWidth:'900px', margin:'0 auto', padding:'40px 20px 80px'}}>
         <h1 style={{fontFamily:'Anton, sans-serif', fontSize:'48px', marginBottom:'8px', textTransform:'uppercase'}}>
           Welcome back, <em style={{fontStyle:'italic', color:'#e05c2e'}}>{displayName}</em>
         </h1>
@@ -168,10 +155,7 @@ export default function ProfilePage() {
         )}
       </div>
 
-      <footer style={{marginTop:'80px', padding:'40px', borderTop:'1px solid #1e1e1e', textAlign:'center'}}>
-        <div style={{fontFamily:'Anton, sans-serif', fontSize:'24px', marginBottom:'8px'}}>VIBIN</div>
-        <div style={{color:'#555', fontSize:'13px'}}>Custom prints · Made to order · Jacksonville, FL</div>
-      </footer>
+      <SiteFooter />
     </div>
   )
 }

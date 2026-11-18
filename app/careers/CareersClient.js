@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import styles from '../styles.css';
+import SiteHeader from '../components/SiteHeader'
+import SiteFooter from '../components/SiteFooter'
 
 export default function CareersPage() {
   const [selectedRole, setSelectedRole] = useState(null);
@@ -90,18 +91,7 @@ export default function CareersPage() {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles }} />
-
-      <nav>
-        <a href="/" className="logo">VIBIN</a>
-        <div className="nav-links">
-          <a href="/shop">Shop</a>
-          <a href="/drop/01" className="new" style={{color:'var(--coral)'}}>Drop 01 ★</a>
-          <a href="/lookbook">Lookbook</a>
-          <a href="/about">About</a>
-          <a href="/careers" style={{color:'var(--coral)'}}>Careers</a>
-        </div>
-      </nav>
+      <SiteHeader />
 
       <section style={{padding:'120px 32px 60px', maxWidth:'1100px', margin:'0 auto'}}>
         <div style={{textAlign:'center', marginBottom:'60px'}}>
@@ -227,15 +217,7 @@ export default function CareersPage() {
           </Link>
         </section>
 
-        <footer>
-        <div className="foot-logo">VIBIN</div>
-        <div className="foot-social">
-          <a href="#">Instagram</a>
-          <a href="#">TikTok</a>
-          <a href="#">Twitter / X</a>
-        </div>
-        <div className="foot-tag">© 2026 Vibin Apparel · Jacksonville, FL · A subsidiary of HVD Holdings</div>
-      </footer>
+        <SiteFooter />
     </>
   );
 }

@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import SiteHeader from '../../components/SiteHeader'
+import SiteFooter from '../../components/SiteFooter'
 
 export default function AmbassadorApply() {
   const [form, setForm] = useState({ name: '', email: '', instagram: '', tiktok: '', why: '', audience: '' })
@@ -52,9 +54,7 @@ export default function AmbassadorApply() {
   if (submitted) {
     return (
       <div style={{background:'#0a0a0a',minHeight:'100vh',color:'#f0ede6',fontFamily:'Manrope, sans-serif'}}>
-        <header style={{padding:'20px 40px',borderBottom:'1px solid #1e1e1e'}}>
-          <Link href="/" style={{fontFamily:'Anton, sans-serif',fontSize:'32px',color:'#f0ede6',textDecoration:'none'}}>VIBIN</Link>
-        </header>
+        <SiteHeader dark />
         <div style={{maxWidth:'600px',margin:'0 auto',padding:'100px 20px',textAlign:'center'}}>
           <div style={{fontSize:'64px',marginBottom:'24px'}}>✦</div>
           <h1 style={{fontFamily:'Anton, sans-serif',fontSize:'48px',textTransform:'uppercase',marginBottom:'16px'}}>Application Received</h1>
@@ -73,16 +73,14 @@ export default function AmbassadorApply() {
             ← Back to Store
           </Link>
         </div>
+        <SiteFooter />
       </div>
     )
   }
 
   return (
     <div style={{background:'#0a0a0a',minHeight:'100vh',color:'#f0ede6',fontFamily:'Manrope, sans-serif'}}>
-      <header style={{padding:'20px 40px',borderBottom:'1px solid #1e1e1e',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-        <Link href="/" style={{fontFamily:'Anton, sans-serif',fontSize:'32px',color:'#f0ede6',textDecoration:'none'}}>VIBIN</Link>
-        <Link href="/careers" style={{color:'#888',textDecoration:'none',fontSize:'14px'}}>← Back to Careers</Link>
-      </header>
+      <SiteHeader dark />
 
       <div style={{maxWidth:'600px',margin:'0 auto',padding:'60px 20px'}}>
         <div style={{textAlign:'center',marginBottom:'40px'}}>
@@ -155,6 +153,8 @@ export default function AmbassadorApply() {
           4. Earn 15–25% commission on every referred sale
         </div>
       </div>
+
+      <SiteFooter />
     </div>
   )
 }

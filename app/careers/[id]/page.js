@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import styles from '../../styles.css';
+import SiteHeader from '../../components/SiteHeader';
+import SiteFooter from '../../components/SiteFooter';
 
 export default function JobApplicationPage({ params }) {
   const [formData, setFormData] = useState({
@@ -68,13 +69,7 @@ export default function JobApplicationPage({ params }) {
   if (submitted) {
     return (
       <>
-        <style dangerouslySetInnerHTML={{ __html: styles }} />
-        <nav>
-          <a href="/" className="logo">VIBIN</a>
-          <div className="nav-links">
-            <a href="/careers" style={{ color: 'var(--coral)' }}>Careers</a>
-          </div>
-        </nav>
+        <SiteHeader />
 
         <div style={{
           minHeight: 'calc(100vh - 160px)',
@@ -129,25 +124,14 @@ export default function JobApplicationPage({ params }) {
           </div>
         </div>
 
-        <footer>
-          <div className="foot-logo">VIBIN</div>
-          <div className="foot-tag">© 2026 Vibin Apparel · Jacksonville, FL</div>
-        </footer>
+        <SiteFooter />
       </>
     );
   }
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles }} />
-
-      <nav>
-        <a href="/" className="logo">VIBIN</a>
-        <div className="nav-links">
-          <a href="/shop">Shop</a>
-          <a href="/careers" style={{ color: 'var(--coral)' }}>Careers</a>
-        </div>
-      </nav>
+      <SiteHeader />
 
       <section style={{ padding: '120px 32px 60px', maxWidth: '800px', margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
@@ -372,10 +356,7 @@ export default function JobApplicationPage({ params }) {
         </form>
       </section>
 
-      <footer>
-        <div className="foot-logo">VIBIN</div>
-        <div className="foot-tag">© 2026 Vibin Apparel · Jacksonville, FL</div>
-      </footer>
+      <SiteFooter />
     </>
   );
 }

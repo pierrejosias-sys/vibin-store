@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import styles from '../styles.css';
 
 export default function SupportAgentPage() {
   const [chats, setChats] = useState([]);
@@ -128,8 +127,6 @@ export default function SupportAgentPage() {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles }} />
-
       <nav>
         <a href="/" className="logo">VIBIN</a>
         <div className="nav-links">

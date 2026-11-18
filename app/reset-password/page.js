@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
+import SiteHeader from '../components/SiteHeader'
+import SiteFooter from '../components/SiteFooter'
 
 const input = { width: '100%', padding: '12px', background: '#0a0a0a', border: '1px solid #3a3a3a', color: '#f6f1e7', fontSize: '16px', boxSizing: 'border-box', borderRadius: '4px' }
 const label = { display: 'block', fontSize: '12px', color: '#888', marginBottom: '8px', letterSpacing: '.1em', textTransform: 'uppercase' }
@@ -41,10 +43,7 @@ export default function ResetPasswordPage() {
 
   return (
     <div style={{ background: '#0a0a0a', minHeight: '100vh', color: '#f6f1e7', fontFamily: 'Manrope, sans-serif' }}>
-      <nav className="dark">
-        <Link href="/" className="logo">VIBIN</Link>
-        <Link href="/login" className="back">← Sign In</Link>
-      </nav>
+      <SiteHeader dark />
       <div style={{ maxWidth: '400px', margin: '0 auto', padding: '64px 20px' }}>
         <h1 style={{ fontFamily: 'Anton, sans-serif', fontSize: '36px', textTransform: 'uppercase', marginBottom: '12px', textAlign: 'center' }}>New Password</h1>
         {ready === null && <p style={{ color: '#888', textAlign: 'center' }}>Checking your reset link…</p>}
@@ -72,6 +71,8 @@ export default function ResetPasswordPage() {
           </form>
         )}
       </div>
+
+      <SiteFooter />
     </div>
   )
 }

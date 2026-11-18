@@ -8,10 +8,16 @@ import { FREE_SHIPPING_LABEL } from './shipping'
 const BASE_URL = 'https://vibinapparel.com'
 const DEFAULT_IMAGE = '/og-default.jpg'
 
+// The root layout's title template appends " — Vibin Apparel" to every page <title>, so a page title must
+// not carry the brand itself (it showed twice). Social previews (og/twitter) are not templated, so they keep it.
+const stripBrand = t => String(t || '').replace(/\s*(?:—|\||-)\s*Vibin Apparel\s*$/i, '').trim()
+
 export function buildMeta({ title, description, path = '/', image = DEFAULT_IMAGE, type = 'website', noIndex = false } = {}) {
   const url = `${BASE_URL}${path}`
+  const plain = stripBrand(title)
+  const branded = plain ? `${plain} — Vibin Apparel` : 'Vibin Apparel'
   return {
-    title,
+    title: plain || undefined,
     description,
     alternates: { canonical: url },
     robots: noIndex
@@ -21,14 +27,14 @@ export function buildMeta({ title, description, path = '/', image = DEFAULT_IMAG
       type,
       url,
       siteName: 'Vibin Apparel',
-      title,
+      title: branded,
       description,
-      images: [{ url: image, width: 1200, height: 630, alt: title }]
+      images: [{ url: image, width: 1200, height: 630, alt: branded }]
     },
     twitter: {
       card: 'summary_large_image',
       site: '@vibinapparel',
-      title,
+      title: branded,
       description,
       images: [image]
     }

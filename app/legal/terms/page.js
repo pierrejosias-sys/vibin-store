@@ -1,17 +1,16 @@
 import Link from 'next/link'
+import SiteHeader from '../../components/SiteHeader'
+import SiteFooter from '../../components/SiteFooter'
 
 export const metadata = {
-  title: 'Terms of Service | Vibin Apparel',
+  title: 'Terms of Service',
   description: 'Vibin Apparel Terms of Service - Terms and conditions for using our website and services.'
 }
 
 export default function TermsOfService() {
   return (
     <div style={{background:'#0a0a0a',minHeight:'100vh',color:'#f6f1e7',fontFamily:'Manrope, sans-serif'}}>
-      <header style={{padding:'20px 40px',borderBottom:'1px solid #1e1e1e',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-        <Link href="/" style={{fontFamily:'Anton, sans-serif',fontSize:'32px',color:'#f6f1e7',textDecoration:'none'}}>VIBIN</Link>
-        <Link href="/" style={{fontSize:'14px',color:'#888',textDecoration:'none'}}>← Back to Home</Link>
-      </header>
+      <SiteHeader dark />
 
       <div style={{maxWidth:'800px',margin:'0 auto',padding:'60px 20px'}}>
         <div style={{marginBottom:'40px'}}>
@@ -136,6 +135,8 @@ export default function TermsOfService() {
           </div>
         </div>
       </div>
+
+      <SiteFooter />
     </div>
   )
 }
