@@ -6,6 +6,7 @@
  */
 import { createClient } from '@supabase/supabase-js'
 import { DROP_CATALOG } from './drop-catalog.mjs'
+import { DROP_01 } from './drop-public.mjs'
 
 export const STYLE_NAMES = {
   hd: 'Hoodie',
@@ -39,11 +40,12 @@ export const DROPS = {
     name: 'Drop 01: The Foundation',
     // Pre-order window (source of truth: drops.release_at / drops.closes_at; this is the fallback).
     // Opens Thu Nov 19, 2026 7:00 PM ET; closes Sun Nov 22, 2026 11:59 PM ET.
-    releaseAt: '2026-11-20T00:00:00Z',
-    closesAt: '2026-11-23T04:59:59Z',
+    // The times live in drop-public.mjs so the browser can use them without loading this file.
+    releaseAt: DROP_01.opensAt,
+    closesAt: DROP_01.closesAt,
     // Private waitlist early access: Thu Nov 19, 2026 6:00 PM ET (1 hour before public open).
-    earlyAccessAt: '2026-11-19T23:00:00Z',
-    shipsBy: 'Dec 18',
+    earlyAccessAt: DROP_01.earlyAccessAt,
+    shipsBy: DROP_01.shipsBy,
     story: 'Drop 01 is the first numbered Vibin Apparel run, limited to 50 pieces per style, designed in Jacksonville, FL.',
     careInfo: 'Machine wash cold inside out, hang dry, do not bleach, and do not iron the print.',
     piecesPerStyle: 50,

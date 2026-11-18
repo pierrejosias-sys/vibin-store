@@ -1,115 +1,35 @@
-'use client'
-
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { supabase } from './lib/supabase'
-import ComingSoonSignup from './components/ComingSoonSignup'
-import { useCart } from './lib/cart-context'
-import styles from './styles.css'
+import Image from 'next/image'
+import SiteHeader from './components/SiteHeader'
+import SiteFooter from './components/SiteFooter'
+import ProductThumb from './components/ProductThumb'
+import HomeDrop from './components/HomeDrop'
+import HomeNewsletter from './components/HomeNewsletter'
+import ReferralTracker from './components/ReferralTracker'
+import { getProducts } from './lib/catalog'
 import { FREE_SHIPPING_LABEL } from './lib/shipping'
+import { productImage, canOptimizeImage } from './lib/product-image'
+import { productSubtitle, formatPrice } from './lib/shop-filters.mjs'
+import { featuredForHome, homeCategories } from './lib/home-helpers.mjs'
 
-export default function HomePage() {
-  const [products, setProducts] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [addedId, setAddedId] = useState(null)
-  const { cartCount } = useCart()
+// Built once and refreshed in the background every minute: visitors get the page (with product photos
+// and counts already in it) straight from the cache instead of waiting on a database call in the browser.
+export const revalidate = 60
 
-  useEffect(() => {
-    fetchProducts()
-    trackReferral()
-  }, [])
-
-  function trackReferral() {
-    try {
-      const params = new URLSearchParams(window.location.search)
-      const ref = params.get('ref')
-      if (ref) {
-        const refs = JSON.parse(localStorage.getItem('vibin_referrals') || '[]')
-        refs.push({ code: ref, timestamp: new Date().toISOString() })
-        localStorage.setItem('vibin_referrals', JSON.stringify(refs))
-      }
-    } catch (e) {
-      // localStorage may be blocked in some environments
-    }
+export default async function HomePage() {
+  let products = []
+  try {
+    products = await getProducts()
+  } catch {
+    // The page still renders; the product sections show a friendly empty state.
   }
-
-  async function fetchProducts() {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (data && data.length > 0) {
-      setProducts(data)
-    } else {
-      setProducts([
-        { id: 1, name: 'Foundation Tee — Black', price: 85, category: 'Tee · Heavyweight', color: 'Black', image_color: 'ink' },
-        { id: 2, name: 'Move Different Tee — Cream', slug: 'move-different-tee', comingSoon: true, price: 48, category: 'Tee · Heavyweight', color: 'Cream', image_color: 'cream2' },
-        { id: 3, name: 'VOL 01 Hoodie', slug: 'vol-01-hoodie', comingSoon: true, price: 195, category: 'Hoodie · Lane Seven Heavyweight · DTF Print', color: 'Black', image_color: 'ink' },
-        { id: 4, name: 'Mark Hoodie — Onyx', price: 98, category: 'Hoodie · Heavyweight Fleece', color: 'Onyx', image_color: 'ink2' },
-        { id: 5, name: 'Different Crewneck — Violet', slug: 'different-crewneck', comingSoon: true, price: 78, category: 'Sweatshirt · Cotton Blend', color: 'Violet', image_color: 'violet' },
-        { id: 6, name: 'Louder Cap — Acid', price: 38, category: 'Headwear · 6-Panel', color: 'Acid', image_color: 'acid' },
-        { id: 7, name: 'VBN Heavyweight Tee — Forest', slug: 'vbn-heavyweight-tee', comingSoon: true, price: 48, category: 'Tee · Heavyweight', color: 'Forest', image_color: 'teal' },
-        { id: 8, name: 'Sunup Beanie — Sun', price: 32, category: 'Headwear · Knit', color: 'Sun', image_color: 'sun' },
-      ])
-    }
-    setLoading(false)
-  }
-
-  // Fix: pass all required params and dispatch cart update event instead of calling undefined updateCart()
-  function handleQuickAdd(id, name, price, color) {
-    try {
-      const cart = JSON.parse(localStorage.getItem('vibin_cart') || '[]')
-      const existing = cart.find(item => item.id === id)
-      if (existing) {
-        existing.qty += 1
-      } else {
-        cart.push({ id, name, price, color, size: 'M', qty: 1 })
-      }
-      localStorage.setItem('vibin_cart', JSON.stringify(cart))
-      // Dispatch storage event so CartProvider picks up the change
-      window.dispatchEvent(new Event('storage'))
-    } catch (e) {
-      console.error('Cart update failed:', e)
-    }
-    setAddedId(id)
-    setTimeout(() => setAddedId(null), 1800)
-  }
+  const featured = featuredForHome(products, 8)
+  const categories = homeCategories(products)
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles }} />
-
-      {/* PROMO BAR */}
-      <div className="promo">
-        <div className="promo-track">
-          <span>Free shipping on orders over {FREE_SHIPPING_LABEL}</span>
-          <span>New SS26 Drop is live</span>
-          <span>Sign up for 15% off your first order</span>
-          <span>Free shipping on orders over {FREE_SHIPPING_LABEL}</span>
-          <span>New SS26 Drop is live</span>
-          <span>Sign up for 15% off your first order</span>
-        </div>
-      </div>
-
-      {/* NAV */}
-      <nav>
-        <a href="/" className="logo">VIBIN</a>
-        <div className="nav-links">
-          <a href="/shop">Shop</a>
-          <a href="/drop/01" className="new" style={{color:'var(--coral)'}}>Drop 01 ★</a>
-          <a href="/lookbook">Lookbook</a>
-          <a href="/about">About</a>
-          <a href="/contact">Contact</a>
-        </div>
-        <div className="nav-actions">
-          <Link href="/qa" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>🔍</Link>
-          <a href="/login" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>👤</a>
-          <a href="/cart" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>
-            🛒{cartCount > 0 && <span className="cart-dot">{cartCount}</span>}
-          </a>
-        </div>
-      </nav>
+      <ReferralTracker />
+      <SiteHeader />
 
       {/* HERO */}
       <section className="hero">
@@ -118,11 +38,11 @@ export default function HomePage() {
         <div className="hero-content">
           <div className="hero-top">
             <div className="hero-meta">
-              <strong>SS26 Collection</strong> · Drop 01<br/>
+              <strong>SS26 Collection</strong> · Drop 01<br />
               Vol. I — The Foundation
             </div>
             <div className="hero-meta">
-              Released · Jacksonville FL<br/>
+              Designed · Jacksonville FL<br />
               Shot at 6:42 AM
             </div>
           </div>
@@ -135,21 +55,21 @@ export default function HomePage() {
               Apparel for those who move with purpose, dress with intention, and vibe louder than the noise. Quality first, hype second.
             </div>
             <div className="hero-cta">
-              <a href="/shop" className="btn primary">Shop The Drop <span className="arrow">→</span></a>
-              <a href="/lookbook" className="btn">Lookbook</a>
+              <Link href="/shop" className="btn primary">Shop The Drop <span className="arrow">→</span></Link>
+              <Link href="/lookbook" className="btn">Lookbook</Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* MARQUEE */}
+      {/* MARQUEE: true in every phase of the drop */}
       <div className="marquee">
         <div className="marquee-track">
-          <span>SS26 IS LIVE</span>
+          <span>DROP 01 · NOV 19</span>
           <span><em>The Foundation</em></span>
           <span>NEW ARRIVALS</span>
           <span>FREE SHIPPING {FREE_SHIPPING_LABEL}+</span>
-          <span>SS26 IS LIVE</span>
+          <span>DROP 01 · NOV 19</span>
           <span><em>The Foundation</em></span>
           <span>NEW ARRIVALS</span>
           <span>FREE SHIPPING {FREE_SHIPPING_LABEL}+</span>
@@ -162,113 +82,90 @@ export default function HomePage() {
           <div className="sec-eye">SS26 · Drop 01</div>
           <h2 className="sec-title">The <em>Foundation</em></h2>
         </div>
-        <a href="/shop" className="sec-link">View All Products →</a>
+        <Link href="/shop" className="sec-link">View All Products →</Link>
       </div>
 
-      <div className="products">
-        {loading ? (
-          <div style={{gridColumn:'1/-1',textAlign:'center',padding:'60px',color:'var(--muted)'}}>Loading...</div>
-        ) : (
-          products.map((prod, i) => (
-            <div className="prod" key={prod.id}>
-              <div className="prod-img">
-                {i === 0 && <div className="prod-tag-img new">New</div>}
-                {i === 2 && <div className="prod-tag-img last">Last Pieces</div>}
-                {i === 3 && <div className="prod-tag-img new">New</div>}
-                <div className={`prod-canvas pc-${i+1}`}>
-                  <div className="prod-graphic">
-                    {i === 0 && <>VIBIN<em>different.</em></>}
-                    {i === 1 && <>MOVE<em>different.</em></>}
-                    {i === 2 && <>VOL<em>01.</em></>}
-                    {i === 3 && <>✦<em>vibin.</em></>}
-                    {i === 4 && <>DIFF<em>erent.</em></>}
-                    {i === 5 && <>VIBE<em>louder.</em></>}
-                    {i === 6 && <>VBN<em>·hvd·</em></>}
-                    {i === 7 && <>SUN<em>up.</em></>}
+      {featured.length > 0 ? (
+        <div className="products">
+          {featured.map((p, i) => {
+            const soldOut = p.in_stock === false
+            const isNew = Array.isArray(p.tags) && p.tags.includes('new')
+            const was = Number(p.compare_price) > Number(p.price) ? Number(p.compare_price) : null
+            return (
+              <Link key={p.id} href={`/product/${p.slug || p.id}`} prefetch={false} className={`prod${soldOut ? ' is-sold' : ''}`}>
+                <div className="prod-img prod-img--photo">
+                  {soldOut ? <div className="prod-tag-img last">Sold out</div> : isNew ? <div className="prod-tag-img new">New</div> : null}
+                  <ProductThumb
+                    src={productImage(p, 'square')}
+                    name={p.name}
+                    color={p.color}
+                    alt=""
+                    priority={i < 2}
+                    sizes="(max-width: 900px) 50vw, 25vw"
+                  />
+                </div>
+                <div className="prod-info">
+                  <div>
+                    <div className="prod-name">{p.name}</div>
+                    <div className="prod-cat">{productSubtitle(p)}</div>
+                  </div>
+                  <div className="prod-price">
+                    {was ? <span className="prod-was">{formatPrice(was)}</span> : null}
+                    {formatPrice(p.price)}
                   </div>
                 </div>
-                {/* Fix: pass name, price, color to handleQuickAdd */}
-                {prod.comingSoon ? (
-                  // Not produced yet — waitlist instead of add-to-cart
-                  <div style={{position:'absolute',left:0,right:0,bottom:0}}>
-                    <ComingSoonSignup slug={prod.slug} name={prod.name} />
+              </Link>
+            )
+          })}
+        </div>
+      ) : (
+        <div className="products products--empty">
+          <p>New pieces are on the way.</p>
+          <Link href="/drop/01" className="sec-link">See Drop 01 →</Link>
+        </div>
+      )}
+
+      {/* CATEGORIES: only categories that have pieces, with real counts and photos */}
+      {categories.length > 0 && (
+        <>
+          <div className="sec-hdr">
+            <div>
+              <div className="sec-eye">Shop By</div>
+              <h2 className="sec-title">Cate<em>gory</em></h2>
+            </div>
+            <Link href="/shop" className="sec-link">All Categories →</Link>
+          </div>
+
+          <div className="categories">
+            {categories.map((c, i) => (
+              <Link key={c.key} href={c.href} prefetch={false} className="cat">
+                <div className="cat-bg">
+                  {c.image ? (
+                    <Image
+                      src={c.image}
+                      alt=""
+                      fill
+                      sizes="(max-width: 700px) 100vw, 50vw"
+                      quality={70}
+                      unoptimized={!canOptimizeImage(c.image)}
+                      style={{ objectFit: 'cover', objectPosition: 'center 30%' }}
+                    />
+                  ) : null}
+                </div>
+                <div className="cat-shade"></div>
+                <div className="cat-content">
+                  <div className="cat-num">{`${String(i + 1).padStart(2, '0')} / ${String(categories.length).padStart(2, '0')}`}</div>
+                  <div className="cat-foot">
+                    <div className="cat-name">{c.label}</div>
+                    <div className="cat-count">{`${c.count} ${c.count === 1 ? 'Piece' : 'Pieces'}`}</div>
+                    <span className="cat-cta">{`Shop ${c.label} →`}</span>
                   </div>
-                ) : (
-                <div
-                  className="prod-quick"
-                  onClick={() => handleQuickAdd(prod.id, prod.name, prod.price, prod.color)}
-                >
-                  {addedId === prod.id ? '✓ Added' : '+ Quick Add'}
                 </div>
-                )}
-              </div>
-              <div className="prod-info">
-                <div>
-                  <div className="prod-name">{prod.name}</div>
-                  <div className="prod-cat">{prod.category}</div>
-                </div>
-                <div className="prod-price">${prod.price}</div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* CATEGORIES */}
-      <div className="sec-hdr">
-        <div>
-          <div className="sec-eye">Shop By</div>
-          <h2 className="sec-title">Cate<em>gory</em></h2>
-        </div>
-        <a href="/shop" className="sec-link">All Categories →</a>
-      </div>
-
-      <div className="categories">
-        <div className="cat cat-1">
-          <div className="cat-bg"></div>
-          <div className="cat-content">
-            <div className="cat-num">01 / 04</div>
-            <div className="cat-foot">
-              <div className="cat-name">Tees</div>
-              <div className="cat-count">2 Pieces</div>
-              <a href="/shop?cat=tees" className="cat-cta">Shop Tees →</a>
-            </div>
+              </Link>
+            ))}
           </div>
-        </div>
-        <div className="cat cat-2">
-          <div className="cat-bg"></div>
-          <div className="cat-content">
-            <div className="cat-num">02 / 04</div>
-            <div className="cat-foot">
-              <div className="cat-name">Hoodies<br/>+ Crews</div>
-              <div className="cat-count">1 Piece</div>
-              <a href="/shop?cat=hoodies" className="cat-cta">Shop Hoodies →</a>
-            </div>
-          </div>
-        </div>
-        <div className="cat cat-3">
-          <div className="cat-bg"></div>
-          <div className="cat-content">
-            <div className="cat-num">03 / 04</div>
-            <div className="cat-foot">
-              <div className="cat-name">Bottoms</div>
-              <div className="cat-count">1 Piece</div>
-              <a href="/shop?cat=bottoms" className="cat-cta">Shop Bottoms →</a>
-            </div>
-          </div>
-        </div>
-        <div className="cat cat-4">
-          <div className="cat-bg"></div>
-          <div className="cat-content">
-            <div className="cat-num">04 / 04</div>
-            <div className="cat-foot">
-              <div className="cat-name">Headwear<br/>+ Acc.</div>
-              <div className="cat-count">1 Piece</div>
-              <a href="/shop?cat=accessories" className="cat-cta">Shop Accessories →</a>
-            </div>
-          </div>
-        </div>
-      </div>
+        </>
+      )}
 
       {/* LOOKBOOK */}
       <section className="lookbook">
@@ -277,175 +174,35 @@ export default function HomePage() {
           <div className="lb-eye">Editorial Nº 01 · The Foundation</div>
           <h2 className="lb-title">Built for the <em>quiet</em> ones who move loudest.</h2>
           <p className="lb-body">
-            Vibin isn't loud about itself. It moves with intention. Every piece in The Foundation drop was designed for the people who don't need to announce who they are — they show it. Heavyweight cotton. Pre-shrunk. Built to last past the season.
+            Vibin isn&apos;t loud about itself. It moves with intention. Every piece in The Foundation drop was designed for the people who don&apos;t need to announce who they are — they show it. Heavyweight cotton. Pre-shrunk. Built to last past the season.
           </p>
-          {/* Fix: was #editorial (dead anchor), now points to /lookbook */}
-          <a href="/lookbook" className="btn">View Editorial →</a>
+          <Link href="/lookbook" className="btn">View Editorial →</Link>
         </div>
       </section>
 
       {/* MANIFESTO */}
       <section className="manifesto">
         <div className="man-text">
-          Vibin <em>different</em> isn't a tagline. It's a posture. <em>Confident.</em> Calm. Community.
+          Vibin <em>different</em> isn&apos;t a tagline. It&apos;s a posture. <em>Confident.</em> Calm. Community.
         </div>
         <div className="man-credit">— The Vibin Manifesto · Vol. 01</div>
       </section>
 
-      {/* DROP COUNTDOWN */}
-      <section className="drop-block">
-        <div className="drop-left">
-          <div className="drop-eye">Coming Next · Drop 01 · Thu Nov 19, 7 PM ET</div>
-          <h2 className="drop-title">Vol. <em>02</em></h2>
-          <p className="drop-info">
-            The next chapter. Pieces designed for late nights, sunrises, and everything in between. Sign up to get early access — drops always sell out before retail.
-          </p>
-          <a href="#email-signup" className="btn" style={{borderColor:'var(--cream)',color:'var(--cream)'}}>Get Early Access →</a>
-        </div>
-        <div className="countdown" id="countdown">
-          <div className="cd"><div className="cd-num" id="cd-d">--</div><div className="cd-lbl">Days</div></div>
-          <div className="cd"><div className="cd-num" id="cd-h">--</div><div className="cd-lbl">Hours</div></div>
-          <div className="cd"><div className="cd-num" id="cd-m">--</div><div className="cd-lbl">Minutes</div></div>
-          <div className="cd"><div className="cd-num" id="cd-s">--</div><div className="cd-lbl">Seconds</div></div>
-        </div>
-      </section>
+      {/* DROP 01 COUNTDOWN (follows the pre-order window) */}
+      <HomeDrop />
 
       {/* NEWSLETTER */}
       <section id="email-signup" className="newsletter">
         <div className="nl-eye">Join the List</div>
-        <h2 className="nl-title">Get <em>15% off</em><br/>your first piece.</h2>
+        <h2 className="nl-title">Get <em>15% off</em><br />your first piece.</h2>
         <p className="nl-body">
           Be the first to know when drops go live. Early access, exclusive pieces, and 15% off your first order. No spam — just the good stuff.
         </p>
-        <form className="nl-form" onSubmit={async (e) => {
-            e.preventDefault();
-            const form = e.target;
-            const btn = form.querySelector('.nl-btn');
-            const email = form.querySelector('.nl-input').value;
-            btn.textContent = 'Sending...';
-            btn.disabled = true;
-            try {
-              const res = await fetch('/api/waitlist', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, source: 'homepage-newsletter' }),
-              });
-              if (!res.ok) throw new Error('subscribe failed');
-              const data = await res.json();
-              btn.textContent = '✓ Subscribed';
-              // Private link is only returned for NEW sign-ups; existing emails get it by email.
-              const box = document.createElement('div');
-              box.style.cssText = 'background:#0a0a0a;color:#f6f1e7;padding:16px;margin-top:16px;font-family:Manrope,sans-serif;';
-              if (data.created && data.earlyAccessLink) {
-                const p1 = document.createElement('p'); p1.textContent = "You're on the list. Your private Drop 01 early-access link:";
-                const inp = document.createElement('input'); inp.readOnly = true; inp.value = data.earlyAccessLink;
-                inp.style.cssText = 'width:100%;max-width:520px;padding:8px;margin:8px 0;background:transparent;color:#f6f1e7;border:1px solid #f6f1e7;';
-                const b = document.createElement('button'); b.type = 'button'; b.textContent = 'Copy link';
-                b.style.cssText = 'padding:8px 12px;margin-left:8px;font-weight:700;cursor:pointer;';
-                b.onclick = async () => { try { await navigator.clipboard.writeText(data.earlyAccessLink); b.textContent = 'Copied ✓'; } catch {} };
-                const p2 = document.createElement('p'); p2.textContent = 'It works Thu Nov 19, 6:00–7:00 PM ET for one checkout. Keep it private.';
-                box.append(p1, inp, b, p2);
-              } else {
-                box.textContent = "You're already on the list. Your link is in your email.";
-              }
-              form.after(box);
-            } catch (err) {
-              btn.textContent = 'Subscribe';
-              btn.disabled = false;
-              form.insertAdjacentHTML('afterend', '<div style="background:#ff4a3d;color:#fff;padding:16px;margin-top:16px;font-family:Manrope,sans-serif;">Something went wrong. Try again or contact us at hello@vibinapparel.com</div>');
-            }
-          }}>
-          <input type="email" className="nl-input" placeholder="your@email.com" required />
-          <button type="submit" className="nl-btn">Subscribe</button>
-        </form>
+        <HomeNewsletter />
         <div className="nl-disclaim">No spam. Unsubscribe anytime.</div>
       </section>
 
-      {/* FOOTER — merged into single footer, removed duplicate */}
-      <footer>
-        <div className="foot-top">Vibin <em>Different.</em></div>
-        <div className="foot-cols">
-          <div className="foot-brand">
-            <div className="foot-logo">VIBIN</div>
-            {/* Fix: removed Miami FL reference */}
-            <div className="foot-tagline">A lifestyle streetwear brand based in Jacksonville, FL. A subsidiary of HVD Holdings. Apparel for those who move different.</div>
-          </div>
-          <div className="foot-col">
-            <h4>Shop</h4>
-            <ul>
-              <li><a href="/shop">All Products</a></li>
-              <li><a href="/shop?cat=tees">Tees</a></li>
-              <li><a href="/shop?cat=hoodies">Hoodies</a></li>
-              <li><a href="/shop?cat=accessories">Accessories</a></li>
-              <li><a href="/lookbook">Lookbook</a></li>
-              <li><a href="/print">Print</a></li>
-            </ul>
-          </div>
-          <div className="foot-col">
-            <h4>Help</h4>
-            <ul>
-              <li><a href="/shipping">Shipping</a></li>
-              <li><a href="/returns">Returns</a></li>
-              <li><a href="/qa">FAQ</a></li>
-              <li><a href="/support-agent" style={{color:'var(--coral)'}}>Support Agent</a></li>
-              <li><a href="/login">Account</a></li>
-              <li><a href="/ambassador">Ambassador</a></li>
-            </ul>
-          </div>
-          <div className="foot-col">
-            <h4>Connect</h4>
-            <ul>
-              <li><a href="https://instagram.com/vibinapparel" target="_blank" rel="noopener">Instagram</a></li>
-              <li><a href="https://tiktok.com/@vibinapparel" target="_blank" rel="noopener">TikTok</a></li>
-              <li><a href="https://twitter.com/vibinapparel" target="_blank" rel="noopener">Twitter / X</a></li>
-              <li><a href="/lookbook">Lookbook</a></li>
-            </ul>
-          </div>
-        </div>
-        <div className="foot-bottom">
-          <div>© 2026 Vibin Apparel · A subsidiary of HVD Holdings, LLC · Jacksonville, FL</div>
-          <div style={{marginTop:'12px'}}>
-            <a href="/legal/privacy" style={{color:'#888',textDecoration:'none',fontSize:'13px',marginRight:'20px',fontFamily:'JetBrains Mono, monospace'}}>Privacy Policy</a>
-            <a href="/legal/terms" style={{color:'#888',textDecoration:'none',fontSize:'13px',marginRight:'20px',fontFamily:'JetBrains Mono, monospace'}}>Terms of Service</a>
-            <a href="/returns" style={{color:'#888',textDecoration:'none',fontSize:'13px',fontFamily:'JetBrains Mono, monospace'}}>Returns</a>
-          </div>
-          <div className="foot-payments">
-            <span>VISA</span>
-            <span>AMEX</span>
-            <span>PAYPAL</span>
-            <span>SHOP PAY</span>
-            <span>APPLE</span>
-          </div>
-        </div>
-      </footer>
-
-      {/* COUNTDOWN SCRIPT — Drop 01 opens Thu Nov 19, 2026 7:00 PM ET (keep in sync with app/lib/drops.js releaseAt) */}
-      <script dangerouslySetInnerHTML={{ __html: `
-        const DROP02_TARGET = new Date('2026-11-20T00:00:00Z');
-
-        function updateCountdown() {
-          const now = new Date().getTime();
-          const diff = DROP02_TARGET.getTime() - now;
-
-          if (diff <= 0) {
-            document.getElementById('countdown').innerHTML = '<a href="/drop/01" style="color:#f6f1e7;font-size:24px;font-family:Anton,sans-serif;text-transform:uppercase;">Drop 01 pre-order is open. Shop Now →</a>';
-            return;
-          }
-
-          const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-          const secs = Math.floor((diff % (1000 * 60)) / 1000);
-
-          document.getElementById('cd-d').textContent = String(days).padStart(2, '0');
-          document.getElementById('cd-h').textContent = String(hours).padStart(2, '0');
-          document.getElementById('cd-m').textContent = String(mins).padStart(2, '0');
-          document.getElementById('cd-s').textContent = String(secs).padStart(2, '0');
-        }
-
-        updateCountdown();
-        setInterval(updateCountdown, 1000);
-      `}} />
+      <SiteFooter />
     </>
   )
 }
