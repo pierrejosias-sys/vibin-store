@@ -1,0 +1,42 @@
+{
+  "product": "Vibin Tote Chain",
+  "sku_prefix": "VB-ACC-CHAIN",
+  "collection": "Drop 01 target (Thu Jan 14, 2027), pending vendor proof",
+  "category": "accessories",
+  "status": "coming_soon",
+  "buyable": false,
+  "description": "Glam chic chains for the Vibin Tote, made to layer. Stack one or run all three.",
+  "style": "glam chic, layered",
+  "mockup_views": [
+    "on_tote",
+    "layered",
+    "detail"
+  ],
+  "variants": [
+    {
+      "name": "Gold",
+      "sku": "VB-ACC-CHAIN-GLD"
+    },
+    {
+      "name": "Silver",
+      "sku": "VB-ACC-CHAIN-SLV"
+    },
+    {
+      "name": "Diamond",
+      "sku": "VB-ACC-CHAIN-DMD"
+    }
+  ],
+  "material": "TBD",
+  "dimensions": "TBD",
+  "weight": "TBD",
+  "care": "TBD",
+  "vendor": "TBD",
+  "moq": "TBD",
+  "lead_time": "TBD",
+  "ship_date": "TBD",
+  "images": [],
+  "image_note": "Placeholders only. Real Vibin photos replace them before launch. No stock photos.",
+  "price": "TBD",
+  "compare_price": null,
+  "slug": "vibin-tote-chain"
+}

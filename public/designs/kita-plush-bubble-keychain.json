@@ -1,0 +1,79 @@
+{
+  "product": "Vibin Plush Bubble Keychain",
+  "sku_prefix": "VB-KEY-PLSH",
+  "collection": "Drop 01 target (Thu Jan 14, 2027), pending vendor proof",
+  "category": "accessories",
+  "status": "coming_soon",
+  "buyable": false,
+  "description": "Plush VIBIN bubble letters in 12 colors, with brown glitter hardware on the left of the V. Spells VIBIN, every letter in full view.",
+  "hardware": "brown glitter, attached left of the V",
+  "lettering": "bubble letters spelling exactly VIBIN, V fully visible",
+  "mockup_views": [
+    "front",
+    "hardware_detail",
+    "color_lineup"
+  ],
+  "variants": [
+    {
+      "name": "Black",
+      "sku": "VB-KEY-PLSH-BLK"
+    },
+    {
+      "name": "White",
+      "sku": "VB-KEY-PLSH-WHT"
+    },
+    {
+      "name": "Brown",
+      "sku": "VB-KEY-PLSH-BRN"
+    },
+    {
+      "name": "Pink",
+      "sku": "VB-KEY-PLSH-PNK"
+    },
+    {
+      "name": "Leopard Print",
+      "sku": "VB-KEY-PLSH-LEO"
+    },
+    {
+      "name": "Lime Green",
+      "sku": "VB-KEY-PLSH-LIM"
+    },
+    {
+      "name": "Zebra Print",
+      "sku": "VB-KEY-PLSH-ZEB"
+    },
+    {
+      "name": "Red",
+      "sku": "VB-KEY-PLSH-RED"
+    },
+    {
+      "name": "Yellow",
+      "sku": "VB-KEY-PLSH-YLW"
+    },
+    {
+      "name": "Purple",
+      "sku": "VB-KEY-PLSH-PRP"
+    },
+    {
+      "name": "Gold",
+      "sku": "VB-KEY-PLSH-GLD"
+    },
+    {
+      "name": "Silver",
+      "sku": "VB-KEY-PLSH-SLV"
+    }
+  ],
+  "material": "TBD",
+  "dimensions": "TBD",
+  "weight": "TBD",
+  "care": "TBD",
+  "vendor": "TBD",
+  "moq": "TBD",
+  "lead_time": "TBD",
+  "ship_date": "TBD",
+  "images": [],
+  "image_note": "Placeholders only. Real Vibin photos replace them before launch. No stock photos.",
+  "price": "TBD",
+  "compare_price": null,
+  "slug": "vibin-plush-bubble-keychain"
+}

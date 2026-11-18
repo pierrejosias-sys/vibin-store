@@ -1,0 +1,39 @@
+{
+  "product": "Vibin Star Keychain",
+  "sku_prefix": "VB-KEY-STAR",
+  "collection": "Drop 01 target (Thu Jan 14, 2027), pending vendor proof",
+  "category": "accessories",
+  "status": "coming_soon",
+  "buyable": false,
+  "description": "The Vibin star, in metal or clear acrylic with a turquoise star inside.",
+  "artwork": "VIBIN. star logo (final vector still missing)",
+  "mockup_views": [
+    "metal_front",
+    "acrylic_front",
+    "on_tote"
+  ],
+  "variants": [
+    {
+      "name": "Metal",
+      "sku": "VB-KEY-STAR-MTL"
+    },
+    {
+      "name": "Clear Acrylic",
+      "sku": "VB-KEY-STAR-ACR",
+      "detail": "turquoise star inside"
+    }
+  ],
+  "material": "TBD",
+  "dimensions": "TBD",
+  "weight": "TBD",
+  "care": "TBD",
+  "vendor": "TBD",
+  "moq": "TBD",
+  "lead_time": "TBD",
+  "ship_date": "TBD",
+  "images": [],
+  "image_note": "Placeholders only. Real Vibin photos replace them before launch. No stock photos.",
+  "price": "TBD",
+  "compare_price": null,
+  "slug": "vibin-star-keychain"
+}
