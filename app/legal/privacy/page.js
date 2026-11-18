@@ -117,17 +117,24 @@ export default function PrivacyPolicy() {
           </section>
 
           <section style={section}>
-            <h2 style={h2}>7. Children's Privacy</h2>
+            <h2 style={h2}>7. AI Tools</h2>
+            <p>We use AI tools to help run Vibin, for example to draft emails and support replies, review orders and store data, and help build the website. When we do, those tools may process information described in this policy, such as order, support, or account details, on our behalf. We share only what a task needs.</p>
+            <p style={mt}>Some images on this site, such as model and campaign photos, are created or edited with AI. They show our designs, but they are not photos of real customers.</p>
+            <p style={mt}>Our Help chat is answered by the Vibin team. AI may help draft replies, but you are not talking to a chatbot.</p>
+          </section>
+
+          <section style={section}>
+            <h2 style={h2}>8. Children's Privacy</h2>
             <p>Vibin Apparel is not intended for children under 16. We do not knowingly collect data from children. If you believe a child has provided us information, contact us immediately.</p>
           </section>
 
           <section style={section}>
-            <h2 style={h2}>8. Changes to This Policy</h2>
+            <h2 style={h2}>9. Changes to This Policy</h2>
             <p>We may update this policy occasionally. Changes will be posted here with a new "Last Updated" date. Continued use of our site constitutes acceptance of the updated policy.</p>
           </section>
 
           <section style={{marginBottom:'60px'}}>
-            <h2 style={h2}>9. Contact Us</h2>
+            <h2 style={h2}>10. Contact Us</h2>
             <p>For privacy-related questions:</p>
             <p style={{marginTop:'12px'}}>
               Email: <a href="mailto:privacy@vibinapparel.com" style={{color:'#e05c2e'}}>privacy@vibinapparel.com</a><br />
