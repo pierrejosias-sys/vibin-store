@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useCart } from '../lib/cart-context'
 import { FREE_SHIPPING_LABEL } from '../lib/shipping'
+import { useDropPhase } from '../lib/use-drop-phase'
+import { DROP_01 } from '../lib/drop-public.mjs'
+import { dropPromoLine } from '../lib/drop-copy.mjs'
 
 const LINKS = [
   { href: '/shop', label: 'Shop' },
@@ -26,6 +29,13 @@ export default function SiteHeader({ dark = false, promo = true }) {
   const { cartCount } = useCart()
   const [signedIn, setSignedIn] = useState(false)
   const [open, setOpen] = useState(false)
+  // The drop line follows the pre-order window (opens / open / closed) instead of claiming "live".
+  const { phase } = useDropPhase(DROP_01)
+  const promoItems = [
+    `Free shipping on orders over ${FREE_SHIPPING_LABEL}`,
+    dropPromoLine(DROP_01, phase),
+    'Sign up for 15% off your first order',
+  ]
 
   useEffect(() => {
     const sync = () => setSignedIn(hasSessionCookie())
@@ -43,12 +53,7 @@ export default function SiteHeader({ dark = false, promo = true }) {
       {promo && (
         <div className="promo">
           <div className="promo-track">
-            <span>Free shipping on orders over {FREE_SHIPPING_LABEL}</span>
-            <span>New SS26 Drop is live</span>
-            <span>Sign up for 15% off your first order</span>
-            <span>Free shipping on orders over {FREE_SHIPPING_LABEL}</span>
-            <span>New SS26 Drop is live</span>
-            <span>Sign up for 15% off your first order</span>
+            {[...promoItems, ...promoItems].map((text, i) => <span key={i}>{text}</span>)}
           </div>
         </div>
       )}

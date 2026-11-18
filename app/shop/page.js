@@ -3,6 +3,7 @@ import SiteFooter from '../components/SiteFooter'
 import ShopClient from './ShopClient'
 import { getProducts } from '../lib/catalog'
 import { normalizeFilter } from '../lib/shop-filters.mjs'
+import { orderForDisplay } from '../lib/home-helpers.mjs'
 import { FREE_SHIPPING_LABEL } from '../lib/shipping'
 
 export const metadata = {
@@ -26,7 +27,7 @@ export default async function ShopPage({ searchParams }) {
   return (
     <>
       <SiteHeader dark />
-      <ShopClient products={products} initialFilter={normalizeFilter(params?.cat)} loadError={loadError} />
+      <ShopClient products={orderForDisplay(products)} initialFilter={normalizeFilter(params?.cat)} loadError={loadError} />
       <SiteFooter />
     </>
   )
