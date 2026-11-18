@@ -1,0 +1,51 @@
+/* About page. Loaded only on /about. Uses the same tokens as the rest of the site (--ink, --cream, --coral). */
+
+.ab-hero {
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(900px 520px at 88% 118%, rgba(255, 74, 61, .30), transparent 62%), var(--ink);
+  color: var(--cream);
+  padding: 120px 60px 96px;
+}
+.ab-eye { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--coral); }
+.ab-eye::before { content: ''; width: 36px; height: 1px; background: var(--coral); }
+.ab-title { margin: 0 0 28px; font-family: 'Anton', sans-serif; font-size: clamp(64px, 16vw, 220px); line-height: .85; letter-spacing: -.01em; text-transform: uppercase; }
+.ab-title em { display: block; font-style: italic; color: var(--coral); text-shadow: 0 0 40px rgba(255, 74, 61, .4); }
+.ab-sub { max-width: 560px; margin: 0; font-size: clamp(15px, 1.6vw, 19px); line-height: 1.65; color: rgba(246, 241, 231, .78); }
+
+.ab-story { display: grid; grid-template-columns: 1.1fr .9fr; gap: 80px; align-items: center; padding: 110px 60px; }
+.ab-story .sec-title { margin-bottom: 28px; }
+.ab-body { max-width: 560px; margin: 0 0 18px; font-size: 16px; line-height: 1.75; color: var(--ink2); }
+.ab-photo { position: relative; aspect-ratio: 3 / 4; background: var(--ink); overflow: hidden; }
+.ab-photo img { object-fit: cover; }
+
+.ab-values { background: var(--ink); color: var(--cream); padding: 100px 60px 110px; }
+.ab-values .sec-title { margin-bottom: 56px; color: var(--cream); }
+.ab-values-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--ink3); border: 1px solid var(--ink3); }
+.ab-value { background: var(--ink); padding: 36px 28px 40px; }
+.ab-value-num { margin-bottom: 44px; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: .2em; color: var(--coral); }
+.ab-value h3 { margin: 0 0 14px; font-family: 'Anton', sans-serif; font-size: 28px; font-weight: 400; line-height: 1; letter-spacing: .01em; text-transform: uppercase; }
+.ab-value p { margin: 0; font-size: 14px; line-height: 1.7; color: rgba(246, 241, 231, .72); }
+
+.ab-cta { background: var(--cream2); padding: 100px 60px; text-align: center; }
+.ab-cta-title { margin: 0 0 32px; font-family: 'Anton', sans-serif; font-size: clamp(44px, 7vw, 96px); font-weight: 400; line-height: .9; text-transform: uppercase; }
+.ab-cta-title em { font-style: italic; color: var(--coral); }
+.ab-cta-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.ab-cta .btn { color: var(--ink); }
+.ab-cta .btn:hover { background: var(--ink); border-color: var(--ink); color: var(--cream); }
+.ab-cta .btn.primary { background: var(--coral); border-color: var(--coral); color: var(--cream); }
+.ab-cta .btn.primary:hover { background: var(--ink); border-color: var(--ink); color: var(--cream); }
+
+@media (max-width: 1000px) {
+  .ab-values-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+  .ab-hero { padding: 80px 24px 64px; }
+  .ab-story { grid-template-columns: 1fr; gap: 40px; padding: 72px 24px; }
+  .ab-values { padding: 72px 24px 80px; }
+  .ab-values .sec-title { margin-bottom: 36px; }
+  .ab-values-grid { grid-template-columns: 1fr; }
+  .ab-value { padding: 28px 24px 32px; }
+  .ab-value-num { margin-bottom: 28px; }
+  .ab-cta { padding: 72px 24px; }
+}

@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { FREE_SHIPPING_LABEL } from '../lib/shipping'
+import SiteHeader from '../components/SiteHeader'
+import SiteFooter from '../components/SiteFooter'
 
 // Google/Apple are disabled in Supabase; set NEXT_PUBLIC_ENABLE_OAUTH=true after enabling them.
 const OAUTH_ENABLED = process.env.NEXT_PUBLIC_ENABLE_OAUTH === 'true'
@@ -162,10 +163,7 @@ export default function LoginPage() {
 
   return (
     <>
-      <nav className="dark">
-        <Link href="/" className="logo">VIBIN</Link>
-        <Link href="/" className="back">← Back to Shop</Link>
-      </nav>
+      <SiteHeader />
 
       <div className="split">
         {/* LEFT PANEL */}
@@ -376,6 +374,8 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+
+      <SiteFooter />
     </>
   )
 }

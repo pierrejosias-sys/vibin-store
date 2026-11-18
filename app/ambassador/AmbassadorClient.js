@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createBrowserClient } from '@supabase/ssr'
+import SiteHeader from '../components/SiteHeader'
+import SiteFooter from '../components/SiteFooter'
 
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -103,7 +105,7 @@ export default function AmbassadorHub() {
   }
 
   const captions = [
-    'Move different. Vibin Apparel SS26 is live. Heavyweight cotton built to last past the season. Use my code [YOURCODE] for 15% off. ✦ #VibinDifferent',
+    'Move different. Vibin Apparel SS26. Heavyweight cotton built to last past the season. Use my code [YOURCODE] for 15% off. ✦ #VibinDifferent',
     'The VOL 01 hoodie was MADE for these temps. Last pieces — once gone, gone. Code [YOURCODE] = 15% off. Link in bio. @vibinapparel',
     "Vibin different isn't a tagline. It's a posture. Confident. Calm. Community. Wear yours — code [YOURCODE]. ✦",
   ]
@@ -111,8 +113,6 @@ export default function AmbassadorHub() {
 
   const s = {
     page: { background: '#0a0a0a', minHeight: '100vh', color: '#f0ede6', fontFamily: 'Manrope, sans-serif' },
-    header: { padding: '20px 40px', borderBottom: '1px solid #1e1e1e', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-    logo: { fontFamily: 'Anton, sans-serif', fontSize: '32px', color: '#f0ede6', textDecoration: 'none' },
     tab: (active) => ({
       padding: '10px 20px', background: active ? '#e05c2e' : 'transparent',
       border: `1px solid ${active ? '#e05c2e' : '#2a2a2a'}`, borderRadius: '4px',
@@ -144,9 +144,7 @@ export default function AmbassadorHub() {
   if (authState === 'unauthenticated') {
     return (
       <div style={s.page}>
-        <header style={s.header}>
-          <Link href="/" style={s.logo}>VIBIN</Link>
-        </header>
+        <SiteHeader dark />
         <div style={{ maxWidth: '560px', margin: '0 auto', padding: '100px 20px', textAlign: 'center' }}>
           <div style={{ fontSize: '48px', marginBottom: '24px' }}>✦</div>
           <h1 style={{ ...s.anton, fontSize: '42px', textTransform: 'uppercase', marginBottom: '16px' }}>Ambassador Hub</h1>
@@ -158,6 +156,7 @@ export default function AmbassadorHub() {
             <Link href="/ambassador/apply" style={{ display: 'inline-block', padding: '14px 28px', background: 'transparent', color: '#f0ede6', textDecoration: 'none', borderRadius: '4px', fontWeight: 'bold', fontSize: '14px', border: '1px solid #3a3a3a' }}>Apply to Join</Link>
           </div>
         </div>
+        <SiteFooter />
       </div>
     )
   }
@@ -166,9 +165,7 @@ export default function AmbassadorHub() {
   if (authState === 'pending') {
     return (
       <div style={s.page}>
-        <header style={s.header}>
-          <Link href="/" style={s.logo}>VIBIN</Link>
-        </header>
+        <SiteHeader dark />
         <div style={{ maxWidth: '560px', margin: '0 auto', padding: '100px 20px', textAlign: 'center' }}>
           <div style={{ width: '64px', height: '64px', background: '#1a1500', border: '1px solid #3d3000', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', fontSize: '28px' }}>⏳</div>
           <h1 style={{ ...s.anton, fontSize: '42px', textTransform: 'uppercase', marginBottom: '16px' }}>Application Under Review</h1>
@@ -181,6 +178,7 @@ export default function AmbassadorHub() {
           </div>
           <Link href="/" style={{ color: '#888', textDecoration: 'none', fontSize: '14px' }}>← Back to Store</Link>
         </div>
+        <SiteFooter />
       </div>
     )
   }
@@ -190,10 +188,7 @@ export default function AmbassadorHub() {
   // ─── APPROVED DASHBOARD ───
   return (
     <div style={s.page}>
-      <header style={s.header}>
-        <Link href="/" style={s.logo}>VIBIN</Link>
-        <span style={{ ...s.mono, fontSize: '11px', letterSpacing: '.15em', textTransform: 'uppercase', color: '#e05c2e' }}>Ambassador Hub</span>
-      </header>
+      <SiteHeader dark />
 
       {/* Hero */}
       <section style={{ padding: '60px 40px', textAlign: 'center', borderBottom: '1px solid #1e1e1e' }}>
@@ -384,11 +379,13 @@ export default function AmbassadorHub() {
         </section>
       )}
 
-      <footer style={{ padding: '40px', textAlign: 'center' }}>
+      <div style={{ padding: '40px', textAlign: 'center' }}>
         <p style={{ ...s.mono, fontSize: '11px', color: '#555', letterSpacing: '.1em' }}>
           Questions? Email ambassador@vibinapparel.com · Vibin Apparel Ambassador Program · HVD Holdings, LLC
         </p>
-      </footer>
+      </div>
+
+      <SiteFooter />
     </div>
   )
 }

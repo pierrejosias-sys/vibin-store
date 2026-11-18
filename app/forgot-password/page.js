@@ -3,6 +3,8 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { createBrowserClient } from '@supabase/ssr'
+import SiteHeader from '../components/SiteHeader'
+import SiteFooter from '../components/SiteFooter'
 
 export default function ForgotPasswordPage() {
   const supabase = useMemo(() => createBrowserClient(
@@ -36,10 +38,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div style={{background:'#0a0a0a', minHeight:'100vh', color:'#f6f1e7', fontFamily:'Manrope, sans-serif'}}>
-      <nav className="dark">
-        <Link href="/" className="logo">VIBIN</Link>
-        <Link href="/login" className="back">← Back to Sign In</Link>
-      </nav>
+      <SiteHeader dark />
 
       <div style={{maxWidth:'400px', margin:'0 auto', padding:'100px 20px'}}>
         <div style={{textAlign:'center', marginBottom:'40px'}}>
@@ -123,6 +122,8 @@ export default function ForgotPasswordPage() {
           </form>
         )}
       </div>
+
+      <SiteFooter />
     </div>
   )
 }

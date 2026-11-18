@@ -1,44 +1,10 @@
-'use client'
-
-import { useCart } from '../lib/cart-context'
-import styles from '../styles.css'
-import { FREE_SHIPPING_LABEL } from '../lib/shipping'
+import SiteHeader from '../components/SiteHeader'
+import SiteFooter from '../components/SiteFooter'
 
 export default function ReturnsPage() {
-  const { cartCount } = useCart()
-
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles }} />
-
-      <div className="promo">
-        <div className="promo-track">
-          <span>Free shipping on orders over {FREE_SHIPPING_LABEL}</span>
-          <span>New SS26 Drop is live</span>
-          <span>Sign up for 15% off your first order</span>
-          <span>Free shipping on orders over {FREE_SHIPPING_LABEL}</span>
-          <span>New SS26 Drop is live</span>
-          <span>Sign up for 15% off your first order</span>
-        </div>
-      </div>
-
-      <nav>
-        <a href="/" className="logo">VIBIN</a>
-        <div className="nav-links">
-          <a href="/shop">Shop</a>
-          <a href="/shop" className="new">New Drop</a>
-          <a href="/lookbook">Lookbook</a>
-          <a href="/about">About</a>
-          <a href="/returns">Stockists</a>
-        </div>
-        <div className="nav-actions">
-          <a href="/qa" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>🔍</a>
-          <a href="/login" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>👤</a>
-          <a href="/cart" className="nav-icon" style={{textDecoration:'none',color:'inherit'}}>
-            🛒{cartCount > 0 && <span className="cart-dot">{cartCount}</span>}
-          </a>
-        </div>
-      </nav>
+      <SiteHeader />
 
       <section className="returns-hero">
         <div className="returns-hero-content">
@@ -154,54 +120,7 @@ export default function ReturnsPage() {
         </div>
       </section>
 
-      <footer>
-        <div className="foot-top">Vibin <em>Different.</em></div>
-        <div className="foot-cols">
-          <div className="foot-brand">
-            <div className="foot-logo">VIBIN</div>
-            <div className="foot-tagline">
-              A lifestyle streetwear brand from Miami, FL. Now based in Jacksonville. A subsidiary of HVD Holdings. Apparel for those who move different.
-            </div>
-          </div>
-          <div className="foot-col">
-            <h4>Shop</h4>
-            <ul>
-              <li><a href="/shop">All Products</a></li>
-              <li><a href="/shop?cat=tees">Tees</a></li>
-              <li><a href="/shop?cat=hoodies">Hoodies</a></li>
-              <li><a href="/lookbook">Lookbook</a></li>
-            </ul>
-          </div>
-          <div className="foot-col">
-            <h4>Help</h4>
-            <ul>
-              <li><a href="/shipping">Shipping</a></li>
-              <li><a href="/returns">Returns</a></li>
-              <li><a href="/qa">FAQ</a></li>
-              <li><a href="/returns">Contact</a></li>
-            </ul>
-          </div>
-          <div className="foot-col">
-            <h4>Connect</h4>
-            <ul>
-              <li><a href="https://instagram.com/vibinapparel" target="_blank" rel="noopener">Instagram</a></li>
-              <li><a href="https://tiktok.com/@vibinapparel" target="_blank" rel="noopener">TikTok</a></li>
-              <li><a href="https://twitter.com/vibinapparel" target="_blank" rel="noopener">Twitter / X</a></li>
-              <li><a href="/lookbook">Lookbook</a></li>
-            </ul>
-          </div>
-        </div>
-        <div className="foot-bottom">
-          <div>© 2026 Vibin Apparel · A subsidiary of HVD Holdings, LLC · Jacksonville, FL</div>
-          <div className="foot-payments">
-            <span>VISA</span>
-            <span>AMEX</span>
-            <span>PAYPAL</span>
-            <span>SHOP PAY</span>
-            <span>APPLE</span>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
 
       <style dangerouslySetInnerHTML={{ __html: `
         .returns-hero { position: relative; background: var(--ink); color: var(--cream); padding: 100px 60px; text-align: center; }
@@ -238,9 +157,6 @@ export default function ReturnsPage() {
         .contact-icon { font-size: 32px; margin-bottom: 12px; }
         .contact-label { font-family: Manrope, sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 6px; }
         .contact-sub { font-family: JetBrains Mono, monospace; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-        .foot-col li { margin-bottom: 8px; font-family: 'Manrope', sans-serif; font-size: 13px; color: rgba(246,241,231,.7); cursor: pointer; transition: color .2s; list-style: none; }
-        .foot-col li a { color: rgba(246,241,231,.7); text-decoration: none; }
-        .foot-col li:hover, .foot-col li a:hover { color: var(--cream); }
         @media (max-width: 768px) {
           .returns-hero, .returns-content { padding-left: 24px; padding-right: 24px; }
         }

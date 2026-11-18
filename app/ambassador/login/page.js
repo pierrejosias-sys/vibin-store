@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
+import SiteHeader from '../../components/SiteHeader'
+import SiteFooter from '../../components/SiteFooter'
 
 export default function AmbassadorLoginPage() {
   const supabase = useMemo(() => createBrowserClient(
@@ -70,10 +72,7 @@ export default function AmbassadorLoginPage() {
 
   return (
     <div style={{background:'#0a0a0a', minHeight:'100vh', color:'#f6f1e7', fontFamily:'Manrope, sans-serif'}}>
-      <header style={{padding:'20px 40px', borderBottom:'1px solid #1e1e1e', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-        <Link href="/" style={{fontFamily:'Anton, sans-serif', fontSize:'32px', color:'#f6f1e7', textDecoration:'none'}}>VIBIN</Link>
-        <Link href="/login" style={{color:'#888', textDecoration:'none', fontSize:'14px'}}>← Back to Sign In</Link>
-      </header>
+      <SiteHeader dark />
 
       <div style={{maxWidth:'500px', margin:'0 auto', padding:'100px 20px'}}>
         <div style={{textAlign:'center', marginBottom:'40px'}}>
@@ -174,6 +173,8 @@ export default function AmbassadorLoginPage() {
           </p>
         </div>
       </div>
+
+      <SiteFooter />
     </div>
   )
 }

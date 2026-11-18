@@ -1,9 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { useCart } from '../lib/cart-context'
-import styles from '../styles.css'
-import { FREE_SHIPPING_LABEL } from '../lib/shipping'
+import SiteHeader from '../components/SiteHeader'
+import SiteFooter from '../components/SiteFooter'
 
 /* ==========================================================================
    Vibin Verify — /verify
@@ -57,13 +56,14 @@ const VERIFY_CSS = `
 .verify-tape { margin: 34px -20px 0; transform: rotate(-1.2deg); background: #12110d; color: #f2ecdd; overflow: hidden; white-space: nowrap; padding: 7px 0; font-family: monospace; font-size: 12px; letter-spacing: .3em; text-transform: uppercase; }
 .verify-tape span { display: inline-block; padding-right: 12px; }
 .verify-grid { display: grid; grid-template-columns: 1.25fr .75fr; gap: 28px; margin-top: 36px; align-items: start; }
+.verify-grid > * { min-width: 0; }
 @media (max-width: 820px) { .verify-grid { grid-template-columns: 1fr; } }
 .verify-card { background: #faf6ea; border: 1.5px solid #d8d0ba; border-radius: 14px; padding: 26px; box-shadow: 0 10px 30px rgba(18,17,13,.12); }
 .verify-card h2 { font-size: 26px; margin: 0 0 6px; text-transform: uppercase; }
 .verify-card .sub { color: #4c483c; margin: 0 0 18px; font-size: 15px; }
 .verify-label { display: block; font-family: monospace; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: #4c483c; margin-bottom: 8px; }
 .verify-row { display: flex; gap: 10px; flex-wrap: wrap; }
-.verify-input { flex: 1 1 220px; min-height: 52px; padding: 12px 16px; font-family: monospace; font-size: 19px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; background: #f2ecdd; color: #12110d; border: 2px solid #12110d; border-radius: 10px; }
+.verify-input { flex: 1 1 220px; min-width: 0; min-height: 52px; padding: 12px 16px; font-family: monospace; font-size: 19px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; background: #f2ecdd; color: #12110d; border: 2px solid #12110d; border-radius: 10px; }
 .verify-btn { min-height: 48px; padding: 12px 22px; border-radius: 10px; border: 2px solid #12110d; font-weight: 800; font-size: 16px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #12110d; color: #f2ecdd; cursor: pointer; }
 .verify-btn.turq { background: #0a9a87; border-color: #0a9a87; color: #06110e; }
 .verify-btn.ghost { background: transparent; color: #12110d; }
@@ -165,7 +165,6 @@ const notFound = (c) => ({ kind: 'bad', phase: 'missing', title: 'Code not found
 const alreadyClaimed = (item, c, at) => ({ kind: 'warn', phase: 'already', title: 'Real piece — points already claimed', body: 'This code was claimed on ' + fmtDate(at) + '. The piece checks out as genuine Vibin, but each code pays its points once, to the first claim. Bought it new and seeing this? Send a photo of the tag plus your order confirmation to the brand.', item, code: c, earned: null })
 
 export default function VerifyPage() {
-  const { cartCount } = useCart()
   const [code, setCode] = useState('')
   const [result, setResult] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -293,39 +292,9 @@ export default function VerifyPage() {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles }} />
       <style>{VERIFY_CSS}</style>
 
-      <div className="promo">
-        <div className="promo-track">
-          <span>Free shipping on orders over {FREE_SHIPPING_LABEL}</span>
-          <span>New SS26 Drop is live</span>
-          <span>Sign up for 15% off your first order</span>
-          <span>Free shipping on orders over {FREE_SHIPPING_LABEL}</span>
-          <span>New SS26 Drop is live</span>
-          <span>Sign up for 15% off your first order</span>
-        </div>
-      </div>
-
-      {/* NAV */}
-      <nav>
-        <a href="/" className="logo">VIBIN</a>
-        <div className="nav-links">
-          <a href="/shop">Shop</a>
-          <a href="/shop" className="new">New Drop</a>
-          <a href="/lookbook">Lookbook</a>
-          <a href="/about">About</a>
-          <a href="/verify">Verify</a>
-          <a href="/returns">Stockists</a>
-        </div>
-        <div className="nav-actions">
-          <a href="/qa" className="nav-icon" style={{ textDecoration: 'none', color: 'inherit' }}>🔍</a>
-          <a href="/login" className="nav-icon" style={{ textDecoration: 'none', color: 'inherit' }}>👤</a>
-          <a href="/cart" className="nav-icon" style={{ textDecoration: 'none', color: 'inherit' }}>
-            🛒{cartCount > 0 && <span className="cart-dot">{cartCount}</span>}
-          </a>
-        </div>
-      </nav>
+      <SiteHeader />
 
       <div className="verify-wrap">
         <header className="verify-hero">
@@ -524,36 +493,7 @@ export default function VerifyPage() {
 
       </div>
 
-      {/* FOOTER */}
-      <footer>
-        <div className="foot-top">Vibin <em>Different.</em></div>
-        <div className="foot-cols">
-          <div className="foot-brand">
-            <div className="foot-logo">VIBIN</div>
-            <div className="foot-tagline">A lifestyle streetwear brand from Miami, FL. Now based in Jacksonville. A subsidiary of HVD Holdings.</div>
-          </div>
-          <div className="foot-col">
-            <h4>Shop</h4>
-            <ul>
-              <li><a href="/shop">All Products</a></li>
-              <li><a href="/shop?cat=tees">Tees</a></li>
-              <li><a href="/shop?cat=hoodies">Hoodies</a></li>
-              <li><a href="/lookbook">Lookbook</a></li>
-            </ul>
-          </div>
-          <div className="foot-col">
-            <h4>Info</h4>
-            <ul>
-              <li><a href="/about">About</a></li>
-              <li><a href="/verify">Verify</a></li>
-              <li><a href="/shipping">Shipping</a></li>
-              <li><a href="/returns">Returns</a></li>
-              <li><a href="/qa">FAQ</a></li>
-            </ul>
-          </div>
-        </div>
-        <div className="foot-bottom">© 2026 Vibin Apparel · HVD Holdings, LLC · Jacksonville, FL</div>
-      </footer>
+      <SiteFooter />
     </>
   )
 }

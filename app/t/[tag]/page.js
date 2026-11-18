@@ -26,10 +26,10 @@ const lookup = cache(async (tag) => {
 export async function generateMetadata({ params }) {
   const { tag } = await params
   const piece = await lookup(tag)
-  if (!piece) return { title: 'Tag not found — Vibin Apparel', robots: { index: false } }
+  if (!piece) return { title: 'Tag not found', robots: { index: false } }
   const styleName = piece.style_name || STYLE_NAMES[piece.style_code] || piece.style_code
   return {
-    title: `${styleName} ${piece.number}/${piece.total} — ${piece.drop_name} — Vibin Apparel`,
+    title: `${styleName} ${piece.number}/${piece.total} — ${piece.drop_name}`,
     robots: { index: false, follow: false },
   }
 }

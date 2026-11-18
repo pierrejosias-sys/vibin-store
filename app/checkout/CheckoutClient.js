@@ -6,8 +6,9 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { loadStripe } from '@stripe/stripe-js'
 import { useCart } from '../lib/cart-context'
-import styles from '../styles.css'
-import { shippingFor, FREE_SHIPPING_LABEL } from '../lib/shipping'
+import SiteHeader from '../components/SiteHeader'
+import SiteFooter from '../components/SiteFooter'
+import { shippingFor } from '../lib/shipping'
 
 const STRIPE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 const stripePromise = STRIPE_PUBLISHABLE_KEY ? loadStripe(STRIPE_PUBLISHABLE_KEY) : Promise.resolve(null)
@@ -100,36 +101,21 @@ export default function CheckoutPage() {
   if (items.length === 0 && step !== 3 && paymentStatus !== 'success') {
     return (
       <>
-        <style dangerouslySetInnerHTML={{ __html: styles }} />
-        <div className="promo"><div className="promo-track"><span>Free shipping over {FREE_SHIPPING_LABEL}</span><span>SS26 Drop is live</span></div></div>
-        <nav>
-          <Link href="/" className="logo">VIBIN</Link>
-          <div className="nav-actions"><Link href="/cart" className="nav-icon">🛒</Link></div>
-        </nav>
+        <SiteHeader />
         <div className="cart-page">
           <div className="cart-empty">
             <p>Your bag is empty.</p>
             <Link href="/shop" style={{ color: 'var(--coral)', marginTop: '20px', display: 'inline-block' }}>Continue Shopping →</Link>
           </div>
         </div>
+        <SiteFooter />
       </>
     )
   }
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: styles }} />
-
-      <div className="promo">
-        <div className="promo-track">
-          <span>Free shipping over {FREE_SHIPPING_LABEL}</span><span>SS26 Drop is live</span>
-          <span>Free shipping over {FREE_SHIPPING_LABEL}</span><span>SS26 Drop is live</span>
-        </div>
-      </div>
-
-      <nav>
-        <Link href="/" className="logo">VIBIN</Link>
-      </nav>
+      <SiteHeader />
 
       <div className="checkout-page">
         {step === 1 && (
@@ -239,10 +225,7 @@ export default function CheckoutPage() {
         )}
       </div>
 
-      <footer>
-        <div className="foot-top">Vibin <em>Different.</em></div>
-        <div className="foot-bottom"><div>© 2026 Vibin Apparel · Jacksonville, FL</div></div>
-      </footer>
+      <SiteFooter />
     </>
   )
 }
