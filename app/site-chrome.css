@@ -1,0 +1,56 @@
+/* Shared storefront chrome (SiteHeader / SiteFooter), 404, search and product tiles.
+   Loaded after styles.css, so these rules win ties. */
+
+/* ---- Header: mobile menu + dark variant ---- */
+.nav-burger { display: none; width: 36px; height: 36px; align-items: center; justify-content: center; background: none; border: 0; cursor: pointer; color: inherit; font-size: 20px; line-height: 1; }
+.nav-menu { display: none; }
+nav.site-nav--dark { background: var(--ink); color: var(--cream); border-bottom-color: var(--ink3); }
+nav.site-nav--dark .logo, nav.site-nav--dark .nav-links a { color: var(--cream); }
+nav.site-nav--dark .nav-links a:hover { color: var(--coral); }
+@media (max-width: 768px) {
+  .nav-burger { display: flex; }
+  .nav-menu { position: absolute; top: 100%; left: 0; right: 0; background: var(--cream); border-bottom: 1px solid var(--line); padding: 4px 24px 12px; flex-direction: column; }
+  .nav-menu.open { display: flex; }
+  .nav-menu a { padding: 14px 0; font-family: 'Manrope', sans-serif; font-size: 14px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+  .nav-menu a:last-child { border-bottom: 0; }
+  nav.site-nav--dark .nav-menu { background: var(--ink); border-bottom-color: var(--ink3); }
+  nav.site-nav--dark .nav-menu a { color: var(--cream); border-bottom-color: var(--ink3); }
+}
+
+/* ---- Home hero: keep "DIFFERENT." inside narrow phones ---- */
+@media (max-width: 480px) {
+  .hero-title { font-size: clamp(56px, 20vw, 80px); }
+}
+
+/* ---- 404 ---- */
+.nf { background: var(--ink); color: var(--cream); min-height: 62vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 80px 24px; }
+.nf-eye { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--coral); margin-bottom: 16px; }
+.nf-title { font-family: 'Anton', sans-serif; font-size: clamp(56px, 14vw, 160px); line-height: .9; text-transform: uppercase; margin-bottom: 20px; }
+.nf-title em { font-style: italic; color: var(--coral); }
+.nf-sub { max-width: 420px; color: rgba(246,241,231,.7); line-height: 1.6; margin-bottom: 32px; }
+.nf-links { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+/* ---- Product tile (shop, search, related) ---- */
+.pt { position: relative; width: 100%; aspect-ratio: 3 / 4; background: #111; overflow: hidden; }
+.pt-fallback { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 16px; color: var(--cream); font-family: 'Anton', sans-serif; text-transform: uppercase; }
+.pt-fallback-name { font-size: clamp(20px, 5vw, 32px); line-height: 1; letter-spacing: .04em; }
+.pt-fallback-color { margin-top: 6px; font-size: clamp(14px, 3vw, 20px); font-style: italic; color: var(--coral); }
+
+/* ---- Search ---- */
+.srch { max-width: 1100px; margin: 0 auto; padding: 56px 24px 80px; min-height: 60vh; }
+.srch-form { display: flex; gap: 12px; align-items: center; border-bottom: 2px solid var(--ink); }
+.srch-input { flex: 1; min-width: 0; background: transparent; border: 0; outline: 0; font-family: 'Anton', sans-serif; font-size: clamp(28px, 6vw, 56px); text-transform: uppercase; color: var(--ink); padding: 12px 0; }
+.srch-input::placeholder { color: var(--dim); }
+.srch-go { background: none; border: 0; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .15em; text-transform: uppercase; color: var(--ink); padding: 12px 4px; }
+.srch-meta { margin: 20px 0 28px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.srch-empty { margin: 24px 0 0; color: var(--muted); line-height: 1.6; }
+.srch-h2 { font-family: 'Anton', sans-serif; font-size: 24px; text-transform: uppercase; margin: 40px 0 16px; }
+.srch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 24px 16px; margin-top: 24px; }
+.srch-card { display: block; text-decoration: none; color: inherit; }
+.srch-card .pt { margin-bottom: 12px; }
+.srch-name { font-weight: 700; font-size: 14px; }
+.srch-sub { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); margin-top: 2px; }
+.srch-pages { display: flex; flex-wrap: wrap; gap: 10px; }
+.srch-page { border: 1.5px solid var(--ink); padding: 10px 16px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; text-decoration: none; color: var(--ink); }
+.srch-page:hover { background: var(--ink); color: var(--cream); }
+@media (max-width: 600px) { .srch-grid { grid-template-columns: repeat(2, 1fr); } }

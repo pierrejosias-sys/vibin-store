@@ -1,31 +1,37 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 
-const CartContext = createContext()
+const CartContext = createContext({ cartCount: 0, updateCart: () => {} })
+
+function readCount() {
+  try {
+    const items = JSON.parse(localStorage.getItem('vibin_cart') || '[]')
+    return Array.isArray(items) ? items.reduce((sum, item) => sum + (Number(item?.qty) || 0), 0) : 0
+  } catch {
+    return 0
+  }
+}
 
 export function CartProvider({ children }) {
   const [cartCount, setCartCount] = useState(0)
+  const updateCart = useCallback(() => setCartCount(readCount()), [])
 
   useEffect(() => {
-    const saved = localStorage.getItem('vibin_cart')
-    if (saved) {
-      const items = JSON.parse(saved)
-      const count = items.reduce((sum, item) => sum + item.qty, 0)
-      setCartCount(count)
+    updateCart()
+    // 'storage' covers other tabs and the pages that dispatch it by hand after a quick-add;
+    // 'vibin-cart' is the same-tab signal; focus/pageshow catch back-forward-cache restores.
+    window.addEventListener('storage', updateCart)
+    window.addEventListener('vibin-cart', updateCart)
+    window.addEventListener('focus', updateCart)
+    window.addEventListener('pageshow', updateCart)
+    return () => {
+      window.removeEventListener('storage', updateCart)
+      window.removeEventListener('vibin-cart', updateCart)
+      window.removeEventListener('focus', updateCart)
+      window.removeEventListener('pageshow', updateCart)
     }
-  }, [])
-
-  function updateCart() {
-    const saved = localStorage.getItem('vibin_cart')
-    if (saved) {
-      const items = JSON.parse(saved)
-      const count = items.reduce((sum, item) => sum + item.qty, 0)
-      setCartCount(count)
-    } else {
-      setCartCount(0)
-    }
-  }
+  }, [updateCart])
 
   return (
     <CartContext.Provider value={{ cartCount, updateCart }}>
