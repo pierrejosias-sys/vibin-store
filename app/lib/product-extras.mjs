@@ -48,13 +48,29 @@ export const PRODUCT_EXTRAS = {
     hideStoredDescription: true,
     hideStoredColor: true,
   },
+  // Two lanyards, two products (Josias, Nov 18 2026): Wordmark keeps the original lanyard row and URL,
+  // Star is its own row (supabase/migrations/20261118000005_lanyard_wordmark_star.sql).
+  // Images are mockups (not product photos), cropped from the one image Muse emailed to Josias.
   lanyard: {
-    // Mockup image (not a product photo), from Muse by email to Josias, Nov 18 2026.
     gallery: [
-      { file: 'lanyard-01.webp', label: 'Mockup', ready: true, fit: 'contain', background: '#f3efec',
-        alt: 'Mockup of two Vibin lanyards: one black and turquoise with a star and VIBIN printed along it, one turquoise with a star pattern.' },
+      { file: 'lanyard-wordmark-01.webp', label: 'Mockup', ready: true, fit: 'contain', background: '#f3efec',
+        alt: 'Mockup of the Vibin Lanyard, Wordmark design: black-edged teal strap with a white star and VIBIN wordmark repeated along it and SS26 Drop 01 near the clasp.' },
     ],
-    description: 'The Vibin Lanyard. One size. Image shown is a mockup.',
+    description: 'The Vibin Lanyard in the Wordmark design: black-edged teal with the white VIBIN wordmark. One size. Image shown is a mockup.',
+    specs: [
+      { label: 'Material', value: null },
+      { label: 'Length', value: null },
+      { label: 'Clip', value: null },
+      { label: 'Care', value: null },
+    ],
+    features: [],
+  },
+  'lanyard-star': {
+    gallery: [
+      { file: 'lanyard-star-01.webp', label: 'Mockup', ready: true, fit: 'contain', background: '#f3efec',
+        alt: 'Mockup of the Vibin Lanyard, Star design: solid teal strap with a four-point star pattern and a silver clasp.' },
+    ],
+    description: 'The Vibin Lanyard in the Star design: solid teal with a star pattern and a silver clasp. One size. Image shown is a mockup.',
     specs: [
       { label: 'Material', value: null },
       { label: 'Length', value: null },
