@@ -18,6 +18,7 @@ async function joinWaitlist(payload) {
 import { useCart } from '../lib/cart-context'
 import WaitlistThanks from '../components/WaitlistThanks'
 import { sizesForStyle } from '../lib/drops'
+import { getCampaign } from '../lib/campaign.mjs'
 import { DROP_STYLE_IMAGES, activeStyleColors } from '../lib/drop-catalog.mjs'
 import { countdownTarget, formatET } from '../lib/drop-window.mjs'
 
@@ -58,12 +59,14 @@ function Waitlist({ dropId }) {
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState('idle')
   const [result, setResult] = useState(null)
+  // Capture the first-touch campaign on landing, so it survives in-visit navigation.
+  useEffect(() => { getCampaign() }, [])
 
   async function submit(e) {
     e.preventDefault()
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setStatus('invalid'); return }
     setStatus('loading')
-    const r = await joinWaitlist({ email, source: `${dropId}-waitlist` })
+    const r = await joinWaitlist({ email, source: `${dropId}-waitlist`, ...getCampaign() })
     setResult(r.result); setStatus(r.status)
   }
 
