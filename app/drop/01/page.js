@@ -4,6 +4,8 @@ import { createClient } from '@supabase/supabase-js'
 import { getDropState, getDropInventory, serverNow } from '../../lib/drops'
 import { accessPhase, EARLY_ACCESS_COOKIE } from '../../lib/early-access.mjs'
 import { isValidEarlyAccessToken } from '../../lib/waitlist.mjs'
+import { DROP_01 } from '../../lib/drop-public.mjs'
+import { windowLabelShort } from '../../lib/drop-copy.mjs'
 
 async function hasEarlyAccess() {
   const accessCookie = (await cookies()).get(EARLY_ACCESS_COOKIE)?.value
@@ -17,7 +19,7 @@ export const dynamic = 'force-dynamic'
 
 export const metadata = buildMeta({
   title: 'Drop 01: The Foundation — Vibin Apparel',
-  description: 'Drop 01: The Foundation. Numbered pre-order Thu Nov 19 – Sun Nov 22 (ET), ships by Dec 18. The VOL 01 Hoodie: Lane Seven heavyweight, DTF print, no cords.',
+  description: `Drop 01: The Foundation. Numbered pre-order ${windowLabelShort(DROP_01)} (ET). The VOL 01 Hoodie: Lane Seven heavyweight, DTF print, no cords.`,
   path: '/drop/01',
   image: '/og-drop01.jpg'
 })

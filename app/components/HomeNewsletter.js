@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { DROP_01 } from '../lib/drop-public.mjs'
+import { earlyAccessLabel } from '../lib/drop-copy.mjs'
 
 /**
  * Waitlist / newsletter form on the home page. Same request as before: POST /api/waitlist with
@@ -56,7 +58,7 @@ export default function HomeNewsletter() {
                 <input readOnly value={result.link} aria-label="Your early-access link" onFocus={e => e.target.select()} />
                 <button type="button" onClick={copy}>{copied ? 'Copied ✓' : 'Copy link'}</button>
               </div>
-              <p>It works Thu Nov 19, 6:00–7:00 PM ET for one checkout. Keep it private.</p>
+              <p>It works {earlyAccessLabel(DROP_01)} for one checkout. Keep it private.</p>
             </>
           ) : (
             <p>You&apos;re already on the list. Your link is in your email.</p>

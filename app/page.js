@@ -11,6 +11,8 @@ import { FREE_SHIPPING_LABEL } from './lib/shipping'
 import { productImage, canOptimizeImage } from './lib/product-image'
 import { productSubtitle, formatPrice } from './lib/shop-filters.mjs'
 import { featuredForHome, homeCategories } from './lib/home-helpers.mjs'
+import { DROP_01 } from './lib/drop-public.mjs'
+import { openDateShort } from './lib/drop-copy.mjs'
 
 // Built once and refreshed in the background every minute: visitors get the page (with product photos
 // and counts already in it) straight from the cache instead of waiting on a database call in the browser.
@@ -65,11 +67,11 @@ export default async function HomePage() {
       {/* MARQUEE: true in every phase of the drop */}
       <div className="marquee">
         <div className="marquee-track">
-          <span>DROP 01 · NOV 19</span>
+          <span>DROP 01 · {openDateShort(DROP_01).toUpperCase()}</span>
           <span><em>The Foundation</em></span>
           <span>NEW ARRIVALS</span>
           <span>FREE SHIPPING {FREE_SHIPPING_LABEL}+</span>
-          <span>DROP 01 · NOV 19</span>
+          <span>DROP 01 · {openDateShort(DROP_01).toUpperCase()}</span>
           <span><em>The Foundation</em></span>
           <span>NEW ARRIVALS</span>
           <span>FREE SHIPPING {FREE_SHIPPING_LABEL}+</span>

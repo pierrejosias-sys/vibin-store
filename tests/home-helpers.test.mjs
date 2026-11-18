@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { orderForDisplay, featuredForHome, homeCategories } from '../app/lib/home-helpers.mjs'
-import { dropPromoLine, dropBlockCopy, countdownParts } from '../app/lib/drop-copy.mjs'
+import { dropPromoLine, dropBlockCopy, countdownParts, openDateShort, windowLabelShort, earlyAccessLabel } from '../app/lib/drop-copy.mjs'
 import { DROP_01 } from '../app/lib/drop-public.mjs'
 import { DROPS } from '../app/lib/drops.js'
 import { dropPhase } from '../app/lib/drop-window.mjs'
@@ -85,22 +85,44 @@ test('falls back to the first photographed piece when a preferred cover is missi
 test('promo line follows the pre-order window and never claims "live" early', () => {
   assert.equal(dropPromoLine(DROP_01, null), 'Drop 01 · The Foundation')
   assert.equal(dropPromoLine(DROP_01, 'tba'), 'Drop 01 · The Foundation')
-  assert.equal(dropPromoLine(DROP_01, 'upcoming'), 'Drop 01 pre-order opens Thu, Nov 19, 7:00 PM ET')
-  assert.equal(dropPromoLine(DROP_01, 'open'), 'Drop 01 pre-order is open · closes Sun, Nov 22, 11:59 PM ET')
+  assert.equal(dropPromoLine(DROP_01, 'upcoming'), 'Drop 01 pre-order opens Thu, Jan 14, 7:00 PM ET')
+  assert.equal(dropPromoLine(DROP_01, 'open'), 'Drop 01 pre-order is open · closes Sun, Jan 17, 11:59 PM ET')
   assert.equal(dropPromoLine(DROP_01, 'closed'), 'Drop 01 pre-order is closed')
   for (const ph of [null, 'upcoming', 'open', 'closed']) assert.ok(!/is live/i.test(dropPromoLine(DROP_01, ph)))
 })
 
 test('home block copy per phase', () => {
   assert.equal(dropBlockCopy(DROP_01, null).cta.href, '#email-signup')
-  assert.equal(dropBlockCopy(DROP_01, 'upcoming').eyebrow, 'Pre-order opens · Thu, Nov 19, 7:00 PM ET')
+  assert.equal(dropBlockCopy(DROP_01, 'upcoming').eyebrow, 'Pre-order opens · Thu, Jan 14, 7:00 PM ET')
   assert.equal(dropBlockCopy(DROP_01, 'upcoming').counting, 'Opens in')
   const open = dropBlockCopy(DROP_01, 'open')
   assert.equal(open.cta.href, '/drop/01')
   assert.equal(open.counting, 'Closes in')
   const closed = dropBlockCopy(DROP_01, 'closed')
   assert.equal(closed.counting, null)
-  assert.match(closed.body, /ship by Dec 18/)
+  // No public ship date while DROP_01.shipsBy is empty: the line is left out, not printed as "null".
+  assert.match(closed.body, /pre-orders are closed\. Join the list/)
+  assert.ok(!/ship/i.test(closed.body) && !/ship/i.test(open.body))
+  assert.match(dropBlockCopy({ ...DROP_01, shipsBy: 'Feb 12' }, 'closed').body, /ship by Feb 12/)
+})
+
+test('postponed Drop 01 labels come from the config (Jan 14, 2027)', () => {
+  assert.equal(openDateShort(DROP_01), 'Jan 14')
+  assert.equal(windowLabelShort(DROP_01), 'Jan 14 to 17')
+  assert.equal(earlyAccessLabel(DROP_01), 'Thu Jan 14, 6:00–7:00 PM ET')
+  // window that crosses a month, and an early hour that crosses noon
+  assert.equal(windowLabelShort({ opensAt: '2027-01-30T17:00:00Z', closesAt: '2027-02-03T04:59:59Z' }), 'Jan 30 to Feb 2')
+  assert.equal(earlyAccessLabel({ earlyAccessAt: '2027-01-14T16:00:00Z', opensAt: '2027-01-14T17:00:00Z' }), 'Thu Jan 14, 11:00 AM–12:00 PM ET')
+  assert.equal(windowLabelShort({}), '')
+  assert.equal(earlyAccessLabel({}), '')
+  assert.equal(DROP_01.shipsBy, null)
+})
+
+test('no phase of the public copy mentions the old Nov 19 / Dec 18 plan', () => {
+  for (const ph of [null, 'tba', 'upcoming', 'open', 'closed']) {
+    const text = [dropPromoLine(DROP_01, ph), JSON.stringify(dropBlockCopy(DROP_01, ph))].join(' ')
+    assert.ok(!/Nov|Dec 18/.test(text), `phase ${ph}: ${text}`)
+  }
 })
 
 test('countdown parts', () => {
@@ -114,8 +136,10 @@ test('the public window is the single source for the drop config', () => {
   assert.equal(DROPS.d01.closesAt, DROP_01.closesAt)
   assert.equal(DROPS.d01.earlyAccessAt, DROP_01.earlyAccessAt)
   assert.equal(DROPS.d01.shipsBy, DROP_01.shipsBy)
-  // Thu Nov 19 7:00 PM ET opens; Sun Nov 22 11:59 PM ET closes; waitlist hour is 6:00 PM ET
-  assert.equal(dropPhase(DROP_01.opensAt, DROP_01.closesAt, Date.parse('2026-11-19T23:59:59Z')), 'upcoming')
-  assert.equal(dropPhase(DROP_01.opensAt, DROP_01.closesAt, Date.parse('2026-11-20T00:00:00Z')), 'open')
-  assert.equal(dropPhase(DROP_01.opensAt, DROP_01.closesAt, Date.parse('2026-11-23T05:00:00Z')), 'closed')
+  // Thu Jan 14, 2027 7:00 PM ET opens; Sun Jan 17 11:59 PM ET closes; waitlist hour is 6:00 PM ET
+  assert.equal(dropPhase(DROP_01.opensAt, DROP_01.closesAt, Date.parse('2026-11-19T23:59:59Z')), 'upcoming') // the old Nov 19 slot stays closed
+  assert.equal(dropPhase(DROP_01.opensAt, DROP_01.closesAt, Date.parse('2026-11-20T00:00:00Z')), 'upcoming')
+  assert.equal(dropPhase(DROP_01.opensAt, DROP_01.closesAt, Date.parse('2027-01-14T23:59:59Z')), 'upcoming')
+  assert.equal(dropPhase(DROP_01.opensAt, DROP_01.closesAt, Date.parse('2027-01-15T00:00:00Z')), 'open')
+  assert.equal(dropPhase(DROP_01.opensAt, DROP_01.closesAt, Date.parse('2027-01-18T05:00:00Z')), 'closed')
 })
