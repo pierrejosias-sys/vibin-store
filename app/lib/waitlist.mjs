@@ -6,17 +6,27 @@ const likeExact = s => s.replace(/[\\%_]/g, m => '\\' + m)
 const uniq = a => [...new Set(a.filter(Boolean))]
 
 /** Inserts or merges (dedupe by email) a sign-up. Returns the row. */
-export async function upsertSignup(supabase, { email, firstName, source, style, consent }) {
+export async function upsertSignup(supabase, { email, firstName, source, style, consent, utm_source, utm_campaign, utm_medium }) {
+  // Composite tag saved next to the form source in sources[] (first touch stays in utm_*;
+  // every campaign journey step stays visible here). Built only from validated UTM values.
+  const campaignTag = (utm_source && utm_campaign)
+    ? `${source}-${utm_source}-${utm_campaign}`.slice(0, 40).replace(/-+$/, '')
+    : null
+  const withCampaign = (sources) => uniq([...(sources || []), source, campaignTag])
   const { data: existing, error: readErr } = await supabase.from('waitlist_signups')
     .select('*').ilike('email', likeExact(email)).maybeSingle()
   if (readErr) throw new Error(readErr.message)
   const now = new Date().toISOString()
   if (existing) {
     const patch = {
-      sources: uniq([...(existing.sources || []), source]),
+      sources: withCampaign(existing.sources),
       styles: uniq([...(existing.styles || []), style]),
       first_name: existing.first_name || firstName || null,
       updated_at: now,
+      // First-touch wins: only fill utm_* columns that are still null.
+      ...(utm_source && !existing.utm_source ? { utm_source } : {}),
+      ...(utm_campaign && !existing.utm_campaign ? { utm_campaign } : {}),
+      ...(utm_medium && !existing.utm_medium ? { utm_medium } : {}),
       ...(consent && !existing.consent_email ? { consent_email: true, consent_at: now } : {}),
     }
     const { data, error } = await supabase.from('waitlist_signups').update(patch).eq('id', existing.id).select('*').single()
@@ -25,14 +35,15 @@ export async function upsertSignup(supabase, { email, firstName, source, style, 
   }
   for (let attempt = 0; attempt < 3; attempt++) {
     const { data, error } = await supabase.from('waitlist_signups').insert({
-      email, first_name: firstName || null, sources: uniq([source]), styles: uniq([style]),
+      email, first_name: firstName || null, sources: withCampaign([]), styles: uniq([style]),
+      utm_source: utm_source || null, utm_campaign: utm_campaign || null, utm_medium: utm_medium || null,
       consent_email: !!consent, consent_at: consent ? now : null, early_access_token: newEarlyAccessToken(),
     }).select('*').single()
     if (!error) return { row: data, created: true }
     if (error.code !== '23505') throw new Error(error.message)
     // 23505: email inserted concurrently (merge on retry) or token collision (new token)
     const again = await supabase.from('waitlist_signups').select('*').ilike('email', likeExact(email)).maybeSingle()
-    if (again.data) return upsertSignup(supabase, { email, firstName, source, style, consent })
+    if (again.data) return upsertSignup(supabase, { email, firstName, source, style, consent, utm_source, utm_campaign, utm_medium })
   }
   throw new Error('could not create sign-up')
 }
