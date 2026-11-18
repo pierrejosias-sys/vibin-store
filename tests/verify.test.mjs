@@ -152,6 +152,14 @@ test('the browser page holds no database access: no service key, no supabase cli
   for (const endpoint of ["'/api/verify/'", "'/api/claim'", "'/api/redeem'"]) assert.ok(page.includes(endpoint), endpoint)
 })
 
+test('the hero <header> is reset: the site-wide `header` rule would turn it into the 64px sticky nav bar', () => {
+  const page = readFileSync('app/verify/page.js', 'utf8')
+  assert.match(readFileSync('app/styles.css', 'utf8'), /^header \{[^}]*position: sticky[^}]*height: 64px/m, 'premise: the global header rule exists')
+  const rule = /\.verify-wrap header\.verify-hero \{([^}]*)\}/.exec(page)
+  assert.ok(rule, 'page.js must override the global header rule for its hero')
+  for (const decl of ['position: static', 'display: block', 'height: auto', 'background: transparent']) assert.ok(rule[1].includes(decl), decl)
+})
+
 test('only the three route handlers reach the service-role client, and they are never cached', () => {
   for (const f of ['app/api/verify/[code]/route.js', 'app/api/claim/route.js', 'app/api/redeem/route.js']) {
     const s = readFileSync(f, 'utf8')
