@@ -14,6 +14,7 @@ const supabase = createBrowserClient(
 export default function AmbassadorHub() {
   const [ambassador, setAmbassador] = useState(null)
   const [authState, setAuthState] = useState('loading')
+  const [signedIn, setSignedIn] = useState(false)
   const [refCopied, setRefCopied] = useState(false)
   const [capCopied, setCapCopied] = useState(null)
   const [referredOrders, setReferredOrders] = useState([])
@@ -25,6 +26,7 @@ export default function AmbassadorHub() {
     async function checkAccess() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { setAuthState('unauthenticated'); return }
+      setSignedIn(true)
 
       const { data: profile } = await supabase
         .from('profiles')
@@ -149,10 +151,12 @@ export default function AmbassadorHub() {
           <div style={{ fontSize: '48px', marginBottom: '24px' }}>✦</div>
           <h1 style={{ ...s.anton, fontSize: '42px', textTransform: 'uppercase', marginBottom: '16px' }}>Ambassador Hub</h1>
           <p style={{ color: '#888', fontSize: '15px', marginBottom: '40px', lineHeight: '1.6' }}>
-            This area is for approved Vibin ambassadors only. Apply to join the program or log in if you've already been approved.
+            {signedIn
+              ? "This area is for approved Vibin ambassadors. You haven't applied yet, so start with the application."
+              : "This area is for approved Vibin ambassadors only. Apply to join the program or log in if you've already been approved."}
           </p>
           <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/login" style={{ display: 'inline-block', padding: '14px 28px', background: '#e05c2e', color: '#fff', textDecoration: 'none', borderRadius: '4px', fontWeight: 'bold', fontSize: '14px' }}>Log In →</Link>
+            {!signedIn && <Link href="/login?next=/ambassador" style={{ display: 'inline-block', padding: '14px 28px', background: '#e05c2e', color: '#fff', textDecoration: 'none', borderRadius: '4px', fontWeight: 'bold', fontSize: '14px' }}>Log In →</Link>}
             <Link href="/ambassador/apply" style={{ display: 'inline-block', padding: '14px 28px', background: 'transparent', color: '#f0ede6', textDecoration: 'none', borderRadius: '4px', fontWeight: 'bold', fontSize: '14px', border: '1px solid #3a3a3a' }}>Apply to Join</Link>
           </div>
         </div>

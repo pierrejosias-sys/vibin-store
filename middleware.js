@@ -21,10 +21,11 @@ export async function middleware(request) {
     return res
   }
 
-  // Routes that require authentication
-  const protectedRoutes = ['/admin', '/ambassador', '/profile']
+  // Routes that require authentication. /ambassador is public on purpose: the hub, /ambassador/apply and
+  // /ambassador/login show their own signed-out / pending / approved states, and the data behind them is
+  // protected by RLS and the server routes, not by this redirect.
+  const protectedRoutes = ['/admin', '/profile']
   const adminRoutes = ['/admin']
-  const ambassadorRoutes = ['/ambassador']
 
   const isProtected = protectedRoutes.some(r => pathname.startsWith(r))
   if (!isProtected) return NextResponse.next()
@@ -57,19 +58,15 @@ export async function middleware(request) {
     return NextResponse.redirect(loginUrl)
   }
 
-  // Check role for admin/ambassador routes
-  if (adminRoutes.some(r => pathname.startsWith(r)) || ambassadorRoutes.some(r => pathname.startsWith(r))) {
+  // Check role for admin routes
+  if (adminRoutes.some(r => pathname.startsWith(r))) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('is_admin, is_ambassador')
+      .select('is_admin')
       .eq('id', user.id)
       .single()
 
-    if (adminRoutes.some(r => pathname.startsWith(r)) && !profile?.is_admin) {
-      return NextResponse.redirect(new URL('/login?error=unauthorized', request.url))
-    }
-
-    if (ambassadorRoutes.some(r => pathname.startsWith(r)) && !profile?.is_ambassador && !profile?.is_admin) {
+    if (!profile?.is_admin) {
       return NextResponse.redirect(new URL('/login?error=unauthorized', request.url))
     }
   }
@@ -80,7 +77,6 @@ export async function middleware(request) {
 export const config = {
   matcher: [
     '/admin/:path*',
-    '/ambassador/:path*',
     '/profile/:path*',
     '/drop/:path*',
   ]
