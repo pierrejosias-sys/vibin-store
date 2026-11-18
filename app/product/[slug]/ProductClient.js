@@ -46,7 +46,14 @@ export default function ProductClient({ product, sizes: runSizes = null, drop = 
     return () => clearInterval(t)
   }, [])
 
+  // Drop 01 pieces can't go in the bag before the pre-order window opens (or after it closes).
+  const buyOpen = drop ? dropPhase(drop.earlyAccessAt || drop.opensAt, drop.closesAt, now) === 'open' : true
+  const lockedLabel = drop && !buyOpen
+    ? (dropPhase(drop.opensAt, drop.closesAt, now) === 'closed' ? 'Pre-order closed' : `Pre-order opens ${formatET(drop.opensAt)}`)
+    : null
+
   function addToCart() {
+    if (!buyOpen) return
     let cart = []
     try {
       const saved = JSON.parse(localStorage.getItem('vibin_cart') || '[]')
@@ -188,8 +195,8 @@ export default function ProductClient({ product, sizes: runSizes = null, drop = 
               <input type="text" value={qty} readOnly aria-label="Quantity" />
               <button type="button" aria-label="Increase quantity" onClick={() => setQty(q => Math.min(10, q + 1))}>+</button>
             </div>
-            <button type="button" className="btn-atc" onClick={addToCart} disabled={soldOut}>
-              {soldOut ? 'Sold out' : added ? '✓ Added to Bag' : `Add to Bag · $${(price * qty).toFixed(2)}`}
+            <button type="button" className="btn-atc" onClick={addToCart} disabled={soldOut || !buyOpen}>
+              {soldOut ? 'Sold out' : lockedLabel ? lockedLabel : added ? '✓ Added to Bag' : `Add to Bag · $${(price * qty).toFixed(2)}`}
             </button>
           </div>
           {added && <Link href="/cart" className="pdp-viewbag">View bag →</Link>}

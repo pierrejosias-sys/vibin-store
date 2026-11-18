@@ -83,7 +83,12 @@ function Waitlist({ dropId }) {
 
 /** Card photo through next/image (a small WebP instead of a 2 MB PNG); links to `href` when given. */
 function CardImage({ src, name, href }) {
-  if (!src) return null
+  // No product photo yet: keep the card's shape with a plain labeled tile (no stand-in image).
+  if (!src) return (
+    <div className="pt" role="img" aria-label={`${name}: photo coming soon`} style={{ borderRadius: 8, marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#151515', border: '1px dashed #333', color: '#888', fontSize: 12, letterSpacing: '.12em', textTransform: 'uppercase', aspectRatio: '1 / 1' }}>
+      Photo coming soon
+    </div>
+  )
   const pic = (
     <div className="pt" style={{ borderRadius: 8, marginBottom: 12 }}>
       <ProductThumb src={src} name={name} sizes="(max-width: 600px) 90vw, 280px" />
@@ -104,7 +109,7 @@ function ComingSoonCard({ drop, style }) {
     setResult(r.result); setStatus(r.status)
   }
   return (
-    <div style={S.card}>
+    <div style={S.card} id={`style-${style.code}`}>
       <CardImage src={DROP_STYLE_IMAGES[drop.id]?.[style.code]?.[0]} name={style.name} />
       <div style={S.eyebrow}>{drop.id.toUpperCase()}-{style.code.toUpperCase()}</div>
       <h3 style={{ margin: '8px 0' }}>{style.name}</h3>
@@ -194,7 +199,7 @@ function StyleCard({ drop, style, released }) {
   }
 
   return (
-    <div style={{ ...S.card, opacity: soldOut ? 0.5 : 1 }}>
+    <div style={{ ...S.card, opacity: soldOut ? 0.5 : 1 }} id={`style-${style.code}`}>
       <CardImage src={DROP_STYLE_IMAGES[drop.id]?.[style.code]?.[0]} name={style.name} />
       <div style={S.eyebrow}>{drop.id.toUpperCase()}-{style.code.toUpperCase()}</div>
       <h3 style={{ margin: '8px 0' }}>{style.name}</h3>

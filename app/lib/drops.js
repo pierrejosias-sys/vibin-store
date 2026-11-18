@@ -58,7 +58,7 @@ export const DROPS = {
     ],
     // Approved launch lineup (Oct 22, 2026): only hd is for sale. Enforced in
     // /api/checkout via isStylePurchasable(); 'hidden' styles are not shown at all.
-    availability: { hd: 'available', cj: 'coming-soon', wb: 'coming-soon', ns: 'hidden' },
+    availability: DROP_01.availability,
   },
 }
 

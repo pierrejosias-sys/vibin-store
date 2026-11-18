@@ -42,7 +42,7 @@ export const getProduct = cache(async (key) => {
 export async function getDropWindow(dropId) {
   const base = DROPS[dropId]
   if (!base) return null
-  const out = { id: dropId, name: base.name, opensAt: base.releaseAt, closesAt: base.closesAt, shipsBy: base.shipsBy }
+  const out = { id: dropId, name: base.name, opensAt: base.releaseAt, closesAt: base.closesAt, earlyAccessAt: base.earlyAccessAt || null, shipsBy: base.shipsBy }
   try {
     const { data } = await client().from('drops').select('name,release_at,closes_at').eq('id', dropId).maybeSingle()
     if (data) {
