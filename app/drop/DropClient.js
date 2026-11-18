@@ -1,7 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import SiteHeader from '../components/SiteHeader'
+import SiteFooter from '../components/SiteFooter'
+import ProductThumb from '../components/ProductThumb'
 
 /** Server-side sign-up (dedupes by email, issues the private early-access link, syncs to the ESP). */
 async function joinWaitlist(payload) {
@@ -18,7 +22,7 @@ import { DROP_STYLE_IMAGES, activeStyleColors } from '../lib/drop-catalog.mjs'
 import { countdownTarget, formatET } from '../lib/drop-window.mjs'
 
 const S = {
-  page: { background: '#0a0a0a', color: '#f5f5f5', minHeight: '100vh', padding: '64px 20px', fontFamily: 'inherit' },
+  page: { background: '#0a0a0a', color: '#f5f5f5', minHeight: '70vh', padding: '48px 20px 72px', fontFamily: 'inherit' },
   wrap: { maxWidth: 1100, margin: '0 auto' },
   eyebrow: { letterSpacing: 4, fontSize: 12, textTransform: 'uppercase', opacity: 0.6 },
   h1: { fontSize: 'clamp(36px, 7vw, 72px)', margin: '12px 0 16px', lineHeight: 1 },
@@ -74,6 +78,17 @@ function Waitlist({ dropId }) {
   )
 }
 
+/** Card photo through next/image (a small WebP instead of a 2 MB PNG); links to `href` when given. */
+function CardImage({ src, name, href }) {
+  if (!src) return null
+  const pic = (
+    <div className="pt" style={{ borderRadius: 8, marginBottom: 12 }}>
+      <ProductThumb src={src} name={name} sizes="(max-width: 600px) 90vw, 280px" />
+    </div>
+  )
+  return href ? <Link href={href} aria-label={name} style={{ display: 'block', color: 'inherit' }}>{pic}</Link> : pic
+}
+
 function ComingSoonCard({ drop, style }) {
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState('idle')
@@ -87,7 +102,7 @@ function ComingSoonCard({ drop, style }) {
   }
   return (
     <div style={S.card}>
-      {DROP_STYLE_IMAGES[drop.id]?.[style.code]?.[0] && <img src={DROP_STYLE_IMAGES[drop.id][style.code][0]} alt={style.name} loading="lazy" style={{ width: '100%', aspectRatio: '3 / 4', objectFit: 'cover', borderRadius: 8, marginBottom: 12 }} />}
+      <CardImage src={DROP_STYLE_IMAGES[drop.id]?.[style.code]?.[0]} name={style.name} />
       <div style={S.eyebrow}>{drop.id.toUpperCase()}-{style.code.toUpperCase()}</div>
       <h3 style={{ margin: '8px 0' }}>{style.name}</h3>
       <div style={{ margin: '12px 0', fontSize: 14 }}><strong>Coming soon</strong> · not available to order yet</div>
@@ -108,6 +123,7 @@ function CatalogCard({ drop, item, released }) {
   const [size, setSize] = useState(item.sizes.length === 1 ? item.sizes[0] : null)
   const [added, setAdded] = useState(false)
   const canBuy = released && item.inStock && size
+  const href = item.slug ? `/product/${item.slug}` : null
 
   function addToCart() {
     if (!canBuy) return
@@ -123,10 +139,13 @@ function CatalogCard({ drop, item, released }) {
 
   return (
     <div style={S.card}>
-      {item.images?.[0] && <img src={item.images[0]} alt={item.name} loading="lazy" style={{ width: '100%', aspectRatio: '3 / 4', objectFit: 'cover', borderRadius: 8, marginBottom: 12 }} />}
+      <CardImage src={item.images?.[0]} name={item.name} href={href} />
       <div style={S.eyebrow}>{drop.id.toUpperCase()} · Made in-house</div>
-      <h3 style={{ margin: '8px 0' }}>{item.name}</h3>
+      <h3 style={{ margin: '8px 0' }}>
+        {href ? <Link href={href} style={{ color: 'inherit', textDecoration: 'none' }}>{item.name}</Link> : item.name}
+      </h3>
       <div style={{ opacity: 0.8 }}>${item.price}</div>
+      {href && <Link href={href} style={{ display: 'inline-block', marginTop: 4, fontSize: 13, color: 'inherit', opacity: 0.7, textDecoration: 'underline' }}>View details →</Link>}
       {drop.shipsBy && <div style={{ fontSize: 13, opacity: 0.8, marginTop: 4 }}>Pre-order · Ships by {drop.shipsBy}</div>}
       <div style={{ margin: '12px 0', fontSize: 14 }}>
         {!released && <span>🔒 {drop.phase === 'closed' ? 'Pre-order closed' : `Pre-order opens ${formatET(drop.releaseAt)}`}</span>}
@@ -173,7 +192,7 @@ function StyleCard({ drop, style, released }) {
 
   return (
     <div style={{ ...S.card, opacity: soldOut ? 0.5 : 1 }}>
-      {DROP_STYLE_IMAGES[drop.id]?.[style.code]?.[0] && <img src={DROP_STYLE_IMAGES[drop.id][style.code][0]} alt={style.name} loading="lazy" style={{ width: '100%', aspectRatio: '3 / 4', objectFit: 'cover', borderRadius: 8, marginBottom: 12 }} />}
+      <CardImage src={DROP_STYLE_IMAGES[drop.id]?.[style.code]?.[0]} name={style.name} />
       <div style={S.eyebrow}>{drop.id.toUpperCase()}-{style.code.toUpperCase()}</div>
       <h3 style={{ margin: '8px 0' }}>{style.name}</h3>
       {style.description && <p style={{ fontSize: 14, opacity: 0.8, margin: '0 0 8px' }}>{style.description}</p>}
@@ -239,6 +258,8 @@ export default function DropClient({ drop: dropProp, phase, earlyAccess, serverN
   )
 
   return (
+    <>
+    <SiteHeader dark />
     <main style={S.page}>
       <div style={S.wrap}>
         <div style={S.eyebrow}>Vibin Apparel · SS26</div>
@@ -296,5 +317,7 @@ export default function DropClient({ drop: dropProp, phase, earlyAccess, serverN
         </div>
       </div>
     </main>
+    <SiteFooter />
+    </>
   )
 }
