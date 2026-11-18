@@ -40,7 +40,7 @@ export default function AboutPage() {
       <section className="ab-story">
         <div className="ab-story-text">
           <div className="sec-eye">Our Story</div>
-          <h2 className="sec-title">Built in <em>Jacksonville.</em></h2>
+          <h2 className="sec-title">Born in Miami. Built in <em>Jacksonville.</em></h2>
           <p className="ab-body">
             Vibin was born in the heart of Miami, FL — a city that moves to its own rhythm. Now based in Jacksonville, the brand carries that Miami energy into every piece: bold, intentional, and unapologetically different.
           </p>
@@ -48,7 +48,7 @@ export default function AboutPage() {
             Vibin isn&apos;t about following trends or chasing hype. It&apos;s about creating quality pieces that speak to the people who don&apos;t need to announce who they are — they show it. Every piece is designed with intention. Heavyweight cotton that lasts. Cuts that fit right. Graphics that mean something.
           </p>
           <p className="ab-body">
-            A subsidiary of HVD Holdings, LLC, Vibin represents a new wave of lifestyle streetwear that prioritizes substance over spectacle. Built in Miami. Living in Jacksonville. Shipping everywhere.
+            A subsidiary of HVD Holdings, LLC, Vibin represents a new wave of lifestyle streetwear that prioritizes substance over spectacle. Born in Miami. Built in Jacksonville. Shipping across the US.
           </p>
         </div>
         <div className="ab-photo">

@@ -26,7 +26,7 @@ function dropLine(drop, phase) {
  * drop: pre-order window for drop-catalog items, null otherwise. serverNow keeps the first render
  * identical on server and client; the real clock takes over after mount.
  */
-export default function ProductClient({ product, sizes: runSizes = null, drop = null, serverNow }) {
+export default function ProductClient({ product, sizes: runSizes = null, drop = null, storeOpensAt = null, serverNow }) {
   const { updateCart } = useCart()
   const colorways = colorwaysFor(product)
   const sizes = runSizes && runSizes.length ? runSizes : DEFAULT_SIZES
@@ -50,10 +50,14 @@ export default function ProductClient({ product, sizes: runSizes = null, drop = 
   }, [])
 
   // Drop 01 pieces can't go in the bag before the pre-order window opens (or after it closes).
-  const buyOpen = drop ? dropPhase(drop.earlyAccessAt || drop.opensAt, drop.closesAt, now) === 'open' : true
-  const lockedLabel = drop && !buyOpen
-    ? (dropPhase(drop.opensAt, drop.closesAt, now) === 'closed' ? 'Pre-order closed' : `Pre-order opens ${formatET(drop.opensAt)}`)
-    : null
+  // Other products are locked until the store opens (Thu Jan 14, 2027 7:00 PM ET).
+  const buyOpen = drop
+    ? dropPhase(drop.earlyAccessAt || drop.opensAt, drop.closesAt, now) === 'open'
+    : !storeOpensAt || now >= new Date(storeOpensAt).getTime()
+  const lockedLabel = buyOpen ? null
+    : drop
+      ? (dropPhase(drop.opensAt, drop.closesAt, now) === 'closed' ? 'Pre-order closed' : `Pre-order opens ${formatET(drop.opensAt)}`)
+      : `Available ${formatET(storeOpensAt)}`
 
   function addToCart() {
     if (!buyOpen) return

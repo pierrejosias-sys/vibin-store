@@ -10,7 +10,7 @@ import SiteHeader from '../components/SiteHeader'
 import SiteFooter from '../components/SiteFooter'
 import { shippingFor } from '../lib/shipping'
 import { DROP_01 } from '../lib/drop-public.mjs'
-import { preorderBuyOpen, formatET } from '../lib/drop-window.mjs'
+import { preorderBuyOpen, storeOpen, formatET } from '../lib/drop-window.mjs'
 
 const money = n => `$${(Number(n) || 0).toFixed(2)}`
 
@@ -125,10 +125,14 @@ export default function CheckoutPage() {
   const total = subtotal + shippingCost
   const hasPreorder = items.some(i => i.drop || i.preorder)
   // Drop 01 pieces can't be checked out before the window (the server refuses them too).
-  const preorderLocked = hasPreorder && now != null && !preorderBuyOpen(DROP_01, now)
+  const hasRegular = items.some(i => !(i.drop || i.preorder))
+  const dropLocked = hasPreorder && now != null && !preorderBuyOpen(DROP_01, now)
+  // Regular products open with the store, Thu Jan 14, 2027 7:00 PM ET.
+  const storeLocked = hasRegular && now != null && !storeOpen(DROP_01.opensAt, now)
+  const preorderLocked = dropLocked || storeLocked
   const lockedNote = preorderLocked && (
     <div data-testid="preorder-locked" style={{ border: '1px solid #e05c2e', borderRadius: '8px', padding: '10px 14px', margin: '0 0 16px', fontSize: '0.85rem' }}>
-      <strong>Drop 01 isn&apos;t open yet.</strong> Pre-order opens {formatET(DROP_01.opensAt)} (waitlist early access from {formatET(DROP_01.earlyAccessAt)}). Remove Drop 01 pieces from your <Link href="/cart">bag</Link> to check out the rest.
+      <strong>Checkout opens {formatET(DROP_01.opensAt)}.</strong> {dropLocked ? `Waitlist members can pre-order Drop 01 pieces from ${formatET(DROP_01.earlyAccessAt)}.` : 'Everything in the shop goes on sale then.'} Your <Link href="/cart">bag</Link> is saved until then.
     </div>
   )
 

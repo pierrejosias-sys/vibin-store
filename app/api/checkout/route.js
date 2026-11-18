@@ -10,7 +10,7 @@ import { getSessionUser } from '../../lib/admin-auth'
 import { shippingFor, FREE_SHIPPING_LABEL } from '../../lib/shipping'
 import { DROPS } from '../../lib/drops'
 import { DROP_CATALOG, enforceDropCatalog, shipsInTwoPackages, TWO_PACKAGES_NOTE } from '../../lib/drop-catalog.mjs'
-import { serverNow } from '../../lib/drop-window.mjs'
+import { serverNow, storeOpen, formatET } from '../../lib/drop-window.mjs'
 import { cookies } from 'next/headers'
 import { EARLY_ACCESS_COOKIE, accessPhase } from '../../lib/early-access.mjs'
 import { lockEarlyAccessToken, attachEarlyAccessLock, releaseEarlyAccessLock } from '../../lib/waitlist.mjs'
@@ -58,6 +58,12 @@ export async function POST(request) {
     const d01 = (windowDrops || []).find(d => d.id === 'd01')
     const phaseNow = d01 ? accessPhase({ earlyAccessAt: DROPS.d01.earlyAccessAt, releaseAt: d01.release_at, closesAt: d01.closes_at }, now) : 'tba'
     const touchesDrop = items.some(i => (i.drop && i.style) || DROP_CATALOG.d01.some(c => Number(i.id) === c.productId))
+    // Regular products are locked until the store opens with Drop 01's public open (Josias, Nov 18).
+    const storeOpensAt = d01?.release_at || DROPS.d01.releaseAt
+    const hasRegular = items.some(i => !(i.drop && i.style) && !DROP_CATALOG.d01.some(c => Number(i.id) === c.productId))
+    if (hasRegular && !storeOpen(storeOpensAt, now)) {
+      return Response.json({ error: `The shop opens ${formatET(storeOpensAt)}. Your bag is saved until then.` }, { status: 409 })
+    }
     let earlyAccessGranted = false
     if (phaseNow === 'early' && touchesDrop) {
       earlyLockToken = (await cookies()).get(EARLY_ACCESS_COOKIE)?.value || null
