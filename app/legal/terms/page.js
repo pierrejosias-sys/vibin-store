@@ -123,8 +123,8 @@ export default function TermsOfService() {
             <p style={{marginTop:'12px'}}>
               Email: <a href="mailto:legal@vibinapparel.com" style={{color:'#e05c2e'}}>legal@vibinapparel.com</a><br />
               Mail: Vibin Apparel, LLC (c/o HVD Holdings, LLC)<br />
-              10151 Deerwood Park Blvd, Building 100, Suite 250<br />
-              Jacksonville, FL 32256
+              1285 W 26th St<br />
+              Jacksonville, FL 32209
             </p>
           </section>
 
