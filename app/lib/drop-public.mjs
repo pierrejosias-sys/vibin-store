@@ -12,5 +12,8 @@ export const DROP_01 = {
   // Approved launch lineup (Oct 22, 2026): only hd is for sale; 'hidden' styles are not shown at all.
   // Enforced at checkout through drops.js isStylePurchasable().
   availability: { hd: 'available', cj: 'coming-soon', wb: 'coming-soon', ns: 'hidden' },
+  // Drop 01 flatlay (Josias' Top pick #1) as the page hero. Save it at public/drop01/flatlay-hero.webp and
+  // set ready: true. Until then no hero shows.
+  hero: { src: '/drop01/flatlay-hero.webp', ready: false, alt: 'Drop 01 flatlay (mockup): The Foundation pieces laid out together.' },
   shipsBy: null, // No public ship date until vendor proof is in; copy leaves the line out while this is empty
 }

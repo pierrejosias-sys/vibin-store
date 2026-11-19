@@ -6,7 +6,7 @@ import ProductThumb from '../components/ProductThumb'
 import { productImage } from '../lib/product-image'
 import { coverImage } from '../lib/product-extras.mjs'
 import ComingSoonSignup from '../components/ComingSoonSignup'
-import { colorSummary } from '../lib/coming-soon.mjs'
+import { colorSummary, comingSoonSections } from '../lib/coming-soon.mjs'
 import { filterProducts, visibleFilters, productSubtitle, formatPrice } from '../lib/shop-filters.mjs'
 
 /**
@@ -85,18 +85,18 @@ export default function ShopClient({ products, initialFilter = 'all', loadError 
         )}
       </div>
 
-      {comingSoon.length > 0 && (
-        <section className="sp-soon" aria-labelledby="sp-soon-title">
+      {comingSoonSections(comingSoon).map(section => (
+        <section key={section.id} className="sp-soon" aria-labelledby={`sp-soon-${section.id}`}>
           <div className="sp-head">
-            <div className="sp-eye">Coming soon</div>
-            <h2 id="sp-soon-title" className="sp-title">Totes &amp; Keychains</h2>
+            <div className="sp-eye">{section.eyebrow}</div>
+            <h2 id={`sp-soon-${section.id}`} className="sp-title">{section.title}</h2>
           </div>
           <div className="sp-grid">
-            {comingSoon.map(p => (
+            {section.items.map(p => (
               <div key={p.slug} className="sp-card sp-card--soon">
                 <div className="pt sp-photo">
-                  <ProductThumb src={null} name={p.name} />
-                  <span className="sp-tag">Coming soon</span>
+                  <ProductThumb src={p.image} name={p.name} alt={p.image ? `${p.name} (mockup)` : undefined} />
+                  <span className="sp-tag">{p.imageLabel ? `Coming soon · ${p.imageLabel}` : 'Coming soon'}</span>
                 </div>
                 <div className="sp-meta">
                   <div className="sp-name">{p.name}</div>
@@ -109,7 +109,7 @@ export default function ShopClient({ products, initialFilter = 'all', loadError 
             ))}
           </div>
         </section>
-      )}
+      ))}
     </main>
   )
 }

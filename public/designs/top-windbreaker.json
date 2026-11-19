@@ -1,0 +1,27 @@
+{
+  "collection": "Josias' Top picks (Nov 18, 2026), Drop 01 target Thu Jan 14, 2027, pending vendor proof",
+  "status": "coming_soon",
+  "buyable": false,
+  "group": "top-picks",
+  "product": "Vibin Windbreaker",
+  "sku_prefix": "VB-WB",
+  "category": "outerwear",
+  "description": "The Vibin windbreaker.",
+  "variants": [],
+  "mockup_views": [
+    "front"
+  ],
+  "images": [],
+  "slug": "vibin-windbreaker",
+  "material": "TBD",
+  "dimensions": "TBD",
+  "weight": "TBD",
+  "care": "TBD",
+  "vendor": "TBD",
+  "moq": "TBD",
+  "lead_time": "TBD",
+  "ship_date": "TBD",
+  "image_note": "Mockups only, labeled as mockups. Each file goes in public/products/<slug>/ and is listed in images. Until then the tile shows Photo coming soon.",
+  "price": "TBD",
+  "compare_price": null
+}

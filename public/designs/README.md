@@ -47,3 +47,22 @@ No ship date goes in public copy before that, and no Curv name, logo or photos a
 | `kita-magnetic-charms.json` | Vibin Magnetic Charms | VB-ACC-MAG | TBD | `vibin-magnetic-charms` |
 
 Glitter keychains are on hold, so they have no file yet.
+
+## Josias' Top picks (coming soon, not buyable)
+
+Ranked by Josias on Nov 18, 2026. Spec files only: no `products` rows, so there is no price, no product page and
+no Add to Bag. They show on /shop under "Top Picks" with a "Price coming soon" label and a notify-me box.
+Every image is a mockup and is labeled as one. A file goes in `public/products/<slug>/` and its name goes in
+`images`. Until then the tile shows "Photo coming soon".
+
+| File | Product | Slug | Photos needed |
+|------|---------|------|---------------|
+| `top-gasoline-hoodie.json` | Vibin Hoodie, Gasoline Turquoise | `vibin-hoodie-gasoline` | turquoise hoodie mockup |
+| `top-move-different-tee.json` | Move Different Tee | `move-different-tee` | Move Different tee mockup |
+| `top-windbreaker.json` | Vibin Windbreaker | `vibin-windbreaker` | windbreaker mockup |
+| `top-first-layer-kit.json` | First Layer Kit | `first-layer-kit` | box inside, box lid, box lifestyle |
+
+Also from the Top picks, wired but waiting on their files: the Tech Short clean back view
+(`public/products/tech-short/tech-short-back-clean.webp`, never the v1 back with the flap) and the Drop 01 flatlay
+as the /drop/01 hero (`public/drop01/flatlay-hero.webp`). Tags / QR stay as hang-tag detail and the favicon is
+not a product.
