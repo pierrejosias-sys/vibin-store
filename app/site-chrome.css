@@ -61,6 +61,7 @@ footer .foot-col a { color: inherit; text-decoration: none; }
 
 /* ---- Product tile (shop, search, related) ---- */
 .pt { position: relative; width: 100%; aspect-ratio: 3 / 4; background: #111; overflow: hidden; }
+@supports not (aspect-ratio: 1 / 1) { .pt { height: 0; padding-top: 133.333%; } .pdp-main { height: 0; padding-top: 100%; } }
 .pt-fallback { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 16px; color: var(--cream); font-family: 'Anton', sans-serif; text-transform: uppercase; }
 .pt-fallback-name { font-size: clamp(20px, 5vw, 32px); line-height: 1; letter-spacing: .04em; }
 .pt-fallback-color { margin-top: 6px; font-size: clamp(14px, 3vw, 20px); font-style: italic; color: var(--coral); }
@@ -82,7 +83,7 @@ footer .foot-col a { color: inherit; text-decoration: none; }
 .srch-pages { display: flex; flex-wrap: wrap; gap: 10px; }
 .srch-page { border: 1.5px solid var(--ink); padding: 10px 16px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; text-decoration: none; color: var(--ink); }
 .srch-page:hover { background: var(--ink); color: var(--cream); }
-@media (max-width: 600px) { .srch-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .srch-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 /* ---- Shop ---- */
 .sp { background: var(--ink); color: var(--cream); min-height: 70vh; padding: 56px 24px 80px; }
@@ -97,8 +98,8 @@ footer .foot-col a { color: inherit; text-decoration: none; }
 .sp-chip:hover { border-color: var(--cream); }
 .sp-chip.on { background: var(--cream); border-color: var(--cream); color: var(--ink); }
 .sp-count { flex: none; font-size: 13px; color: #888; }
-.sp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 28px 14px; }
-.sp-card { display: block; color: inherit; text-decoration: none; }
+.sp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: 28px 14px; }
+.sp-card { display: block; min-width: 0; color: inherit; text-decoration: none; }
 .sp-photo img { transition: transform .5s ease; }
 @media (hover: hover) { .sp-card:hover .sp-photo img { transform: scale(1.04); } }
 .sp-card.is-sold .sp-photo img { opacity: .45; }
@@ -115,7 +116,10 @@ footer .foot-col a { color: inherit; text-decoration: none; }
 .sp-link { border: 0; border-bottom: 1px solid var(--cream); background: none; padding: 0 0 2px; color: var(--cream); cursor: pointer; font: inherit; text-decoration: none; }
 @media (max-width: 700px) {
   .sp { padding: 36px 16px 56px; }
-  .sp-grid { grid-template-columns: repeat(2, 1fr); gap: 22px 10px; }
+  /* minmax(0, 1fr): a column never grows past half the screen, whatever is inside it. */
+  .sp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 10px; }
+  /* All category chips visible on a phone instead of a row that runs off the edge. */
+  .sp-chips { flex-wrap: wrap; overflow-x: visible; }
   .sp-bar { flex-direction: column-reverse; align-items: stretch; gap: 10px; }
   .sp-meta { grid-template-columns: 1fr; }
   .sp-price { text-align: left; }
