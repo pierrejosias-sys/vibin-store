@@ -50,10 +50,12 @@ export const PRODUCT_EXTRAS = {
   },
   'tech-short': {
     // Back view: the CLEAN back only (one flat continuous waistband). Never the v1 back with the wide flap.
-    // Save it as public/products/tech-short/tech-short-back-clean.webp and set ready: true.
+    // Both views are mockups from Muse's email to Josias (Nov 18, 2026).
     gallery: [
-      { file: 'tech-short-back-clean.webp', label: 'Back view (mockup)', ready: false,
-        alt: 'Back of the Vibin Tech Short: one flat continuous waistband.' },
+      { file: 'tech-short-front.webp', label: 'Front view (mockup)', ready: true,
+        alt: 'Mockup of the front of the Vibin Tech Short: black shorts with turquoise side piping, a turquoise zip pocket and a drawcord.' },
+      { file: 'tech-short-back-clean.webp', label: 'Back view (mockup)', ready: true,
+        alt: 'Mockup of the back of the Vibin Tech Short: one flat continuous waistband and two turquoise zip pockets.' },
     ],
     specs: [],
     features: [],
