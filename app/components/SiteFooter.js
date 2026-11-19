@@ -9,7 +9,7 @@ export default function SiteFooter() {
       <div className="foot-cols">
         <div className="foot-brand">
           <div className="foot-logo">VIBIN</div>
-          <div className="foot-tagline">A lifestyle streetwear brand based in Jacksonville, FL. A subsidiary of HVD Holdings. Apparel for those who move different.</div>
+          <div className="foot-tagline">A lifestyle streetwear brand. EST. 2019. A subsidiary of HVD Holdings. Apparel for those who move different.</div>
         </div>
         <div className="foot-col">
           <h4>Shop</h4>
@@ -44,7 +44,7 @@ export default function SiteFooter() {
         </div>
       </div>
       <div className="foot-bottom">
-        <div>© 2026 Vibin Apparel · A subsidiary of HVD Holdings, LLC · Jacksonville, FL</div>
+        <div>© 2026 Vibin Apparel · A subsidiary of HVD Holdings, LLC · USA</div>
         <div style={{ marginTop: '12px' }}>
           <Link href="/legal/privacy" style={LEGAL}>Privacy Policy</Link>
           <Link href="/legal/terms" style={LEGAL}>Terms of Service</Link>
