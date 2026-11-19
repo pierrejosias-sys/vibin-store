@@ -119,7 +119,7 @@ nav { position: sticky; top: 0; z-index: 100; background: var(--cream); border-b
 .related-link:hover { color: var(--coral); border-color: var(--coral); }
 
 .related-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-@media (max-width: 900px) { .related-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 900px) { .related-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .rp { cursor: pointer; }
 .rp-img { position: relative; aspect-ratio: 3/4; background: var(--ink); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; color: var(--cream); border: 1px solid var(--line); font-family: 'Anton', sans-serif; font-size: 36px; text-align: center; transition: border-color .2s; }
 .rp:hover .rp-img { border-color: var(--ink); }
@@ -431,7 +431,7 @@ header { position: sticky; top: 0; z-index: 100; background: var(--ink); color: 
 
 /* PRODUCTS GRID */
 .products { padding: 0 60px 100px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
-@media (max-width: 900px) { .products { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 900px) { .products { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .prod { cursor: pointer; position: relative; }
 .prod-img { position: relative; width: 100%; aspect-ratio: 3/4; background: var(--cream2); overflow: hidden; margin-bottom: 14px; border: 1px solid var(--line); transition: border-color .25s; }
 .prod:hover .prod-img { border-color: var(--ink); }

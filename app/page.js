@@ -9,6 +9,7 @@ import ReferralTracker from './components/ReferralTracker'
 import { getProducts } from './lib/catalog'
 import { FREE_SHIPPING_LABEL } from './lib/shipping'
 import { productImage, canOptimizeImage } from './lib/product-image'
+import { coverImage } from './lib/product-extras.mjs'
 import { productSubtitle, formatPrice } from './lib/shop-filters.mjs'
 import { featuredForHome, homeCategories } from './lib/home-helpers.mjs'
 import { DROP_01 } from './lib/drop-public.mjs'
@@ -93,12 +94,16 @@ export default async function HomePage() {
             const soldOut = p.in_stock === false
             const isNew = Array.isArray(p.tags) && p.tags.includes('new')
             const was = Number(p.compare_price) > Number(p.price) ? Number(p.compare_price) : null
+            const stored = productImage(p, 'square')
+            const cover = stored ? null : coverImage(p)
             return (
               <Link key={p.id} href={`/product/${p.slug || p.id}`} prefetch={false} className={`prod${soldOut ? ' is-sold' : ''}`}>
                 <div className="prod-img prod-img--photo">
                   {soldOut ? <div className="prod-tag-img last">Sold out</div> : isNew ? <div className="prod-tag-img new">New</div> : null}
                   <ProductThumb
-                    src={productImage(p, 'square')}
+                    src={stored || cover?.src || null}
+                    fit={cover?.fit}
+                    background={cover?.background}
                     name={p.name}
                     color={p.color}
                     alt=""

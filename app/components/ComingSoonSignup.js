@@ -36,13 +36,13 @@ export default function ComingSoonSignup({ slug, name, dark = true }) {
       {status === 'done' ? (
         <WaitlistThanks result={result} dark={dark} />
       ) : (
-        <form onSubmit={submit} style={{ display: 'flex', gap: 6 }}>
+        <form onSubmit={submit} style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           <input
             type="email" required value={email} onChange={e => setEmail(e.target.value)} onClick={stop}
             placeholder="Email for first access" aria-label={`Email for ${name} waitlist`}
-            style={{ flex: 1, minWidth: 0, padding: '8px 10px', fontSize: 13, border: `1px solid ${fg}44`, background: 'transparent', color: fg }}
+            style={{ flex: '1 1 120px', width: '100%', minWidth: 0, boxSizing: 'border-box', padding: '8px 10px', fontSize: 16, border: `1px solid ${fg}44`, background: 'transparent', color: fg }}
           />
-          <button type="submit" disabled={status === 'loading'} style={{ padding: '8px 12px', fontSize: 12, fontWeight: 700, border: 'none', background: fg, color: dark ? '#0a0a0a' : '#f6f1e7', cursor: 'pointer' }}>
+          <button type="submit" disabled={status === 'loading'} style={{ flex: '1 0 auto', padding: '8px 12px', fontSize: 12, fontWeight: 700, border: 'none', background: fg, color: dark ? '#0a0a0a' : '#f6f1e7', cursor: 'pointer' }}>
             {status === 'loading' ? '…' : 'Notify me'}
           </button>
         </form>
