@@ -24,7 +24,7 @@ export async function generateMetadata({ params }) {
   const product = stored ? withExtras(stored) : null
   if (!product) return { title: 'Product not found', robots: { index: false, follow: false } }
   const path = `/product/${product.slug || product.id}`
-  const description = (product.description || `${product.name} from Vibin Apparel, Jacksonville streetwear. Free shipping on orders over $125.`).slice(0, 160)
+  const description = (product.description || `${product.name} from Vibin Apparel, USA streetwear. Free shipping on orders over $125.`).slice(0, 160)
   const image = productImage(product, 'hero') || '/og-default.jpg'
   return {
     title: product.name,

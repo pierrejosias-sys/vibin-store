@@ -206,7 +206,7 @@ export default function AdminLoginPage() {
 
       <footer>
         <div className="foot-logo">VIBIN</div>
-        <div className="foot-tag">© 2026 Vibin Apparel · Jacksonville, FL</div>
+        <div className="foot-tag">© 2026 Vibin Apparel · USA</div>
       </footer>
     </>
   );

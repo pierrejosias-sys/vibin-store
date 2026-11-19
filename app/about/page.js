@@ -6,7 +6,7 @@ import './about.css'
 
 export const metadata = {
   title: 'About',
-  description: 'Vibin Apparel is a lifestyle streetwear brand based in Jacksonville, FL, a subsidiary of HVD Holdings, LLC. Apparel for those who move different.',
+  description: 'Vibin Apparel is a USA lifestyle streetwear brand, EST. 2019, a subsidiary of HVD Holdings, LLC. Apparel for those who move different.',
 }
 
 const VALUES = [

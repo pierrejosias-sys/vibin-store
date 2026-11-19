@@ -44,7 +44,7 @@ export function buildMeta({ title, description, path = '/', image = DEFAULT_IMAG
 export function buildProductMeta({ name, description, color, category, image, slug }) {
   const title = `${name} — Vibin Apparel`
   const desc = description ||
-    `Shop the ${name} from Vibin Apparel's SS26 Drop 01. ${color ? color + ' colorway. ' : ''}${category ? category + '. ' : ''}Heavyweight cotton. Jacksonville streetwear. Free shipping ${FREE_SHIPPING_LABEL}+.`
+    `Shop the ${name} from Vibin Apparel's SS26 Drop 01. ${color ? color + ' colorway. ' : ''}${category ? category + '. ' : ''}Heavyweight cotton. USA streetwear. Free shipping ${FREE_SHIPPING_LABEL}+.`
   return buildMeta({
     title,
     description: desc.slice(0, 160),
