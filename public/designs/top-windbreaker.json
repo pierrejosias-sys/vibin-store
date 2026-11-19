@@ -9,10 +9,12 @@
   "description": "The Vibin windbreaker.",
   "variants": [],
   "mockup_views": [
-    "front"
+    "front",
+    "back"
   ],
   "images": [
-    "windbreaker-01.webp"
+    "windbreaker-01.webp",
+    "windbreaker-02-back.webp"
   ],
   "slug": "vibin-windbreaker",
   "material": "TBD",

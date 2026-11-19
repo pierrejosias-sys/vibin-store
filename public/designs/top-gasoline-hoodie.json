@@ -14,10 +14,12 @@
     }
   ],
   "mockup_views": [
-    "front"
+    "front",
+    "back"
   ],
   "images": [
-    "hoodie-gasoline-01.webp"
+    "hoodie-gasoline-01.webp",
+    "hoodie-gasoline-02-back.webp"
   ],
   "slug": "vibin-hoodie-gasoline",
   "material": "TBD",
