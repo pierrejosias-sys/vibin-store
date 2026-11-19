@@ -7,6 +7,7 @@ import SiteHeader from '../components/SiteHeader'
 import SiteFooter from '../components/SiteFooter'
 import ProductThumb from '../components/ProductThumb'
 import { getCampaign } from '../lib/campaign.mjs'
+import { DROP_01 } from '../lib/drop-public.mjs'
 
 /** Server-side sign-up (dedupes by email, issues the private early-access link, syncs to the ESP). */
 async function joinWaitlist(payload) {
@@ -270,6 +271,11 @@ export default function DropClient({ drop: dropProp, phase, earlyAccess, serverN
     <SiteHeader dark />
     <main style={S.page}>
       <div style={S.wrap}>
+        {DROP_01.hero?.ready && drop.id === DROP_01.id && (
+          <div style={{ position: 'relative', width: '100%', aspectRatio: '3 / 2', marginBottom: 24, borderRadius: 12, overflow: 'hidden', background: '#111' }}>
+            <ProductThumb src={DROP_01.hero.src} name={drop.name} alt={DROP_01.hero.alt} priority sizes="(max-width: 1100px) 100vw, 1100px" />
+          </div>
+        )}
         <div style={S.eyebrow}>Vibin Apparel · SS26</div>
         <h1 style={S.h1}>{drop.name}</h1>
         <p style={{ maxWidth: 640, opacity: 0.8 }}>{drop.story}</p>

@@ -48,6 +48,16 @@ export const PRODUCT_EXTRAS = {
     hideStoredDescription: true,
     hideStoredColor: true,
   },
+  'tech-short': {
+    // Back view: the CLEAN back only (one flat continuous waistband). Never the v1 back with the wide flap.
+    // Save it as public/products/tech-short/tech-short-back-clean.webp and set ready: true.
+    gallery: [
+      { file: 'tech-short-back-clean.webp', label: 'Back view (mockup)', ready: false,
+        alt: 'Back of the Vibin Tech Short: one flat continuous waistband.' },
+    ],
+    specs: [],
+    features: [],
+  },
   // Two lanyards, two products (Josias, Nov 18 2026): Wordmark keeps the original lanyard row and URL,
   // Star is its own row (supabase/migrations/20261118000005_lanyard_wordmark_star.sql).
   // Images are mockups (not product photos), cropped from the one image Muse emailed to Josias.
