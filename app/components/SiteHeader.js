@@ -19,7 +19,7 @@ const LINKS = [
 const ICON = { textDecoration: 'none', color: 'inherit' }
 
 // Line icons drawn in currentColor, so they follow the nav's text color (off-white on dark pages).
-// Emoji (🔍👤🛒) render as color pictures on iPhone, which clashed with the rest of the nav.
+// Emoji icons render as color pictures on iPhone, which clashed with the rest of the nav.
 const SVG = { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true, focusable: 'false' }
 export function SearchIcon() { return <svg {...SVG}><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" /></svg> }
 export function AccountIcon() { return <svg {...SVG}><circle cx="12" cy="8.5" r="3.75" /><path d="M4.5 20c1.2-3.6 4.1-5.5 7.5-5.5s6.3 1.9 7.5 5.5" /></svg> }
