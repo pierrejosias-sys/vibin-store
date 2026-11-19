@@ -41,10 +41,23 @@ test('the flatlay and the favicon are not products; tags stay off the list', () 
   assert.ok(!/flatlay|favicon|tag|qr/.test(names))
 })
 
-test('Tech Short back is the clean back only, and the flatlay hero waits for its file', () => {
-  const slot = PRODUCT_EXTRAS['tech-short'].gallery[0]
-  assert.equal(slot.file, 'tech-short-back-clean.webp')
-  assert.ok(!/v1|flap/i.test(slot.file))
-  if (slot.ready) assert.ok(existsSync(new URL('../public/products/tech-short/tech-short-back-clean.webp', import.meta.url)))
-  if (DROP_01.hero.ready) assert.ok(existsSync(new URL(`../public${DROP_01.hero.src}`, import.meta.url)))
+test('Tech Short back is the clean back only, and the flatlay hero is in place', () => {
+  const gallery = PRODUCT_EXTRAS['tech-short'].gallery
+  const back = gallery.find(g => /back/i.test(g.label))
+  assert.equal(back.file, 'tech-short-back-clean.webp')
+  for (const g of gallery) {
+    assert.ok(!/v1|flap/i.test(g.file))
+    assert.match(g.label, /mockup/i)
+    if (g.ready) assert.ok(existsSync(new URL(`../public/products/tech-short/${g.file}`, import.meta.url)), g.file)
+  }
+  assert.equal(DROP_01.hero.ready, true)
+  assert.ok(existsSync(new URL(`../public${DROP_01.hero.src}`, import.meta.url)))
+  assert.match(DROP_01.hero.alt, /mockup/i)
+})
+
+test('every Top pick has its photos, and every listed photo file exists', () => {
+  for (const s of top) {
+    assert.ok(s.images.length > 0, s.slug)
+    for (const f of s.images) assert.ok(existsSync(new URL(`../public/products/${s.slug}/${f}`, import.meta.url)), `${s.slug}/${f}`)
+  }
 })

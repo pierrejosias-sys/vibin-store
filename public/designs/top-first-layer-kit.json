@@ -13,7 +13,11 @@
     "box_lid",
     "box_lifestyle"
   ],
-  "images": [],
+  "images": [
+    "first-layer-kit-inside.webp",
+    "first-layer-kit-lid.webp",
+    "first-layer-kit-lifestyle.webp"
+  ],
   "slug": "first-layer-kit",
   "material": "TBD",
   "dimensions": "TBD",
@@ -23,7 +27,7 @@
   "moq": "TBD",
   "lead_time": "TBD",
   "ship_date": "TBD",
-  "image_note": "Mockups only, labeled as mockups. Each file goes in public/products/<slug>/ and is listed in images. Until then the tile shows Photo coming soon.",
+  "image_note": "Mockups from Muse's email to Josias (Nov 18, 2026), labeled as mockups on the site. images[0] is the Shop tile.",
   "price": "TBD",
   "compare_price": null
 }
