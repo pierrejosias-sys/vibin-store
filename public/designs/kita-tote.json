@@ -1,11 +1,11 @@
 {
-  "product": "Vibin Tote",
+  "product": "Vibin Tote, Chocolate",
   "sku_prefix": "VB-BAG-TOTE",
   "collection": "Drop 01 target (Thu Jan 14, 2027), pending vendor proof",
   "category": "accessories",
   "status": "coming_soon",
   "buyable": false,
-  "description": "Chocolate brown tote with VIBIN across the front in cream, all caps. Built to carry your day and wear your chains.",
+  "description": "Chocolate brown tote with VIBIN across the front in cream, all caps. The base of the line. Built to carry your day and wear your chains.",
   "closure": "magnetic snap (built-in or clip-on: TBD)",
   "branding": [
     {
@@ -13,9 +13,6 @@
       "artwork": "VIBIN wordmark, all caps",
       "color": "cream"
     }
-  ],
-  "pending_picks": [
-    "Plum colorway letter color: cream, gold or lime (Kita's call)"
   ],
   "charms": "Chains only for now. All other charms are off.",
   "mockup_views": [
@@ -40,8 +37,15 @@
   "lead_time": "TBD",
   "ship_date": "TBD",
   "images": [],
-  "image_note": "Placeholders only. Real Vibin photos replace them before launch. No stock photos.",
+  "image_note": "Mockups only, labeled as mockups on the site. Kita's files arrive by email as kita-NN.webp (her numbers). A file goes in public/products/<slug>/ and its name in images; until a piece has a photo it stays off /shop. No stock photos.",
   "price": "TBD",
   "compare_price": null,
-  "slug": "vibin-tote-chocolate"
+  "slug": "vibin-tote-chocolate",
+  "group": "kita-totes",
+  "kita_numbers": [
+    "01"
+  ],
+  "photo_slots": [
+    "kita-01.webp"
+  ]
 }

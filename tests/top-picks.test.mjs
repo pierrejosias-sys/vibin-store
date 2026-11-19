@@ -28,10 +28,10 @@ test('four Top picks, none buyable, no price anywhere', () => {
   }
 })
 
-test('the shop shows Top Picks before Totes & Keychains', () => {
-  const tiles = comingSoonTiles([...top, { status: 'coming_soon', buyable: false, slug: 'k', product: 'K' }])
+test('the shop shows Top Picks before Kita\'s totes', () => {
+  const tiles = comingSoonTiles([...top, { status: 'coming_soon', buyable: false, slug: 'k', product: 'K', group: 'kita-totes', images: ['k.webp'] }])
   const sections = comingSoonSections(tiles)
-  assert.deepEqual(sections.map(s => s.title), ['Top Picks', 'Totes & Keychains'])
+  assert.deepEqual(sections.map(s => s.title), ['Top Picks', 'Totes'])
   assert.equal(sections[0].items.length, 4)
   assert.deepEqual(comingSoonSections([]), [])
 })

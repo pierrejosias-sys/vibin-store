@@ -37,8 +37,15 @@
   "lead_time": "TBD",
   "ship_date": "TBD",
   "images": [],
-  "image_note": "Placeholders only. Real Vibin photos replace them before launch. No stock photos.",
+  "image_note": "Mockups only, labeled as mockups on the site. Kita's files arrive by email as kita-NN.webp (her numbers). A file goes in public/products/<slug>/ and its name in images; until a piece has a photo it stays off /shop. No stock photos.",
   "price": "TBD",
   "compare_price": null,
-  "slug": "vibin-leather-bubble-keychain"
+  "slug": "vibin-leather-bubble-keychain",
+  "group": "kita-keychains",
+  "kita_numbers": [
+    "14"
+  ],
+  "photo_slots": [
+    "kita-14.webp"
+  ]
 }

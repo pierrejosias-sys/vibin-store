@@ -1,0 +1,42 @@
+{
+  "product": "Vibin Tote, Lime",
+  "sku_prefix": "VB-BAG-TOTE",
+  "collection": "Kita's line (her 23 picks, Nov 19, 2026), Drop 01 target Thu Jan 14, 2027, pending vendor proof",
+  "category": "accessories",
+  "status": "coming_soon",
+  "buyable": false,
+  "group": "kita-totes",
+  "kita_numbers": [
+    "02"
+  ],
+  "description": "Lime tote with VIBIN across the front in black, all caps.",
+  "variants": [
+    {
+      "name": "Lime / Black VIBIN",
+      "sku": "VB-BAG-TOTE-LIM"
+    }
+  ],
+  "mockup_views": [
+    "front",
+    "back",
+    "inside",
+    "magnetic_snap"
+  ],
+  "letter_note": "Final letters are black (the mockup shows pink).",
+  "material": "TBD",
+  "dimensions": "TBD",
+  "weight": "TBD",
+  "care": "TBD",
+  "vendor": "TBD",
+  "moq": "TBD",
+  "lead_time": "TBD",
+  "ship_date": "TBD",
+  "price": "TBD",
+  "images": [],
+  "photo_slots": [
+    "kita-02.webp"
+  ],
+  "image_note": "Mockups only, labeled as mockups on the site. Kita's files arrive by email as kita-NN.webp (her numbers). A file goes in public/products/<slug>/ and its name in images; until a piece has a photo it stays off /shop. No stock photos.",
+  "compare_price": null,
+  "slug": "vibin-tote-lime"
+}

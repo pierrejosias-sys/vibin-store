@@ -32,8 +32,11 @@
   "lead_time": "TBD",
   "ship_date": "TBD",
   "images": [],
-  "image_note": "Placeholders only. Real Vibin photos replace them before launch. No stock photos.",
+  "image_note": "Mockups only, labeled as mockups on the site. Kita's files arrive by email as kita-NN.webp (her numbers). A file goes in public/products/<slug>/ and its name in images; until a piece has a photo it stays off /shop. No stock photos.",
   "price": "TBD",
   "compare_price": null,
-  "slug": "vibin-star-keychain"
+  "slug": "vibin-star-keychain",
+  "group": "kita-keychains",
+  "kita_numbers": [],
+  "photo_slots": []
 }
