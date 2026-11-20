@@ -3,7 +3,7 @@ import SiteHeader from '../../components/SiteHeader'
 import SiteFooter from '../../components/SiteFooter'
 import { getProducts, getPodFields, withPodFields } from '../../lib/catalog'
 import { productImage } from '../../lib/product-image'
-import { isPodProduct, podShipTimeLine, POD_COLLECTION_PATH, POD_COLLECTION_TITLE, POD_LINE_COPY } from '../../lib/pod.mjs'
+import { isPublishedPod, podShipTimeLine, POD_COLLECTION_PATH, POD_COLLECTION_TITLE, POD_LINE_COPY } from '../../lib/pod.mjs'
 
 // Made-to-order collection (Printful print-on-demand). Its own URL, separate from the drop pages.
 // Copy rules (Legal, Nov 20): no scarcity or urgency words here; tests/pod-unnumbered.test.mjs scans this file.
@@ -20,7 +20,7 @@ export default async function MadeToOrderPage() {
   let loadError = false
   try {
     const [all, pod] = await Promise.all([getProducts(), getPodFields()])
-    items = withPodFields(all, pod).filter(isPodProduct)
+    items = withPodFields(all, pod).filter(isPublishedPod)
   } catch (err) {
     console.error('made-to-order: could not load products:', err.message)
     loadError = true

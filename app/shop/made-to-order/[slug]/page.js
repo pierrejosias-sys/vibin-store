@@ -5,7 +5,7 @@ import PodProductClient from './PodProductClient'
 import { getProduct, getPodFields } from '../../../lib/catalog'
 import { withExtras } from '../../../lib/product-extras.mjs'
 import { productKind } from '../../../lib/shop-filters.mjs'
-import { isPodProduct, podShipTimeLine, POD_COLLECTION_PATH, POD_LINE_COPY, POD_SALES_LIVE } from '../../../lib/pod.mjs'
+import { isPublishedPod, POD_SIZES, podShipTimeLine, POD_COLLECTION_PATH, POD_LINE_COPY, POD_SALES_LIVE } from '../../../lib/pod.mjs'
 
 // One made-to-order product. Only POD rows render here; everything else is a 404.
 export const revalidate = 60
@@ -19,7 +19,7 @@ async function load(slug) {
   if (!stored) return null
   const pod = (await getPodFields()).get(Number(stored.id))
   const product = withExtras({ ...stored, ...(pod || {}) })
-  return isPodProduct(product) ? product : null
+  return isPublishedPod(product) ? product : null
 }
 
 export async function generateMetadata({ params }) {
@@ -37,7 +37,7 @@ export default async function PodProductPage({ params }) {
   const { slug } = await params
   const product = await load(slug)
   if (!product) notFound()
-  const sizes = productKind(product) === 'accessories' ? ['OS'] : ['S', 'M', 'L', 'XL', '2X', '3X']
+  const sizes = productKind(product) === 'accessories' ? ['OS'] : POD_SIZES
   const shipLine = podShipTimeLine(product)
   // Orderable only when POD sales are switched on AND the page states a ship time (16 CFR 435).
   const orderable = POD_SALES_LIVE && !!shipLine

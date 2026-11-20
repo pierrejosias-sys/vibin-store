@@ -6,12 +6,12 @@ import { fileURLToPath } from 'node:url'
 import {
   POD_FULFILLMENT, POD_SALES_LIVE, POD_AUTO_SUBMIT, POD_COLLECTION_PATH, POD_LINE_COPY, POD_SHIP_TIME_COPY,
   POD_SEPARATE_PACKAGE_COPY, POD_BANNED_WORDS, POD_SHIP_DAYS,
-  isPodProduct, isNumberedCapItem, podLinesFromItems, checkPodCheckout, podShipTimeLine, cartSeparatePackageNote,
+  podPriceFor, POD_SIZES, isPodProduct, isPublishedPod, isNumberedCapItem, podLinesFromItems, checkPodCheckout, podShipTimeLine, cartSeparatePackageNote,
   podRecipientFromSession, buildPodDraftPayload, podDraftEligibility, podVariantFor,
 } from '../app/lib/pod.mjs'
 import { createPodDraftForOrder, printfulKeyConfigured, PRINTFUL_KEY_ENV } from '../app/lib/printful-pod-draft.mjs'
 import { splitCart } from '../app/lib/printful-core.mjs'
-import { shippingFor, SHIPPING_FLAT_RATE, POD_SHIPPING } from '../app/lib/shipping.js'
+import { shippingFor, podShippingFor, freeShippingSubtotal, SHIPPING_FLAT_RATE, POD_DEFAULT_RATES, POD_HOLIDAY_SURCHARGE } from '../app/lib/shipping.js'
 import { isDrop01NumberedLine, DROP_CATALOG } from '../app/lib/drop-catalog.mjs'
 import { presentOrderForCs } from '../app/lib/order-cs.mjs'
 
@@ -44,7 +44,7 @@ test('POD lines never count toward the 50-per-style numbered cap or the pieces l
   assert.match(route, /i\.fulfillment = POD_FULFILLMENT/)
   assert.ok(route.indexOf('checkPodCheckout(items, podProducts)') < route.indexOf('claimDropPieces('))
   // migration: POD rows can never be numbered, and nothing touches pieces/drop_styles
-  const sql = read('supabase/migrations/20261120180000_pod_unnumbered_products.sql')
+  const sql = read('supabase/migrations/20261120200000_pod_unnumbered_products.sql')
   assert.match(sql, /CHECK \(fulfillment <> 'printful_pod' OR numbered = false\)/)
   assert.doesNotMatch(sql, /(INSERT|UPDATE|DELETE)[^;]*\b(pieces|drop_styles)\b/i)
 })
@@ -55,7 +55,7 @@ test('POD sales gate: POD_SALES_LIVE defaults to false and blocks checkout', () 
   const blocked = checkPodCheckout([{ id: 501, qty: 1 }], pods)
   assert.equal(blocked.status, 409)
   assert.match(blocked.error, /not available to order yet/)
-  assert.deepEqual(checkPodCheckout([{ id: 501, qty: 1 }], pods, { salesLive: true }), { podCount: 1 })
+  assert.deepEqual(checkPodCheckout([{ id: 501, qty: 1, size: 'M' }], pods, { salesLive: true }), { podCount: 1 })
   assert.deepEqual(checkPodCheckout([{ id: 7, qty: 1 }], pods), { podCount: 0 })
   assert.equal(checkPodCheckout([{ id: 501 }], new Map([[501, { ...POD, numbered: true }]]), { salesLive: true }).status, 409)
 })
@@ -198,22 +198,86 @@ test('POD templates never use banned scarcity / urgency / holiday words', () => 
 })
 
 // ── Shipping ─────────────────────────────────────────────────────────────────────────────────────
-test('ships_separately: each separately shipped unit pays the full first-item rate, not the add-on rate', () => {
-  const rates = { firstItem: 8, addOn: 2.5 }
+test('POD shipping is per product (first + add-on), caps pay full first-item rate each, never free at $125+', () => {
+  const after = { now: Date.parse('2027-02-01T12:00:00Z') }   // after the holiday surcharge window
+  const during = { now: Date.parse('2026-12-01T12:00:00Z') }
+  const tee = { id: 601, qty: 1, price: 48, fulfillment: POD_FULFILLMENT, shipFirst: 4.95, shipAddon: 2.2 }   // seed base rates
+  const hoodie = { id: 602, qty: 1, price: 72, fulfillment: POD_FULFILLMENT, shipFirst: 8.79, shipAddon: 2.5 }
+  // Finance §8 checks (surcharge included, through Jan 17, 2027 ET)
+  assert.equal(shippingFor(120, [tee, hoodie], during), 11.39)
+  assert.equal(shippingFor(96, [{ ...tee, qty: 2 }], during), 7.55)
+  assert.equal(shippingFor(144, [{ ...hoodie, qty: 2 }], during), 11.69)
+  assert.equal(shippingFor(48, [tee], during), 5.35)
+  assert.equal(shippingFor(72, [hoodie], during), 9.19)
+  // both sides of the surcharge date: last minute of Jan 17 ET vs first minute of Jan 18 ET
+  assert.equal(shippingFor(48, [tee], { now: Date.parse('2027-01-18T04:59:00Z') }), 5.35)
+  assert.equal(shippingFor(48, [tee], { now: Date.parse('2027-01-18T05:00:00Z') }), 4.95)
+  const cap = { id: 603, qty: 1, price: 32, fulfillment: POD_FULFILLMENT, shipFirst: 4.69, shipAddon: 2, shipsSeparately: true }
   // unchanged flat rule for every non-POD cart (and the old one-argument call)
   assert.equal(shippingFor(50), SHIPPING_FLAT_RATE)
-  assert.equal(shippingFor(50, [{ id: 1, qty: 3 }], rates), SHIPPING_FLAT_RATE)
-  assert.equal(shippingFor(130, [{ id: 502, qty: 2, fulfillment: POD_FULFILLMENT, shipsSeparately: true }], rates), 0)
-  // two POD tees together: first + add-on
-  assert.equal(shippingFor(76, [{ id: 501, qty: 2, fulfillment: POD_FULFILLMENT }], rates), 10.5)
-  // tee + cap: the cap is its own package at the full first-item rate
-  assert.equal(shippingFor(70, [{ id: 501, qty: 1, fulfillment: POD_FULFILLMENT }, { id: 502, qty: 1, fulfillment: POD_FULFILLMENT, shipsSeparately: true }], rates), 16)
-  // two caps: two full rates
-  assert.equal(shippingFor(64, [{ id: 502, qty: 2, fulfillment: POD_FULFILLMENT, ships_separately: true }], rates), 16)
-  // cart display hint (pod: true) prices the same as the server stamp
-  assert.equal(shippingFor(64, [{ id: 502, qty: 2, pod: true, shipsSeparately: true }], rates), 16)
-  assert.equal(POD_SHIPPING.firstItem, SHIPPING_FLAT_RATE)
+  assert.equal(shippingFor(130), 0)
+  assert.equal(shippingFor(50, [{ id: 1, qty: 3, price: 10 }]), SHIPPING_FLAT_RATE)
+  assert.equal(podShippingFor([{ id: 1, qty: 1 }]), 0)
+  // per product: first + add-on, no $0 add-on
+  assert.equal(shippingFor(96, [{ ...tee, qty: 2 }], after), 7.15)
+  // tee + hoodie together: highest first-item rate leads, the other unit pays its add-on
+  assert.equal(shippingFor(120, [tee, hoodie], after), 10.99)
+  // a cap is its own package at the full first-item rate, even next to other items, and per unit
+  assert.equal(shippingFor(80, [tee, cap], after), 9.64)
+  assert.equal(shippingFor(64, [{ ...cap, qty: 2 }], after), 9.38)
+  // holiday surcharge once per order while it applies (PENDING FINANCE)
+  assert.equal(shippingFor(48, [tee], during), 5.35)
+  assert.equal(POD_HOLIDAY_SURCHARGE.amount, 0.4)
+  // free shipping at $125+ never covers made-to-order lines
+  assert.equal(shippingFor(144, [{ ...hoodie, qty: 2 }], after), 11.29)
+  // in-house items: free only when the NON-made-to-order subtotal reaches $125
+  const inHouse = { id: 7, qty: 1, price: 100 }
+  assert.equal(shippingFor(148, [inHouse, tee], after), SHIPPING_FLAT_RATE + 4.95)
+  assert.equal(shippingFor(178, [{ ...inHouse, price: 130 }, tee], after), 4.95)
+  assert.equal(freeShippingSubtotal([inHouse, tee]), 100)
+  // a row with no rates falls back to the highest (hoodie) rate, PENDING FINANCE
+  assert.deepEqual(POD_DEFAULT_RATES, { first: 8.79, addOn: 2.5 })
+  assert.equal(shippingFor(48, [{ id: 9, qty: 1, price: 48, pod: true }], after), 8.79)
   const route = read('app/api/checkout/route.js')
   assert.match(route, /shippingFor\(total, items\)/)
-  assert.match(route, /i\.shipsSeparately = pod\.ships_separately === true/)
+  assert.match(route, /i\.shipFirst = pod\.ship_first_rate \?\? null; i\.shipAddon = pod\.ship_addon_rate \?\? null/)
+  assert.match(read('app/cart/CartClient.js'), /freeShippingSubtotal\(items\)/)
+})
+
+test('POD migration: rates, published flag + RLS, printful_variants locked from public reads; seed is unpublished', () => {
+  const sql = read('supabase/migrations/20261120200000_pod_unnumbered_products.sql')
+  assert.match(sql, /ship_first_rate\s+NUMERIC/)
+  assert.match(sql, /ship_addon_rate\s+NUMERIC/)
+  assert.match(sql, /FOR SELECT USING \(published OR public\.is_admin\(\)\)/)
+  assert.match(sql, /REVOKE SELECT ON public\.products FROM anon, authenticated;/)
+  const grant = sql.match(/GRANT SELECT \(([\s\S]*?)\)\s+ON public\.products TO anon, authenticated;/)
+  assert.ok(grant, 'column grant present')
+  assert.doesNotMatch(grant[1], /printful_variants/)
+  for (const col of ['id', 'name', 'slug', 'price', 'images', 'image_url', 'in_stock', 'fulfillment', 'published']) assert.match(grant[1], new RegExp(`\\b${col}\\b`))
+  // admin pages no longer select('*') (which would fail on the locked column)
+  for (const f of ['app/admin/products/page.js', 'app/admin/products/[id]/edit/page.js']) assert.doesNotMatch(read(f), /\.select\('\*'\)/)
+  const seed = read('supabase/migrations/20261120200100_pod_core_draft_products_SEED.sql')
+  assert.match(seed, /'Vibin Core Tee', 'vibin-core-tee', 48\.00/)
+  assert.match(seed, /'Vibin Core Hoodie', 'vibin-core-hoodie', 72\.00/)
+  assert.equal((seed.match(/'printful_pod', false, false,/g) || []).length, 2) // POD, unnumbered, unpublished
+  assert.doesNotMatch((seed.replace(/--.*$/gm, '').match(/'[^']*'/g) || []).join(' '), /\b(numbered|limited|exclusive|drop|sold out)\b/i)
+  assert.equal(isPublishedPod({ ...POD, published: false }), false)
+  assert.equal(checkPodCheckout([{ id: 501 }], new Map([[501, { ...POD, published: false }]]), { salesLive: true }).status, 409)
+})
+
+test('POD pricing: tee S–2XL $48; hoodie S–XL $72, 2XL $75; 3XL–5XL not sold', () => {
+  const teeRow = { price: 48, size_prices: null }
+  const hoodieRow = { price: 72, size_prices: { '2XL': 75 } }
+  assert.deepEqual(POD_SIZES, ['S', 'M', 'L', 'XL', '2XL'])
+  for (const sz of ['S', 'M', 'L', 'XL', '2XL']) assert.equal(podPriceFor(teeRow, sz), 48)
+  for (const sz of ['S', 'M', 'L', 'XL']) assert.equal(podPriceFor(hoodieRow, sz), 72)
+  assert.equal(podPriceFor(hoodieRow, '2xl'), 75)
+  for (const sz of ['3XL', '4XL', '5XL', 'XS']) { assert.equal(podPriceFor(teeRow, sz), null); assert.equal(podPriceFor(hoodieRow, sz), null) }
+  const pods = new Map([[602, { ...POD, id: 602, ...hoodieRow }]])
+  assert.equal(checkPodCheckout([{ id: 602, size: '3XL' }], pods, { salesLive: true }).status, 409)
+  assert.deepEqual(checkPodCheckout([{ id: 602, size: '2XL' }], pods, { salesLive: true }), { podCount: 1 })
+  assert.match(read('app/api/checkout/route.js'), /i\.price = podPriceFor\(pod, i\.size\)/)
+  const seed = read('supabase/migrations/20261120200100_pod_core_draft_products_SEED.sql')
+  assert.match(seed, /'printful_pod', false, false, '\{"2XL": 75\}'::jsonb, NULL, false, 8\.79, 2\.50, NULL\)/)
+  assert.match(seed, /'printful_pod', false, false, NULL, NULL, false, 4\.95, 2\.20, NULL\)/)
 })

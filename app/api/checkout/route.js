@@ -15,15 +15,15 @@ import { cookies } from 'next/headers'
 import { EARLY_ACCESS_COOKIE, accessPhase } from '../../lib/early-access.mjs'
 import { lockEarlyAccessToken, attachEarlyAccessLock, releaseEarlyAccessLock } from '../../lib/waitlist.mjs'
 import { siteOrigin } from '../../lib/site-origin.mjs'
-import { POD_FULFILLMENT, checkPodCheckout, podShipDays } from '../../lib/pod.mjs'
+import { POD_FULFILLMENT, checkPodCheckout, podShipDays, podPriceFor } from '../../lib/pod.mjs'
 
 // Made-to-order (POD) rows among the cart's catalog items. Fail-soft: before migration
-// 20261120180000_pod_unnumbered_products.sql the columns don't exist and nothing is POD.
+// 20261120200000_pod_unnumbered_products.sql the columns don't exist and nothing is POD.
 async function loadPodProducts(supabase, items) {
   const ids = [...new Set(items.filter(i => /^\d+$/.test(String(i.id)) && !(i.drop && i.style)).map(i => Number(i.id)))]
   if (!ids.length) return new Map()
   const { data, error } = await supabase.from('products')
-    .select('id, name, fulfillment, numbered, ship_days, ships_separately').in('id', ids).eq('fulfillment', POD_FULFILLMENT)
+    .select('id, name, price, size_prices, fulfillment, numbered, published, ship_days, ships_separately, ship_first_rate, ship_addon_rate').in('id', ids).eq('fulfillment', POD_FULFILLMENT)
   if (error) return new Map()
   return new Map((data || []).map(p => [Number(p.id), p]))
 }
@@ -71,7 +71,7 @@ export async function POST(request) {
     // Stamped server-side (sanitizeItem drops client-sent fields), so /admin/orders can offer the Printful draft.
     for (const i of items) {
       const pod = podProducts.get(Number(i.id))
-      if (pod) { i.fulfillment = POD_FULFILLMENT; i.shipDays = podShipDays(pod); i.shipsSeparately = pod.ships_separately === true }
+      if (pod) { i.price = podPriceFor(pod, i.size); i.fulfillment = POD_FULFILLMENT; i.shipDays = podShipDays(pod); i.shipsSeparately = pod.ships_separately === true; i.shipFirst = pod.ship_first_rate ?? null; i.shipAddon = pod.ship_addon_rate ?? null }
     }
 
     // Drop-window catalog items (Foundation Tee, Snapback): same window + pre-order rules.

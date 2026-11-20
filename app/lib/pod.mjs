@@ -2,7 +2,7 @@
  * Made-to-order (print-on-demand) line. Pure helpers: no I/O, no secrets, unit-tested in tests/pod-unnumbered.test.mjs.
  *
  * A POD product is a regular `products` row with fulfillment = 'printful_pod' AND numbered = false
- * (columns from supabase/migrations/20261120180000_pod_unnumbered_products.sql, NOT applied yet).
+ * (columns from supabase/migrations/20261120200000_pod_unnumbered_products.sql, NOT applied yet).
  * POD products:
  *  - are never numbered: they never go through claim_pieces / the pieces ledger and never count toward the
  *    50-per-style Drop 01 cap (see isNumberedCapItem below and DROP_CATALOG in drop-catalog.mjs);
@@ -41,6 +41,24 @@ export const POD_BANNED_WORDS = ['numbered', 'limited', 'exclusive', 'drop', 'so
 
 export function isPodProduct(product) {
   return !!product && product.fulfillment === POD_FULFILLMENT && product.numbered === false
+}
+
+/** Shown to shoppers only when published (draft rows are hidden by RLS too, once the migration runs). */
+export function isPublishedPod(product) {
+  return isPodProduct(product) && product.published !== false
+}
+
+/** Size run for made-to-order pieces (Finance/Product, Nov 20: S–2XL; 3XL–5XL left out entirely). */
+export const POD_SIZES = ['S', 'M', 'L', 'XL', '2XL']
+
+/** Price for a size: products.size_prices overrides (e.g. hoodie {"2XL": 75}), else products.price. null = size not sold. */
+export function podPriceFor(product, size) {
+  const s = String(size ?? '').trim().toUpperCase()
+  if (!POD_SIZES.includes(s)) return null
+  const map = product?.size_prices && typeof product.size_prices === 'object' ? product.size_prices : {}
+  const v = map[s]
+  const n = v != null && v !== '' && Number.isFinite(Number(v)) && Number(v) > 0 ? Number(v) : Number(product?.price)
+  return Number.isFinite(n) && n > 0 ? n : null
 }
 
 /** Business days to ship for a product: row override first, then POD_SHIP_DAYS. null when invalid. */
@@ -91,8 +109,9 @@ export function checkPodCheckout(items, podProducts, { salesLive = POD_SALES_LIV
   if (!salesLive) return { error: 'Made-to-order pieces are not available to order yet.', status: 409 }
   for (const i of pods) {
     const p = podProducts.get(Number(i.id))
-    if (!isPodProduct(p)) return { error: 'This item is not available to order.', status: 409 }
+    if (!isPodProduct(p) || p.published === false) return { error: 'This item is not available to order.', status: 409 }
     if (!podShipDays(p, shipDays)) return { error: `${p.name} is not available to order yet.`, status: 409 }
+    if (podPriceFor(p, i.size) == null) return { error: `${p.name} isn't available in size ${String(i.size || '').slice(0, 8)}.`, status: 409 }
   }
   return { podCount: pods.length }
 }

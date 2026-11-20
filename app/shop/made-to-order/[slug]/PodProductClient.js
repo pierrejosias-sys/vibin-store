@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useCart } from '../../../lib/cart-context'
 import { productImage } from '../../../lib/product-image'
-import { POD_COLLECTION_PATH, POD_COLLECTION_TITLE, POD_LINE_COPY, POD_SEPARATE_PACKAGE_COPY } from '../../../lib/pod.mjs'
+import { podPriceFor, POD_COLLECTION_PATH, POD_COLLECTION_TITLE, POD_LINE_COPY, POD_SEPARATE_PACKAGE_COPY } from '../../../lib/pod.mjs'
 
 // Made-to-order product page. Copy rules (Legal, Nov 20): no scarcity, urgency or stock wording, no timers.
 // tests/pod-unnumbered.test.mjs scans this file for the banned words.
@@ -13,7 +13,7 @@ export default function PodProductClient({ product, sizes, shipLine, orderable }
   const [size, setSize] = useState(sizes.includes('M') ? 'M' : sizes[0])
   const [qty, setQty] = useState(1)
   const [added, setAdded] = useState(false)
-  const price = Number(product.price)
+  const price = podPriceFor(product, size) ?? Number(product.price)
   const img = productImage(product)
 
   function addToCart() {
@@ -25,7 +25,7 @@ export default function PodProductClient({ product, sizes, shipLine, orderable }
     } catch {}
     const existing = cart.find(i => i && i.id === product.id && i.size === size)
     if (existing) existing.qty = Math.min(20, (Number(existing.qty) || 0) + qty)
-    else cart.push({ id: product.id, name: product.name, price, color: product.color || null, size, qty, slug: product.slug, image_url: img || null, pod: true, shipsSeparately: product.ships_separately === true })
+    else cart.push({ id: product.id, name: product.name, price, color: product.color || null, size, qty, slug: product.slug, image_url: img || null, pod: true, shipsSeparately: product.ships_separately === true, shipFirst: product.ship_first_rate ?? null, shipAddon: product.ship_addon_rate ?? null })
     try { localStorage.setItem('vibin_cart', JSON.stringify(cart)) } catch { return }
     window.dispatchEvent(new Event('vibin-cart'))
     updateCart()

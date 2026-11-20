@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '../lib/cart-context'
-import { shippingFor, FREE_SHIPPING_THRESHOLD } from '../lib/shipping'
+import { shippingFor, FREE_SHIPPING_THRESHOLD, freeShippingSubtotal, isPodLine } from '../lib/shipping'
 import { cartSeparatePackageNote } from '../lib/pod.mjs'
 import { canOptimizeImage } from '../lib/product-image'
 import SiteHeader from '../components/SiteHeader'
@@ -98,6 +98,9 @@ export default function CartPage() {
   const shipping = shippingFor(subtotal, items)
   const total = subtotal + shipping
   const separatePackageNote = cartSeparatePackageNote(items)
+  // Made-to-order lines never count toward free shipping (same rule as shippingFor in lib/shipping.js).
+  const freeShipBase = freeShippingSubtotal(items)
+  const hasInHouse = items.some(i => !isPodLine(i))
 
   return (
     <>
@@ -164,9 +167,9 @@ export default function CartPage() {
             </div>
 
             <div className="cart-summary">
-              {subtotal < FREE_SHIPPING_THRESHOLD && (
+              {hasInHouse && freeShipBase < FREE_SHIPPING_THRESHOLD && (
                 <div style={{background:'#f5f0eb',borderRadius:'8px',padding:'10px 14px',marginBottom:'16px',fontSize:'0.78rem',color:'#555',textAlign:'center'}}>
-                  Add <strong>${(FREE_SHIPPING_THRESHOLD - subtotal).toFixed(2)}</strong> more for free shipping 🚚
+                  Add <strong>${(FREE_SHIPPING_THRESHOLD - freeShipBase).toFixed(2)}</strong> more for free shipping 🚚
                 </div>
               )}
               <div className="cart-row">

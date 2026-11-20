@@ -7,34 +7,68 @@ export const FREE_SHIPPING_THRESHOLD = 125
 export const FREE_SHIPPING_LABEL = `$${FREE_SHIPPING_THRESHOLD}`
 
 /**
- * Made-to-order (Printful) packages. firstItem = the full rate for a package's first unit; addOn = each extra
- * unit in the same package. A product with ships_separately = true (e.g. caps: Printful ships them as their
- * own package) pays the full firstItem rate for EVERY unit, never the add-on rate.
- * PLACEHOLDERS until Finance sets them from Printful's US rate sheet: firstItem = the flat rate, addOn = 0.
+ * Made-to-order (Printful POD) shipping: PER PRODUCT, customer-paid, and NEVER covered by free shipping at
+ * FREE_SHIPPING_THRESHOLD+ (pending Josias/Finance; the stated copy is POD_FREE_SHIPPING_EXCLUSION_COPY in pod.mjs
+ * and must stay in sync with this code).
+ * Rates come from products.ship_first_rate / ship_addon_rate (stamped server-side as shipFirst / shipAddon).
+ * Finance §8 (/workspace/finance/pod-margin-check-nov20.md, Nov 20, 2026): tee $5.35 first / $2.20 add-on,
+ * hoodie $9.19 / $2.50, which include Printful's $0.40 holiday surcharge through Jan 17, 2027. Rows store the base
+ * rates (tee $4.95, hoodie $8.79) and the surcharge is added once per order by POD_HOLIDAY_SURCHARGE, so it drops
+ * off automatically after Jan 17, 2027 ET. A mixed cart pays the highest first-item rate plus add-ons for the rest.
+ * The $8 / free-at-$125 rule stays for the non-made-to-order items (numbered Drop 01 and the regular shop).
+ * Fallback for a row with no rates: the hoodie base rate (the highest). PENDING FINANCE.
  */
-export const POD_SHIPPING = { firstItem: SHIPPING_FLAT_RATE, addOn: 0 }
+export const POD_DEFAULT_RATES = { first: 8.79, addOn: 2.5 } // PENDING FINANCE
+/** Printful's $0.40 US holiday surcharge, once per order with POD lines, through Jan 17, 2027 ET (ends 2027-01-18 00:00 ET). */
+export const POD_HOLIDAY_SURCHARGE = { amount: 0.4, until: '2027-01-18T05:00:00Z' }
+
+const money = n => Math.round(n * 100) / 100
+const units = i => Math.max(1, Math.floor(Number(i?.qty) || 1))
+const rate = (v, d) => (v != null && v !== '' && Number.isFinite(Number(v)) && Number(v) >= 0 ? Number(v) : d)
+
+export function isPodLine(i) {
+  return !!i && (i.fulfillment === 'printful_pod' || i.pod === true)
+}
+
+/** Subtotal that counts toward free shipping: made-to-order lines never do. */
+export function freeShippingSubtotal(items) {
+  return (Array.isArray(items) ? items : []).filter(i => i && !isPodLine(i)).reduce((s, i) => s + Number(i.price || 0) * units(i), 0)
+}
 
 /**
- * shippingFor(subtotal) -> the flat rule (unchanged for every non-POD cart).
- * shippingFor(subtotal, items) also prices made-to-order lines. A line is POD when it has
- * fulfillment === 'printful_pod' (stamped server-side in /api/checkout; the cart may pass pod: true as a
- * display hint) and ships separately when shipsSeparately / ships_separately is true.
- *   in-house items (any)   -> one flat-rate package
- *   POD, shipped together  -> firstItem + addOn x (units - 1)
- *   POD, ships_separately  -> firstItem x units
- * Free shipping at FREE_SHIPPING_THRESHOLD+ still covers the whole order.
+ * Made-to-order shipping for the POD lines of a cart (0 when there are none).
+ *  - shipped together: the highest first-item rate once, every other unit at its own add-on rate
+ *  - ships_separately (caps): EVERY unit pays its full first-item rate, never the add-on rate
+ *  - plus the holiday surcharge once per order while it applies
  */
-export function shippingFor(subtotal, items = null, rates = POD_SHIPPING) {
-  if (subtotal >= FREE_SHIPPING_THRESHOLD) return 0
-  if (!Array.isArray(items) || !items.length) return SHIPPING_FLAT_RATE
-  const isPod = i => i && (i.fulfillment === 'printful_pod' || i.pod === true)
-  const units = i => Math.max(1, Math.floor(Number(i.qty) || 1))
+export function podShippingFor(items, { now = Date.now() } = {}) {
+  const pods = (Array.isArray(items) ? items : []).filter(isPodLine)
+  if (!pods.length) return 0
+  const first = i => rate(i.shipFirst ?? i.ship_first_rate, POD_DEFAULT_RATES.first)
+  const addOn = i => rate(i.shipAddon ?? i.ship_addon_rate, POD_DEFAULT_RATES.addOn)
   const separate = i => i.shipsSeparately === true || i.ships_separately === true
-  const inHouse = items.some(i => i && !isPod(i))
-  const together = items.filter(i => isPod(i) && !separate(i)).reduce((n, i) => n + units(i), 0)
-  const alone = items.filter(i => isPod(i) && separate(i)).reduce((n, i) => n + units(i), 0)
-  let total = inHouse ? SHIPPING_FLAT_RATE : 0
-  if (together > 0) total += rates.firstItem + rates.addOn * (together - 1)
-  total += rates.firstItem * alone
-  return Math.round(total * 100) / 100
+  let total = 0
+  const together = pods.filter(i => !separate(i))
+  if (together.length) {
+    const lead = together.reduce((a, i) => (first(i) > first(a) ? i : a), together[0])
+    total += first(lead) + addOn(lead) * (units(lead) - 1)
+    for (const i of together) if (i !== lead) total += addOn(i) * units(i)
+  }
+  for (const i of pods.filter(separate)) total += first(i) * units(i)
+  if (new Date(now).getTime() < new Date(POD_HOLIDAY_SURCHARGE.until).getTime()) total += POD_HOLIDAY_SURCHARGE.amount
+  return money(total)
+}
+
+/**
+ * shippingFor(subtotal)        -> the flat rule, unchanged for every existing caller and cart.
+ * shippingFor(subtotal, items) -> in-house items: one flat-rate package, free when the NON-made-to-order
+ *                                 subtotal reaches FREE_SHIPPING_THRESHOLD; plus podShippingFor(items).
+ */
+export function shippingFor(subtotal, items = null, opts = {}) {
+  if (!Array.isArray(items) || !items.some(isPodLine)) {
+    return subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FLAT_RATE
+  }
+  const inHouse = items.some(i => i && !isPodLine(i))
+  const flat = inHouse && freeShippingSubtotal(items) < FREE_SHIPPING_THRESHOLD ? SHIPPING_FLAT_RATE : 0
+  return money(flat + podShippingFor(items, opts))
 }
