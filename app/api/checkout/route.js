@@ -14,6 +14,7 @@ import { serverNow, storeOpen, formatET } from '../../lib/drop-window.mjs'
 import { cookies } from 'next/headers'
 import { EARLY_ACCESS_COOKIE, accessPhase } from '../../lib/early-access.mjs'
 import { lockEarlyAccessToken, attachEarlyAccessLock, releaseEarlyAccessLock } from '../../lib/waitlist.mjs'
+import { siteOrigin } from '../../lib/site-origin.mjs'
 
 // Clients are created per request so the build doesn't need secrets
 // (preview environments may not have Stripe/Supabase keys configured).
@@ -152,8 +153,8 @@ export async function POST(request) {
         },
       }],
       mode: 'payment',
-      success_url: `${request.headers.get('origin')}/checkout?success=true&order=${order.id}`,
-      cancel_url: `${request.headers.get('origin')}/cart`,
+      success_url: `${siteOrigin(request)}/checkout?success=true&order=${order.id}`,
+      cancel_url: `${siteOrigin(request)}/cart`,
       customer_email: email,
       // Stripe minimum is 30 minutes; piece holds last slightly longer (PIECE_HOLD_MINUTES).
       ...(pieceIds.length || earlyLockToken ? { expires_at: Math.floor(Date.now() / 1000) + STRIPE_SESSION_MINUTES * 60 } : {}),

@@ -64,6 +64,11 @@ export function newTicketCode() {
   return 'VB-' + Array.from(b, x => A[x % A.length]).join('')
 }
 
+/** First IP from the platform's forwarding headers (best-effort on Vercel). */
+export function clientIp(req) {
+  return (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || req.headers.get('x-real-ip') || 'unknown'
+}
+
 /** In-memory sliding-window limiter (per server instance; the DB check is the durable one). */
 export function createRateLimiter({ max = RATE_MAX, windowMs = RATE_WINDOW_MS } = {}) {
   const hits = new Map()
