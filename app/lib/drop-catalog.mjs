@@ -1,15 +1,17 @@
 /**
  * Regular catalog products sold as part of a drop window (in-house, manual fulfillment —
  * they are NOT in PRINTFUL_VARIANT_MAP, so splitCart() keeps them as manual lines).
+ * `styleCode` makes the product a NUMBERED drop style: at checkout every unit claims one of the style's 50
+ * numbered pieces (claim_pieces), so the cap can't be bypassed through the product page or cart.
  * Pure helpers; unit-tested in tests/drop-catalog.test.mjs.
  */
 import { dropPhase } from './drop-window.mjs'
 
 export const DROP_CATALOG = {
   d01: [
-    { productId: 1, slug: 'vibin-classic-tee', name: 'Foundation Tee', price: 85, sizes: ['S', 'M', 'L', 'XL', '2X', '3X'],
+    { productId: 1, slug: 'vibin-classic-tee', styleCode: 'te', name: 'Foundation Tee', price: 85, sizes: ['S', 'M', 'L', 'XL', '2X', '3X'],
       images: ['/drop01/tee-shgdd-front.webp'], square: '/drop01/tee-shgdd-front-square.webp' },
-    { productId: 10, slug: 'vibin-snapback', name: 'Snapback', price: 65, sizes: ['OS'],
+    { productId: 10, slug: 'vibin-snapback', styleCode: 'sb', name: 'Snapback', price: 65, sizes: ['OS'],
       images: ['/drop01/snapback-6089m-hero.webp', '/drop01/snapback-6089m-hero-flat.webp'] },
   ],
 }
@@ -49,6 +51,17 @@ export function allowedStyleColor(dropId, styleCode, color) {
 export const DROP_STYLE_IMAGES = Object.fromEntries(Object.entries(DROP_STYLE_COLORS).map(([d, styles]) =>
   [d, Object.fromEntries(Object.entries(styles).map(([code, colors]) => [code, colors.filter(c => c.active).flatMap(c => c.images)]))]))
 
+/** Numbered style codes that are sold through a catalog product (e.g. 'te', 'sb'). */
+export function catalogStyleCodes(dropId) {
+  return new Set((DROP_CATALOG[dropId] || []).map(e => e.styleCode).filter(Boolean))
+}
+
+/** True for a Drop 01 Foundation Tee / Snapback cart line (catalog id/slug, or an already-numbered line). */
+export function isDrop01NumberedLine(item) {
+  if (item?.drop && item?.style) return item.drop === 'd01' && catalogStyleCodes('d01').has(item.style)
+  return dropCatalogEntry(item)?.dropId === 'd01' && !!dropCatalogEntry(item).entry.styleCode
+}
+
 export const TWO_PACKAGES_NOTE = 'Ships in two packages: your hoodie ships separately from your tee/snapback, so your order may arrive in two packages.'
 
 /**
@@ -58,7 +71,7 @@ export const TWO_PACKAGES_NOTE = 'Ships in two packages: your hoodie ships separ
 export function shipsInTwoPackages(items) {
   const list = Array.isArray(items) ? items : []
   const hasHoodie = list.some(i => i?.drop && i?.style === 'hd')
-  const hasInHouse = list.some(i => !i?.drop && dropCatalogEntry(i))
+  const hasInHouse = list.some(i => (i?.drop ? catalogStyleCodes(i.drop).has(i.style) : !!dropCatalogEntry(i)))
   return hasHoodie && hasInHouse
 }
 
@@ -94,6 +107,12 @@ export function enforceDropCatalog(items, drops, { now = Date.now(), shipsBy = {
     item.preorder = true
     item.shipsBy = shipsBy[hit.dropId] || null
     item.drop_window = hit.dropId
+    // Numbered style: hand the line to the numbered-piece flow (resolveDropItems + claim_pieces), so it is
+    // priced from drop_styles and capped at the style's 50 numbers. No pieces seeded = not purchasable.
+    if (hit.entry.styleCode) {
+      item.drop = hit.dropId
+      item.style = hit.entry.styleCode
+    }
     preorderItems.push(item)
   }
   return { preorderItems }

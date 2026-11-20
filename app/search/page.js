@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '../lib/supabase'
 import { productImage } from '../lib/product-image'
 import { coverImage } from '../lib/product-extras.mjs'
-import { DROP_STYLE_IMAGES } from '../lib/drop-catalog.mjs'
+import { DROP_STYLE_IMAGES, catalogStyleCodes } from '../lib/drop-catalog.mjs'
 import { DROP_01 } from '../lib/drop-public.mjs'
 import { formatPrice } from '../lib/shop-filters.mjs'
 import ProductThumb from '../components/ProductThumb'
@@ -82,7 +82,8 @@ function SearchContent() {
 
   const dropCatalog = useMemo(() => styles
     .map(s => ({ s, availability: s.drop_id === DROP_01.id ? (DROP_01.availability[s.style_code] || 'hidden') : 'hidden' }))
-    .filter(({ availability }) => availability !== 'hidden')
+    // Tee/snapback are numbered styles but already show up as their product pages.
+    .filter(({ s, availability }) => availability !== 'hidden' && !catalogStyleCodes(s.drop_id).has(s.style_code))
     .map(({ s, availability }) => ({
       key: `d-${s.drop_id}-${s.style_code}`,
       name: s.name,

@@ -6,7 +6,7 @@
  */
 import { createClient } from '@supabase/supabase-js'
 import { DROP_CATALOG } from './drop-catalog.mjs'
-import { DROP_01 } from './drop-public.mjs'
+import { DROP_01, DROP01_NUMBERED_CLAIM_LIVE } from './drop-public.mjs'
 
 export const STYLE_NAMES = {
   hd: 'Hoodie',
@@ -14,11 +14,14 @@ export const STYLE_NAMES = {
   wb: 'Windbreaker',
   ns: 'Nylon Shorts',
   tee: 'Tee',
+  te: 'Foundation Tee',
+  sb: 'Snapback',
 }
 
 export const SIZES = ['S', 'M', 'L', 'XL', 'XXL']
 // Per-style size runs (keys sent to checkout and the Printful variant map).
-export const STYLE_SIZES = { hd: ['S', 'M', 'L', 'XL', '2X', '3X'] }
+// te/sb must match DROP_CATALOG sizes (Foundation Tee S–3X, Snapback one size); a style's 50 numbers span all its sizes.
+export const STYLE_SIZES = { hd: ['S', 'M', 'L', 'XL', '2X', '3X'], te: ['S', 'M', 'L', 'XL', '2X', '3X'], sb: ['OS'] }
 export function sizesForStyle(styleCode) {
   return STYLE_SIZES[styleCode] || SIZES
 }
@@ -46,8 +49,15 @@ export const DROPS = {
     // Private waitlist early access: Thu Jan 14, 2027 6:00 PM ET (1 hour before public open).
     earlyAccessAt: DROP_01.earlyAccessAt,
     shipsBy: DROP_01.shipsBy,
-    story: 'Drop 01 is the first numbered Vibin Apparel run, limited to 50 pieces per style, designed in Jacksonville, FL.',
+    // No count in the story; the cap is described only by the Legal claim line (and only once its gates clear).
+    story: DROP01_NUMBERED_CLAIM_LIVE
+      ? 'Drop 01 is the first numbered Vibin Apparel run, designed in Jacksonville, FL.'
+      : 'Drop 01 is the first Vibin Apparel drop, designed in Jacksonville, FL.',
+    // Use this story even when drops.story (DB) still has the older cap wording.
+    storyFromConfig: true,
     careInfo: 'Machine wash cold inside out, hang dry, do not bleach, and do not iron the print.',
+    // Hard cap: 50 per style (numbers 1–50, all sizes and colors combined). Never restocked:
+    // pieces rows are only created by the seed migrations, and the DB caps number at 50 per (drop, style).
     piecesPerStyle: 50,
     // Approved prices (drop_styles.price is the source of truth; this is the fallback).
     styles: [
@@ -55,8 +65,12 @@ export const DROPS = {
       { code: 'cj', name: 'Cargo Jogger', price: 88 },
       { code: 'wb', name: 'Windbreaker', price: 128 },
       { code: 'ns', name: 'Nylon Shorts', price: 58 },
+      // Jan 14 lineup: sold through the Foundation Tee / Snapback product pages and cards (DROP_CATALOG
+      // styleCode), but every unit claims a numbered piece, so each stops at 50.
+      { code: 'te', name: 'Foundation Tee', price: 85 },
+      { code: 'sb', name: 'Snapback', price: 65 },
     ],
-    // Approved launch lineup (Oct 22, 2026): only hd is for sale. Enforced in
+    // Jan 14 lineup (Nov 20): te + sb for sale, hd hidden until samples arrive. Enforced in
     // /api/checkout via isStylePurchasable(); 'hidden' styles are not shown at all.
     availability: DROP_01.availability,
   },
@@ -106,7 +120,7 @@ export async function getDropState(dropId) {
     ])
     if (drop) {
       state.name = drop.name || state.name
-      state.story = drop.story || state.story
+      state.story = base.storyFromConfig ? state.story : (drop.story || state.story)
       state.releaseAt = drop.release_at
       state.closesAt = drop.closes_at ?? null
       state.piecesPerStyle = drop.pieces_per_style || state.piecesPerStyle

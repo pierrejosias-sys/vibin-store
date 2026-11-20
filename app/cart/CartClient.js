@@ -8,6 +8,8 @@ import { shippingFor, FREE_SHIPPING_THRESHOLD } from '../lib/shipping'
 import { canOptimizeImage } from '../lib/product-image'
 import SiteHeader from '../components/SiteHeader'
 import SiteFooter from '../components/SiteFooter'
+import { isDrop01NumberedLine } from '../lib/drop-catalog.mjs'
+import { drop01CartNote } from '../lib/drop-public.mjs'
 
 // Cart photo with a fallback tile. Carts live in the shopper's browser, so the image address could be
 // anything: only a real string is rendered, and a photo that fails to load falls back to the initials.
@@ -138,6 +140,7 @@ export default function CartPage() {
                   <div className="cart-item-info">
                     <div className="cart-item-name">{item.name}</div>
                     <div className="cart-item-variant">{[item.color, item.size].filter(Boolean).join(' · ')}</div>
+                    {isDrop01NumberedLine(item) && <div className="cart-item-variant" style={{ marginTop: 4 }}>{drop01CartNote()}</div>}
                     <button
                       onClick={() => removeItem(item.id, item.color, item.size)}
                       style={{background:'none',border:'none',color:'#888',fontSize:'0.72rem',padding:'0',marginTop:'6px',cursor:'pointer',textDecoration:'underline',fontFamily:'inherit'}}
