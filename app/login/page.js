@@ -38,6 +38,10 @@ export default function LoginPage() {
       setMessage('Sign-in failed. Please try again.')
       setMessageType('error')
     }
+    if (params.get('error') === 'link_expired') {
+      setMessage('This confirmation link was already used or has expired. If you already confirmed your email, please sign in.')
+      setMessageType('error')
+    }
     if (params.get('error') === 'unauthorized') {
       setMessage('You do not have permission to access that page.')
       setMessageType('error')
