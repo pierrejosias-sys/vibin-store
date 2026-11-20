@@ -17,7 +17,7 @@ export default function FAQPage() {
     { q: 'Are your clothes sustainable?', a: 'We use quality materials built to last. Our pieces are designed in Jacksonville, FL with attention to durability and timeless style.' },
     { q: 'How do I contact support?', a: 'Email us at returns@vibinapparel.com. We typically respond within 24 hours.' },
     { q: 'Can I change my order after placing it?', a: 'Contact us within 1 hour of ordering and we\'ll do our best to accommodate changes before shipping.' },
-    { q: 'Do you restock sold out items?', a: "Drop 01's numbered Foundation Tees and Snapbacks will not be restocked or re-run. We do not promise restocks of other items. If a later, unnumbered release of a design is planned, we will say so clearly on the product page." },
+    { q: 'Do you restock sold out items?', a: 'Numbered Drop 01 pieces are never restocked or re-run. For other pieces, you can sign up on the product page to get an email if an item comes back in stock.' },
     { q: 'How do I use a discount code?', a: 'Enter your code at checkout in the "Discount code" field. Only one code can be used per order.' },
   ]
 
