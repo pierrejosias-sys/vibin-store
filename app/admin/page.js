@@ -64,15 +64,11 @@ export default function AdminPage() {
   async function fetchData() {
     setLoading(true)
     try {
-      // Fetch all orders
-      const { data: allOrders, error } = await supabase
-        .from('orders')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-
-      const orderList = allOrders || []
+      // Orders go through /api/admin/orders (server auth + CS field list). Do not select * from the client.
+      const res = await fetch('/api/admin/orders', { cache: 'no-store' })
+      const payload = await res.json()
+      if (!res.ok) throw new Error(payload.error || 'Failed to load orders')
+      const orderList = payload.orders || []
       setOrders(orderList)
 
       // Compute stats from real data

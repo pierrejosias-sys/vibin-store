@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { formatEt } from '../../lib/order-cs.mjs'
 
 const STATUS_FLOW = ['pending', 'paid', 'shipped', 'delivered', 'cancelled']
 const STATUS_COLORS = {
@@ -81,7 +82,7 @@ export default function AdminOrders() {
   }
 
   const filtered = orders.filter(o => {
-    const matchStatus = statusFilter === 'all' || o.status === statusFilter
+    const matchStatus = statusFilter === 'all' || (statusFilter === 'refunded' ? (o.refund_status && o.refund_status !== 'none') : o.status === statusFilter)
     const matchSearch = !search ||
       o.customer_email?.toLowerCase().includes(search.toLowerCase()) ||
       String(o.id).includes(search)
@@ -147,7 +148,7 @@ export default function AdminOrders() {
           style={{ ...s.input, width: '280px' }}
         />
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {['all', ...STATUS_FLOW].map(st => (
+          {['all', ...STATUS_FLOW, 'refunded'].map(st => (
             <button key={st} onClick={() => setStatusFilter(st)} style={{
               ...s.btn(statusFilter === st ? '#e05c2e' : '#1a1a1a'),
               border: `1px solid ${statusFilter === st ? '#e05c2e' : '#2a2a2a'}`,
@@ -176,7 +177,7 @@ export default function AdminOrders() {
                   {/* Row */}
                   <div
                     onClick={() => setExpandedId(isExpanded ? null : order.id)}
-                    style={{ padding: '16px 20px', display: 'grid', gridTemplateColumns: '1fr 2fr 1fr 1fr 1fr auto', gap: '16px', alignItems: 'center', cursor: 'pointer' }}
+                    style={{ padding: '16px 20px', display: 'grid', gridTemplateColumns: '1fr 2fr 1fr 1.4fr 1fr 1.2fr auto', gap: '16px', alignItems: 'center', cursor: 'pointer' }}
                   >
                     <div style={{ ...s.mono, fontSize: '12px', color: '#888' }}>#{String(order.id).slice(-6).toUpperCase()}</div>
                     <div>
@@ -184,7 +185,17 @@ export default function AdminOrders() {
                       {order.ambassador_code && <div style={{ ...s.mono, fontSize: '10px', color: '#e05c2e' }}>ref: {order.ambassador_code}</div>}
                     </div>
                     <div style={{ fontSize: '14px' }}>${(order.total || 0).toFixed(2)}</div>
-                    <div style={{ ...s.mono, fontSize: '11px', color: '#555' }}>{new Date(order.created_at).toLocaleDateString()}</div>
+                    <div style={{ ...s.mono, fontSize: '11px', color: '#555' }}>{formatEt(order.created_at)}</div>
+                    <div style={{ ...s.mono, fontSize: '11px', color: '#aaa' }}>
+                      {order.refund_status && order.refund_status !== 'none' ? (
+                        <>
+                          <div>${(order.refund_amount || 0).toFixed(2)} · {order.refund_status}</div>
+                          <div style={{ color: '#555' }}>{formatEt(order.refund_event_at)}</div>
+                        </>
+                      ) : (
+                        <span style={{ color: '#555' }}>—</span>
+                      )}
+                    </div>
                     <div>
                       <span style={{ display: 'inline-block', padding: '4px 10px', borderRadius: '100px', fontSize: '11px', ...s.mono, letterSpacing: '.08em', textTransform: 'uppercase', background: sc.bg, border: `1px solid ${sc.border}`, color: sc.text }}>
                         {order.status}
@@ -260,7 +271,20 @@ export default function AdminOrders() {
                           </div>
                         )}
 
-                        {/* Shipping address */}
+                        {/* Refunds from charge.refunded */}
+                        {order.refunds && order.refunds.length > 0 && (
+                          <div>
+                            <p style={{ ...s.mono, fontSize: '10px', color: '#555', letterSpacing: '.15em', textTransform: 'uppercase', marginBottom: '8px' }}>Refunds</p>
+                            {order.refunds.map((rf, i) => (
+                              <p key={i} style={{ fontSize: '13px', color: '#aaa', lineHeight: '1.6' }}>
+                                ${Number(rf.amount || 0).toFixed(2)} · {rf.status}<br />
+                                Stripe event: {formatEt(rf.stripe_event_at)}
+                              </p>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Shipping address — fulfillment only */}
                         {order.shipping_address && (
                           <div>
                             <p style={{ ...s.mono, fontSize: '10px', color: '#555', letterSpacing: '.15em', textTransform: 'uppercase', marginBottom: '8px' }}>Ship To</p>

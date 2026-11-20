@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import supabase from '../../lib/supabase-public';
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,28 +14,16 @@ export default function AdminLoginPage() {
     setLoading(true);
     setError('');
 
-    // Sign in with real Supabase Auth
-    const { data, error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    // Sign-in goes through POST /api/admin/login (server-side allowlist + IP rate limit).
+    // Supabase Auth also rate-limits. The password is not logged or stored in state beyond this request.
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
     });
-
-    if (authError) {
-      setError('Invalid email or password.');
-      setLoading(false);
-      return;
-    }
-
-    // Check if this user is an admin in the profiles table
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', data.user.id)
-      .single();
-
-    if (profileError || !profile?.is_admin) {
-      await supabase.auth.signOut();
-      setError('You do not have admin access.');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setError(data.error || 'Invalid email or password.');
       setLoading(false);
       return;
     }
