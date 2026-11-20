@@ -7,7 +7,7 @@ import SiteHeader from '../components/SiteHeader'
 import SiteFooter from '../components/SiteFooter'
 import ProductThumb from '../components/ProductThumb'
 import { getCampaign } from '../lib/campaign.mjs'
-import { DROP_01 } from '../lib/drop-public.mjs'
+import { DROP_01, DROP01_SHIP_LINE_PREWINDOW } from '../lib/drop-public.mjs'
 
 /** Server-side sign-up (dedupes by email, issues the private early-access link, syncs to the ESP). */
 async function joinWaitlist(payload) {
@@ -281,6 +281,8 @@ export default function DropClient({ drop: dropProp, phase, earlyAccess, serverN
         <p style={{ maxWidth: 640, opacity: 0.8 }}>{drop.story}</p>
         <p style={{ opacity: 0.6, fontSize: 14 }}>Every piece is numbered 1–{drop.piecesPerStyle}.</p>
         {drop.shipsBy && <p style={{ fontSize: 16, fontWeight: 700 }}>Numbered pre-order · Ships by {drop.shipsBy}</p>}
+        {/* Legal, Nov 20: until a ship-by date is approved and posted, say so (no date named). */}
+        {!drop.shipsBy && drop.id === DROP_01.id && <p style={{ fontSize: 16, fontWeight: 700 }}>{DROP01_SHIP_LINE_PREWINDOW}</p>}
 
         {(phase === 'upcoming' || phase === 'tba') && (
           <section style={{ marginTop: 40 }}>

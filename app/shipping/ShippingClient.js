@@ -29,7 +29,7 @@ export default function ShippingPage() {
             <tbody>
               <tr style={{borderBottom:'1px solid var(--line)'}}>
                 <td style={{padding:'16px 0',fontWeight:'600'}}>Standard Shipping</td>
-                <td style={{padding:'16px 0'}}>5–8 business days</td>
+                <td style={{padding:'16px 0'}}>Shown on each product page</td>
                 <td style={{padding:'16px 0',textAlign:'right'}}>${SHIPPING_FLAT_RATE} · free on orders {FREE_SHIPPING_LABEL}+</td>
               </tr>
             </tbody>
@@ -43,7 +43,7 @@ export default function ShippingPage() {
 
         <div style={{marginBottom:'40px'}}>
           <h3 style={{fontFamily:'Anton, sans-serif',fontSize:'24px',textTransform:'uppercase',marginBottom:'16px'}}>Processing</h3>
-          <p>Orders are processed within 1–2 business days. You will receive a tracking number via email once your order ships.</p>
+          <p>Each product page shows when that item ships. Made-to-order pieces ship within 7 business days of your order. Drop 01 is a pre-order, and its ship-by date is shown on the Drop 01 page and at checkout before you pay. You&apos;ll get a tracking number by email once your order ships.</p>
         </div>
 
         <div style={{padding:'20px',border:'2px solid var(--coral)',borderRadius:'8px'}}>
