@@ -1,11 +1,11 @@
-// Separate DB step (needs its own yes): 20261120000001_drop01_tee_snapback_numbered_SEPARATE_DB_STEP.sql.
+// Separate DB step (needs its own yes): 20261120190000_drop01_tee_snapback_numbered_SEPARATE_DB_STEP.sql.
 // Static checks only; the SQL itself was exercised on a scratch PGlite DB (see vibin-store-audit note).
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
 const read = p => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8')
-const MIGRATION = 'supabase/migrations/20261120000001_drop01_tee_snapback_numbered_SEPARATE_DB_STEP.sql'
+const MIGRATION = 'supabase/migrations/20261120190000_drop01_tee_snapback_numbered_SEPARATE_DB_STEP.sql'
 
 test('separate DB step: seeds 50 per style, hard cap kept, refund/reserve rules, never applied by code', () => {
   const sql = read(MIGRATION)

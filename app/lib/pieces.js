@@ -83,7 +83,7 @@ export async function releasePieces(supabase, ids, sessionId = null) {
 /**
  * Full refund of a paid order (Legal rule, Nov 20): a number confirmed NOT yet marked (pieces.marked = false)
  * goes back to 'available' for the next paid order; any other sold number is 'retired' and never sold again.
- * Needs refund_pieces() from 20261120000001_drop01_tee_snapback_numbered_SEPARATE_DB_STEP.sql. Throws on
+ * Needs refund_pieces() from 20261120190000_drop01_tee_snapback_numbered_SEPARATE_DB_STEP.sql. Throws on
  * error so Stripe retries the webhook.
  */
 export async function refundPieces(supabase, ids, sessionId) {
