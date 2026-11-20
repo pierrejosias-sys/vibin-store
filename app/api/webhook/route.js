@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { pieceIdsFromMetadata, releasePieces } from '../../lib/pieces'
 import { markEarlyAccessTokenUsed, releaseEarlyAccessLock } from '../../lib/waitlist.mjs'
 import { fulfillWithPrintful } from '../../lib/printful'
+import { handleChargeRefunded } from '../../lib/order-refunds.mjs'
 
 export const runtime = 'nodejs'
 
@@ -60,14 +61,17 @@ export async function POST(request) {
           status: 'paid',
           stripe_session_id: session.id,
           total_amount: amountTotal,
+          ...(paymentId ? { stripe_payment_intent_id: paymentId } : {}),
           ...(commissionAmount > 0 ? { commission_amount: commissionAmount, commission_status: 'pending' } : {}),
         }
         let { data: updated, error: updateError } = await supabase
           .from('orders').update(updates).eq('id', orderId).select('id')
         // total_amount comes from migration 20261022000003; until it's applied, don't let it block marking paid.
-        if (updateError && /total_amount/.test(updateError.message || '')) {
-          console.error(`Order ${orderId}: total_amount column missing, retrying without it — apply migration 20261022000003`)
-          const { total_amount: _omit, ...rest } = updates
+        if (updateError && /total_amount|stripe_payment_intent_id/.test(updateError.message || '')) {
+          console.error(`Order ${orderId}: optional column missing, retrying without it — apply later migrations`)
+          const rest = { ...updates }
+          if (/total_amount/.test(updateError.message || '')) delete rest.total_amount
+          if (/stripe_payment_intent_id/.test(updateError.message || '')) delete rest.stripe_payment_intent_id
           ;({ data: updated, error: updateError } = await supabase
             .from('orders').update(rest).eq('id', orderId).select('id'))
         }
@@ -136,6 +140,15 @@ export async function POST(request) {
         if (expireError) console.error(`Order ${session.metadata.orderId}: failed to mark expired:`, expireError.message)
       }
       return Response.json({ received: true })
+    }
+
+    if (event.type === 'charge.refunded') {
+      // Records the refund for /admin/orders and (by default) opens a support-queue ticket.
+      // The email alert is drafted but off (REFUND_EMAIL_ALERT = false) until approved.
+      // Needs charge.refunded enabled on the Stripe webhook endpoint (test mode).
+      const result = await handleChargeRefunded(supabase, event)
+      console.log(`charge.refunded event ${event.id}:`, result.skipped || result.orderId)
+      return Response.json({ received: true, ...('skipped' in result ? { skipped: result.skipped } : { orderId: result.orderId }) })
     }
 
     return Response.json({ received: true })
