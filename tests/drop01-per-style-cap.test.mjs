@@ -110,7 +110,8 @@ test('public copy: no bare "50 numbered pieces", no restock / always-sell-out cl
   assert.match(pdp, /DROP01_NUMBERED_CLAIM_LIVE && <p className="pdp-drop">\{DROP01_CAP_COPY\} \{DROP01_MARK_COPY\}<\/p>/)
   assert.match(pdp, /!drop && <BackInStockSignup/)
   assert.doesNotMatch(read('app/qa/QAClient.js'), /Most popular items restock/)
-  assert.match(read('app/qa/QAClient.js'), /Drop 01's numbered Foundation Tees and Snapbacks will not be restocked or re-run\. We do not promise restocks of other items\. If a later, unnumbered release of a design is planned, we will say so clearly on the product page\./)
+  // Legal-approved restock line (same as PR #97, character for character; approved by Ashly Nov 20).
+  assert.ok(read('app/qa/QAClient.js').includes("a: 'Numbered Drop 01 pieces are never restocked or re-run. For other pieces, you can sign up on the product page to get an email if an item comes back in stock.' },"))
   // Old wording Legal rejected stays out of the app.
   for (const f of ['app/drop/DropClient.js', 'app/drop/01/page.js', 'app/lib/drops.js', 'app/product/[slug]/ProductClient.js', 'app/ambassador/AmbassadorClient.js'])
     assert.doesNotMatch(read(f), /50 numbered pieces|pieces per style|Every piece is numbered|each numbered 1–50|Numbered 1–50/)
