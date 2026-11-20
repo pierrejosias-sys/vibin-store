@@ -12,6 +12,8 @@ import { shippingFor } from '../lib/shipping'
 import { DROP_01, DROP01_CAP_COPY, DROP01_MARK_COPY, DROP01_NUMBERED_CLAIM_LIVE } from '../lib/drop-public.mjs'
 import { preorderBuyOpen, storeOpen, formatET } from '../lib/drop-window.mjs'
 
+import { podReturnTermsHref, POD_CART_TERMS_LINE, POD_CART_TERMS_LINK_TEXT } from '../lib/pod.mjs'
+
 const money = n => `$${(Number(n) || 0).toFixed(2)}`
 
 /** Items and totals, shown on the address step and the payment step. */
@@ -21,7 +23,10 @@ function OrderSummary({ items, subtotal, shippingCost, total }) {
       <h3>Order Summary</h3>
       {items.map((item, i) => (
         <div key={`${item.id}-${item.color || ''}-${item.size || ''}-${i}`} className="checkout-item">
-          <span>{item.name}{item.size ? ` (${item.color ? `${item.color} / ` : ''}${item.size})` : ''} × {item.qty}</span>
+          <span>
+            {item.name}{item.size ? ` (${item.color ? `${item.color} / ` : ''}${item.size})` : ''} × {item.qty}
+            {item.pod === true && <><br /><small className="checkout-pod-terms">{POD_CART_TERMS_LINE} <a href={podReturnTermsHref(item)}>{POD_CART_TERMS_LINK_TEXT}</a></small></>}
+          </span>
           <span>{money(item.price * item.qty)}</span>
         </div>
       ))}
@@ -123,11 +128,12 @@ export default function CheckoutPage() {
   }
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0)
-  const shippingCost = shippingFor(subtotal)
+  const shippingCost = shippingFor(subtotal, items)
   const total = subtotal + shippingCost
   const hasPreorder = items.some(i => i.drop || i.preorder)
   // Drop 01 pieces can't be checked out before the window (the server refuses them too).
-  const hasRegular = items.some(i => !(i.drop || i.preorder))
+  // Made-to-order lines have their own gate (POD_SALES_LIVE), not the Jan 14 store open (same as /api/checkout).
+  const hasRegular = items.some(i => !(i.drop || i.preorder) && i.pod !== true)
   const dropLocked = hasPreorder && now != null && !preorderBuyOpen(DROP_01, now)
   // Regular products open with the store, Thu Jan 14, 2027 7:00 PM ET.
   const storeLocked = hasRegular && now != null && !storeOpen(DROP_01.opensAt, now)

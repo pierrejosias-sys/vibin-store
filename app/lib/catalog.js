@@ -53,3 +53,24 @@ export async function getDropWindow(dropId) {
   } catch {}
   return out
 }
+
+// Made-to-order (POD) columns live in a separate, fail-soft query: until migration
+// 20261120200000_pod_unnumbered_products.sql is applied the columns don't exist, and /shop and product
+// pages must keep working (every product is then treated as a regular, non-POD product).
+const POD_COLUMNS = 'id,fulfillment,numbered,published,size_prices,ship_days,ships_separately,ship_first_rate,ship_addon_rate'
+
+/** Map(productId -> { fulfillment, numbered, published, ship_days, ships_separately, ship_*_rate }) for POD rows; empty on any error. */
+export async function getPodFields() {
+  try {
+    const { data, error } = await client().from('products').select(POD_COLUMNS).eq('fulfillment', 'printful_pod')
+    if (error) return new Map()
+    return new Map((data || []).map(r => [Number(r.id), r]))
+  } catch {
+    return new Map()
+  }
+}
+
+/** Products with their POD fields merged in (non-POD rows are unchanged). */
+export function withPodFields(products, podFields) {
+  return (products || []).map(p => (podFields.has(Number(p.id)) ? { ...p, ...podFields.get(Number(p.id)) } : p))
+}

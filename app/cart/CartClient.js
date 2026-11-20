@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '../lib/cart-context'
-import { shippingFor, FREE_SHIPPING_THRESHOLD } from '../lib/shipping'
+import { shippingFor, FREE_SHIPPING_THRESHOLD, freeShippingSubtotal, isPodLine } from '../lib/shipping'
+import { cartSeparatePackageNote, podReturnTermsHref, POD_CART_TERMS_LINE, POD_CART_TERMS_LINK_TEXT, POD_FREE_SHIPPING_EXCLUSION_COPY } from '../lib/pod.mjs'
 import { canOptimizeImage } from '../lib/product-image'
 import SiteHeader from '../components/SiteHeader'
 import SiteFooter from '../components/SiteFooter'
@@ -94,8 +95,12 @@ export default function CartPage() {
   }
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0)
-  const shipping = shippingFor(subtotal)
+  const shipping = shippingFor(subtotal, items)
   const total = subtotal + shipping
+  const separatePackageNote = cartSeparatePackageNote(items)
+  // Made-to-order lines never count toward free shipping (same rule as shippingFor in lib/shipping.js).
+  const freeShipBase = freeShippingSubtotal(items)
+  const hasInHouse = items.some(i => !isPodLine(i))
 
   return (
     <>
@@ -141,6 +146,7 @@ export default function CartPage() {
                     <div className="cart-item-name">{item.name}</div>
                     <div className="cart-item-variant">{[item.color, item.size].filter(Boolean).join(' · ')}</div>
                     {isDrop01NumberedLine(item) && <div className="cart-item-variant" style={{ marginTop: 4 }}>{drop01CartNote()}</div>}
+                    {isPodLine(item) && <div className="cart-item-variant cart-pod-terms" style={{ marginTop: 4 }}>{POD_CART_TERMS_LINE} <Link href={podReturnTermsHref(item)}>{POD_CART_TERMS_LINK_TEXT}</Link></div>}
                     <button
                       onClick={() => removeItem(item.id, item.color, item.size)}
                       style={{background:'none',border:'none',color:'#888',fontSize:'0.72rem',padding:'0',marginTop:'6px',cursor:'pointer',textDecoration:'underline',fontFamily:'inherit'}}
@@ -162,9 +168,9 @@ export default function CartPage() {
             </div>
 
             <div className="cart-summary">
-              {subtotal < FREE_SHIPPING_THRESHOLD && (
+              {hasInHouse && freeShipBase < FREE_SHIPPING_THRESHOLD && (
                 <div style={{background:'#f5f0eb',borderRadius:'8px',padding:'10px 14px',marginBottom:'16px',fontSize:'0.78rem',color:'#555',textAlign:'center'}}>
-                  Add <strong>${(FREE_SHIPPING_THRESHOLD - subtotal).toFixed(2)}</strong> more for free shipping 🚚
+                  Add <strong>${(FREE_SHIPPING_THRESHOLD - freeShipBase).toFixed(2)}</strong> more for free shipping 🚚
                 </div>
               )}
               <div className="cart-row">
@@ -177,6 +183,12 @@ export default function CartPage() {
                   {shipping === 0 ? 'FREE ✓' : `$${shipping.toFixed(2)}`}
                 </span>
               </div>
+              {items.some(isPodLine) && (
+                <div className="cart-note-pod-freeship" style={{fontSize:'0.78rem',color:'#555',margin:'4px 0 8px'}}>{POD_FREE_SHIPPING_EXCLUSION_COPY}</div>
+              )}
+              {separatePackageNote && (
+                <div className="cart-note-separate" style={{fontSize:'0.78rem',color:'#555',margin:'4px 0 8px'}}>{separatePackageNote}</div>
+              )}
               <div className="cart-row cart-total">
                 <span>Total</span>
                 <span>${total.toFixed(2)}</span>

@@ -21,7 +21,7 @@ export default function ReturnsPage() {
               <div className="policy-icon">↻</div>
               <h3 className="policy-title">30-Day Returns</h3>
               <p className="policy-desc">
-                Not feeling it? Return any unused item within 30 days of delivery for a full refund or exchange.
+                Not feeling it? Return any unused item within 30 days of delivery for a full refund or exchange. Made-to-order pieces follow the return terms shown on their product page.
               </p>
             </div>
 
@@ -93,6 +93,7 @@ export default function ReturnsPage() {
           <h2 className="sec-title" style={{textAlign:'center'}}>Non-Returnable <em>Items.</em></h2>
           <div className="nonreturn-grid">
             <div className="nonreturn-item">Final sale items (marked as such)</div>
+            <div className="nonreturn-item">Made-to-order pieces, except damaged, misprinted, defective, or wrong items (see the product page)</div>
             <div className="nonreturn-item">Gift cards</div>
             <div className="nonreturn-item">Worn, washed, or damaged items</div>
             <div className="nonreturn-item">Items without original tags/packaging</div>

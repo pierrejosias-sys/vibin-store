@@ -61,7 +61,7 @@ export default function TermsOfService() {
           <section style={{marginBottom:'40px'}}>
             <h2 style={{fontFamily:'Anton, sans-serif',fontSize:'24px',color:'#f6f1e7',marginBottom:'16px'}}>5. Payment & Refunds</h2>
             <p><strong>Payment:</strong> We use Stripe for secure payment processing. You agree to pay all charges incurred by you or any user of your account.</p>
-            <p style={{marginTop:'12px'}}><strong>Refunds:</strong> Refund requests must be submitted within 30 days of delivery. Items must be unworn, unwashed, and in original packaging. See our <Link href="/returns" style={{color:'#e05c2e'}}>Returns Policy</Link> for details.</p>
+            <p style={{marginTop:'12px'}}><strong>Refunds:</strong> Refund requests must be submitted within 30 days of delivery. Items must be unworn, unwashed, and in original packaging. See our <Link href="/returns" style={{color:'#e05c2e'}}>Returns Policy</Link> for details. Made-to-order pieces are final sale except as stated in the return terms on their product page.</p>
             <p style={{marginTop:'12px'}}><strong>Disputes:</strong> Chargebacks or payment disputes must be resolved by contacting support@vibinapparel.com first.</p>
           </section>
 

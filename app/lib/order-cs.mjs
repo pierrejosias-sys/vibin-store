@@ -15,6 +15,11 @@ export const CS_ORDER_FIELDS = [
   'items',
   'shipping_address',
   'ambassador_code',
+  // Made-to-order hand-off state (columns from 20261023000003_orders_printful_fulfillment.sql, already in the DB)
+  'printful_order_id',
+  'printful_status',
+  'fulfillment_status',
+  'printful_error',
 ]
 
 export const REFUND_SUPPORT_TICKET = true
@@ -81,6 +86,8 @@ export function presentOrderForCs(order, refunds = []) {
     refund_amount: dollarsFromCents(amountCents),
     refund_status: status,
     refund_event_at: latest,
+    // true when the order has made-to-order (Printful POD) lines; drives the manual "Create Printful draft" button
+    has_pod: (Array.isArray(order.items) ? order.items : []).some(i => i && i.fulfillment === 'printful_pod'),
   }
 }
 

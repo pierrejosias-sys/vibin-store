@@ -114,6 +114,8 @@ export function splitCart(items, variantMap) {
   const podLines = [], manualLines = [], unmapped = []
   const podProducts = new Set(Object.keys(variantMap).map(k => k.slice(0, k.lastIndexOf(':'))))
   for (const item of items || []) {
+    // Made-to-order (POD line) items are handed to Printful by an admin only ("Create Printful draft").
+    if (item?.fulfillment === 'printful_pod') { manualLines.push(item); continue }
     const keys = productKeys(item)
     const isPod = keys.some(k => podProducts.has(k))
     if (!isPod) { manualLines.push(item); continue }

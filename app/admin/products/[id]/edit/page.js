@@ -1,5 +1,8 @@
 'use client'
 
+// Explicit columns: products.printful_variants is not readable by anon/authenticated (POD migration).
+const ADMIN_PRODUCT_COLUMNS = 'id,name,slug,price,compare_price,category,color,image_color,description,in_stock,stock_qty,images,is_featured,tags,image_url,created_at'
+
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, useParams } from 'next/navigation'
@@ -23,7 +26,7 @@ export default function EditProductPage() {
   useEffect(() => { fetchProduct() }, [params.id])
 
   async function fetchProduct() {
-    const { data } = await supabase.from('products').select('*').eq('id', params.id).single()
+    const { data } = await supabase.from('products').select(ADMIN_PRODUCT_COLUMNS).eq('id', params.id).single()
     if (data) {
       setForm({
         ...data,

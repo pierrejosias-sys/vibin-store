@@ -22,8 +22,35 @@ export default function AdminOrders() {
   const [trackingInputs, setTrackingInputs] = useState({})
   const [saving, setSaving] = useState({})
   const [toast, setToast] = useState(null)
+  const [pfConfigured, setPfConfigured] = useState(null)
 
   useEffect(() => { fetchOrders() }, [])
+  useEffect(() => {
+    fetch('/api/admin/printful-draft').then(r => r.ok ? r.json() : null).then(d => setPfConfigured(d ? !!d.configured : false)).catch(() => setPfConfigured(false))
+  }, [])
+
+  // Manual only: creates a Printful DRAFT (Printful charges on confirm, which we never do here).
+  async function createPrintfulDraft(orderId) {
+    if (!window.confirm('Create a Printful DRAFT order for the made-to-order items? Nothing is charged until someone confirms it inside Printful.')) return
+    setSaving(prev => ({ ...prev, [`pf_${orderId}`]: true }))
+    try {
+      const res = await fetch('/api/admin/printful-draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok && data.ok) {
+        showToast(`Printful draft ${data.printfulOrderId} created. Review and confirm it in Printful.`)
+        fetchOrders()
+      } else {
+        showToast(data.message || data.error || 'Printful draft failed', 'error')
+      }
+    } catch (e) {
+      showToast(e.message || 'Printful draft failed', 'error')
+    }
+    setSaving(prev => ({ ...prev, [`pf_${orderId}`]: false }))
+  }
 
   async function fetchOrders() {
     setLoading(true)
@@ -267,6 +294,29 @@ export default function AdminOrders() {
                             <p style={{ ...s.mono, fontSize: '13px' }}>Code: <strong>{order.ambassador_code}</strong></p>
                             {order.commission_amount > 0 && (
                               <p style={{ fontSize: '18px', ...s.anton, marginTop: '4px' }}>Commission: ${(order.commission_amount || 0).toFixed(2)}</p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Made-to-order: manual Printful hand-off (draft only; auto-submit is off) */}
+                        {order.has_pod && (
+                          <div style={{ background: '#0d0d0d', border: '1px solid #1e2a3a', borderRadius: '6px', padding: '12px' }}>
+                            <p style={{ ...s.mono, fontSize: '10px', color: '#60a5fa', letterSpacing: '.15em', textTransform: 'uppercase', marginBottom: '6px' }}>Made to order · Printful</p>
+                            {order.printful_order_id ? (
+                              <p style={{ ...s.mono, fontSize: '12px', color: '#aaa' }}>Printful #{order.printful_order_id} · {order.printful_status || order.fulfillment_status}. Confirm it inside Printful.</p>
+                            ) : (
+                              <>
+                                {order.printful_error && <p style={{ fontSize: '12px', color: '#f87171', marginBottom: '8px' }}>{order.printful_error}</p>}
+                                <button
+                                  onClick={() => createPrintfulDraft(order.id)}
+                                  disabled={saving[`pf_${order.id}`] || order.status !== 'paid' || pfConfigured === false}
+                                  style={s.btn('#001020')}
+                                >
+                                  {saving[`pf_${order.id}`] ? '...' : 'Create Printful draft'}
+                                </button>
+                                {pfConfigured === false && <p style={{ fontSize: '12px', color: '#888', marginTop: '6px' }}>Printful isn&apos;t connected yet (PRINTFUL_API_KEY not set).</p>}
+                                {order.status !== 'paid' && <p style={{ fontSize: '12px', color: '#888', marginTop: '6px' }}>Only paid orders can be sent.</p>}
+                              </>
                             )}
                           </div>
                         )}

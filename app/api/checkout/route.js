@@ -15,6 +15,18 @@ import { cookies } from 'next/headers'
 import { EARLY_ACCESS_COOKIE, accessPhase } from '../../lib/early-access.mjs'
 import { lockEarlyAccessToken, attachEarlyAccessLock, releaseEarlyAccessLock } from '../../lib/waitlist.mjs'
 import { siteOrigin } from '../../lib/site-origin.mjs'
+import { POD_FULFILLMENT, checkPodCheckout, podShipDays, podPriceFor } from '../../lib/pod.mjs'
+
+// Made-to-order (POD) rows among the cart's catalog items. Fail-soft: before migration
+// 20261120200000_pod_unnumbered_products.sql the columns don't exist and nothing is POD.
+async function loadPodProducts(supabase, items) {
+  const ids = [...new Set(items.filter(i => /^\d+$/.test(String(i.id)) && !(i.drop && i.style)).map(i => Number(i.id)))]
+  if (!ids.length) return new Map()
+  const { data, error } = await supabase.from('products')
+    .select('id, name, price, size_prices, fulfillment, numbered, published, ship_days, ships_separately, ship_first_rate, ship_addon_rate').in('id', ids).eq('fulfillment', POD_FULFILLMENT)
+  if (error) return new Map()
+  return new Map((data || []).map(p => [Number(p.id), p]))
+}
 
 // Clients are created per request so the build doesn't need secrets
 // (preview environments may not have Stripe/Supabase keys configured).
@@ -46,6 +58,22 @@ export async function POST(request) {
     const { error: catalogError, status: catalogStatus } = await resolveCatalogItems(supabase, items)
     if (catalogError) return Response.json({ error: catalogError }, { status: catalogStatus || 400 })
 
+    // Made-to-order (POD): unnumbered, never claims pieces or counts toward the 50-per-style cap.
+    // Gated by POD_SALES_LIVE (false until Florida sales tax registration clears) and a configured ship time.
+    const podProducts = await loadPodProducts(supabase, items)
+    for (const i of items) {
+      if (podProducts.has(Number(i.id)) && DROP_CATALOG.d01.some(c => Number(i.id) === c.productId)) {
+        return Response.json({ error: 'This item is not available to order.' }, { status: 409 })
+      }
+    }
+    const podCheck = checkPodCheckout(items, podProducts)
+    if (podCheck.error) return Response.json({ error: podCheck.error }, { status: podCheck.status || 409 })
+    // Stamped server-side (sanitizeItem drops client-sent fields), so /admin/orders can offer the Printful draft.
+    for (const i of items) {
+      const pod = podProducts.get(Number(i.id))
+      if (pod) { i.price = podPriceFor(pod, i.size); i.fulfillment = POD_FULFILLMENT; i.shipDays = podShipDays(pod); i.shipsSeparately = pod.ships_separately === true; i.shipFirst = pod.ship_first_rate ?? null; i.shipAddon = pod.ship_addon_rate ?? null }
+    }
+
     // Drop-window catalog items (Foundation Tee, Snapback): same window + pre-order rules.
     const dropIdsForCatalog = Object.keys(DROP_CATALOG)
     const { data: windowDrops, error: windowErr } = await supabase.from('drops')
@@ -61,7 +89,8 @@ export async function POST(request) {
     const touchesDrop = items.some(i => (i.drop && i.style) || DROP_CATALOG.d01.some(c => Number(i.id) === c.productId))
     // Regular products are locked until the store opens with Drop 01's public open (Josias, Nov 18).
     const storeOpensAt = d01?.release_at || DROPS.d01.releaseAt
-    const hasRegular = items.some(i => !(i.drop && i.style) && !DROP_CATALOG.d01.some(c => Number(i.id) === c.productId))
+    // POD lines have their own gate above (POD_SALES_LIVE), so they don't wait for the store open.
+    const hasRegular = items.some(i => i.fulfillment !== POD_FULFILLMENT && !(i.drop && i.style) && !DROP_CATALOG.d01.some(c => Number(i.id) === c.productId))
     if (hasRegular && !storeOpen(storeOpensAt, now)) {
       return Response.json({ error: `The shop opens ${formatET(storeOpensAt)}. Your bag is saved until then.` }, { status: 409 })
     }
@@ -117,7 +146,9 @@ export async function POST(request) {
         currency: 'usd',
         product_data: {
           name: item.name,
-          description: item.preorder
+          description: item.fulfillment === POD_FULFILLMENT && item.shipDays
+            ? `Made to order · Ships within ${item.shipDays} business days · ${item.color ? `${item.color} / ` : ''}${item.size}`
+            : item.preorder
             ? `Pre-order${item.shipsBy ? ` · Ships by ${item.shipsBy}` : ''} · Size ${item.size}`
             : `${item.color} / ${item.size}`,
         },
@@ -127,7 +158,7 @@ export async function POST(request) {
     }))
 
     // Shipping computed server-side from config ($8 flat, free at FREE_SHIPPING_THRESHOLD+).
-    const shippingAmount = shippingFor(total)
+    const shippingAmount = shippingFor(total, items)
 
     // Hoodie (Printful) + tee/snapback (in-house) ship separately: say so on Stripe's page and receipt.
     const twoPackages = shipsInTwoPackages(items)
