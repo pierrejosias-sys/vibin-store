@@ -1,5 +1,5 @@
 'use client'
-import { shipsInTwoPackages } from '../lib/drop-catalog.mjs'
+import { shipsInTwoPackages, isDrop01NumberedLine } from '../lib/drop-catalog.mjs'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -9,7 +9,7 @@ import { useCart } from '../lib/cart-context'
 import SiteHeader from '../components/SiteHeader'
 import SiteFooter from '../components/SiteFooter'
 import { shippingFor } from '../lib/shipping'
-import { DROP_01 } from '../lib/drop-public.mjs'
+import { DROP_01, DROP01_CAP_COPY, DROP01_MARK_COPY, DROP01_NUMBERED_CLAIM_LIVE } from '../lib/drop-public.mjs'
 import { preorderBuyOpen, storeOpen, formatET } from '../lib/drop-window.mjs'
 
 const money = n => `$${(Number(n) || 0).toFixed(2)}`
@@ -48,6 +48,7 @@ export default function CheckoutPage() {
   const { updateCart } = useCart()
   const router = useRouter()
 
+  const [hadNumbered, setHadNumbered] = useState(false)
   const [shipping, setShipping] = useState({
     firstName: '', lastName: '', email: '', phone: '',
     address: '', city: '', state: '', zip: '', country: 'US'
@@ -70,6 +71,7 @@ export default function CheckoutPage() {
     if (success === 'true' && orderId) {
       setOrderId(orderId)
       setPaymentStatus('success')
+      try { setHadNumbered((JSON.parse(saved || '[]') || []).some(isDrop01NumberedLine)) } catch {}
       setStep(3)
       localStorage.removeItem('vibin_cart')
       localStorage.removeItem('vibin_ref')
@@ -247,6 +249,8 @@ export default function CheckoutPage() {
             <h2>Order Confirmed!</h2>
             <p className="success-order">Order #{orderId}</p>
             <p>Thank you for your order! Your payment was successful.</p>
+            {/* Names the edition, never a unit number (numbers are assigned at marking). Gated like every surface. */}
+            {hadNumbered && DROP01_NUMBERED_CLAIM_LIVE && <p style={{ fontSize: '13px', marginTop: '8px' }}>{DROP01_CAP_COPY} {DROP01_MARK_COPY}</p>}
             <p style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '8px' }}>
               Confirmation sent to <strong>{shipping.email}</strong>
             </p>

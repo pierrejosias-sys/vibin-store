@@ -36,7 +36,7 @@ export default async function HomePage() {
 
       {/* HERO */}
       <section className="hero">
-        <div className="hero-img" role="img" aria-label="Model wearing the black VIBIN. hoodie"></div>
+        <div className="hero-img" role="img" aria-label="VIBIN. Drop 01 wordmark and black snapback"></div>
         <div className="hero-grain"></div>
         <div className="hero-content">
           <div className="hero-top">
@@ -45,8 +45,7 @@ export default async function HomePage() {
               Vol. I — The Foundation
             </div>
             <div className="hero-meta">
-              Designed · Jacksonville FL<br />
-              Shot at 6:42 AM
+              Designed · Jacksonville FL
             </div>
           </div>
           <h1 className="hero-title">

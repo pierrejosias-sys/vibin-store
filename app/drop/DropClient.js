@@ -7,7 +7,7 @@ import SiteHeader from '../components/SiteHeader'
 import SiteFooter from '../components/SiteFooter'
 import ProductThumb from '../components/ProductThumb'
 import { getCampaign } from '../lib/campaign.mjs'
-import { DROP_01 } from '../lib/drop-public.mjs'
+import { DROP_01, DROP01_CAP_COPY, DROP01_MARK_COPY, DROP01_NUMBERED_CLAIM_LIVE } from '../lib/drop-public.mjs'
 
 /** Server-side sign-up (dedupes by email, issues the private early-access link, syncs to the ESP). */
 async function joinWaitlist(payload) {
@@ -20,7 +20,7 @@ async function joinWaitlist(payload) {
 import { useCart } from '../lib/cart-context'
 import WaitlistThanks from '../components/WaitlistThanks'
 import { sizesForStyle } from '../lib/drops'
-import { DROP_STYLE_IMAGES, activeStyleColors } from '../lib/drop-catalog.mjs'
+import { DROP_STYLE_IMAGES, activeStyleColors, catalogStyleCodes } from '../lib/drop-catalog.mjs'
 import { countdownTarget, formatET } from '../lib/drop-window.mjs'
 
 const S = {
@@ -127,11 +127,20 @@ function ComingSoonCard({ drop, style }) {
   )
 }
 
-function CatalogCard({ drop, item, released }) {
+/**
+ * Tee/Snapback card. With a styleCode the product is a numbered style: `style` is its drop_styles entry
+ * (missing = numbered pieces not seeded yet, so it can't be ordered). Counts only come from live inventory.
+ */
+function CatalogCard({ drop, item, style, released }) {
   const { updateCart } = useCart() || {}
   const [size, setSize] = useState(item.sizes.length === 1 ? item.sizes[0] : null)
   const [added, setAdded] = useState(false)
-  const canBuy = released && item.inStock && size
+  const numbered = !!item.styleCode
+  const notReady = numbered && !style
+  // Sold out only from live inventory (drop_inventory) with the style's pool at zero (Legal). No leftover counts.
+  const soldOut = released && numbered && drop.inventoryAvailable && style?.remaining === 0
+  const unavailable = notReady || !item.inStock
+  const canBuy = released && !unavailable && !soldOut && size
   const href = item.slug ? `/product/${item.slug}` : null
 
   function addToCart() {
@@ -158,9 +167,10 @@ function CatalogCard({ drop, item, released }) {
       {drop.shipsBy && <div style={{ fontSize: 13, opacity: 0.8, marginTop: 4 }}>Pre-order · Ships by {drop.shipsBy}</div>}
       <div style={{ margin: '12px 0', fontSize: 14 }}>
         {!released && <span>🔒 {drop.phase === 'closed' ? 'Pre-order closed' : `Pre-order opens ${formatET(drop.releaseAt)}`}</span>}
-        {released && !item.inStock && <strong style={{ color: '#f66' }}>SOLD OUT</strong>}
+        {released && soldOut && <strong style={{ color: '#f66' }}>{item.name} sold out</strong>}
+        {released && !soldOut && unavailable && <span>Not available to order yet</span>}
       </div>
-      {released && item.inStock && (
+      {released && !soldOut && !unavailable && (
         <>
           {item.sizes.length > 1 ? (
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
@@ -183,7 +193,8 @@ function StyleCard({ drop, style, released }) {
   const [size, setSize] = useState(null)
   const [added, setAdded] = useState(false)
   const soldOut = released && drop.inventoryAvailable && style.remaining === 0
-  const sizeLeft = sz => (sz in style.sizes ? style.sizes[sz] : style.remaining)
+  // Live inventory only (drop_inventory); null = no count shown.
+  const sizeLeft = sz => (!drop.inventoryAvailable ? null : sz in style.sizes ? style.sizes[sz] : style.remaining)
   const canBuy = released && !soldOut && style.price != null && size && sizeLeft(size) !== 0
 
   function addToCart() {
@@ -208,9 +219,8 @@ function StyleCard({ drop, style, released }) {
       <div style={{ opacity: 0.8 }}>{style.price != null ? `$${style.price}` : 'Price TBA'}</div>
       {drop.shipsBy && <div style={{ fontSize: 13, opacity: 0.8, marginTop: 4 }}>Pre-order · Ships by {drop.shipsBy}</div>}
       <div style={{ margin: '12px 0', fontSize: 14 }}>
-        {!released && <span>🔒 {drop.phase === 'closed' ? 'Pre-order closed' : `Pre-order opens ${formatET(drop.releaseAt)}`} · {drop.piecesPerStyle} numbered pieces</span>}
-        {released && soldOut && <strong style={{ color: '#f66' }}>SOLD OUT</strong>}
-        {released && !soldOut && style.remaining != null && <span>{style.remaining} of {drop.piecesPerStyle} left</span>}
+        {!released && <span>🔒 {drop.phase === 'closed' ? 'Pre-order closed' : `Pre-order opens ${formatET(drop.releaseAt)}`}</span>}
+        {released && soldOut && <strong style={{ color: '#f66' }}>{style.name} sold out</strong>}
       </div>
       {activeStyleColors(drop.id, style.code).length > 0 && (
         <p style={{ margin: '0 0 10px', fontSize: 13, color: '#bbb' }}>Color: {activeStyleColors(drop.id, style.code).map(c => c.name).join(' / ')}</p>
@@ -222,14 +232,13 @@ function StyleCard({ drop, style, released }) {
               const left = sizeLeft(sz)
               const out = left === 0
               return (
-                <button key={sz} disabled={out} onClick={() => setSize(sz)} title={left != null ? `${left} left` : undefined}
+                <button key={sz} disabled={out} onClick={() => setSize(sz)}
                   style={{ ...S.size, ...(size === sz ? { background: '#f5f5f5', color: '#0a0a0a' } : {}), ...(out ? { textDecoration: 'line-through', opacity: 0.4, cursor: 'not-allowed' } : {}) }}>
                   {sz}
                 </button>
               )
             })}
           </div>
-          {size && sizeLeft(size) != null && sz_note(sizeLeft(size), size)}
           <button data-help-avoid style={{ ...S.btn, ...(canBuy ? {} : S.btnOff) }} disabled={!canBuy} onClick={addToCart}>
             {added ? 'Added ✓' : size ? 'Add to cart' : 'Pick a size'}
           </button>
@@ -237,10 +246,6 @@ function StyleCard({ drop, style, released }) {
       )}
     </div>
   )
-}
-
-function sz_note(left, size) {
-  return <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 10 }}>{left} left in {size}</div>
 }
 
 export default function DropClient({ drop: dropProp, phase, earlyAccess, serverNow }) {
@@ -279,7 +284,8 @@ export default function DropClient({ drop: dropProp, phase, earlyAccess, serverN
         <div style={S.eyebrow}>Vibin Apparel · SS26</div>
         <h1 style={S.h1}>{drop.name}</h1>
         <p style={{ maxWidth: 640, opacity: 0.8 }}>{drop.story}</p>
-        <p style={{ opacity: 0.6, fontSize: 14 }}>Every piece is numbered 1–{drop.piecesPerStyle}.</p>
+        {/* Legal numbered claim + mark qualifier, only once Legal's gates clear (DROP01_NUMBERED_CLAIM_LIVE). */}
+        {drop.id === DROP_01.id && DROP01_NUMBERED_CLAIM_LIVE && <p style={{ opacity: 0.6, fontSize: 14 }}>{DROP01_CAP_COPY} {DROP01_MARK_COPY}</p>}
         {drop.shipsBy && <p style={{ fontSize: 16, fontWeight: 700 }}>Numbered pre-order · Ships by {drop.shipsBy}</p>}
 
         {(phase === 'upcoming' || phase === 'tba') && (
@@ -320,11 +326,12 @@ export default function DropClient({ drop: dropProp, phase, earlyAccess, serverN
         )}
 
         <div style={S.grid}>
-          {(drop.catalog || []).filter(c => c.slug === 'vibin-classic-tee').map(c => <CatalogCard key={c.slug} drop={drop} item={c} released={released} />)}
-          {drop.styles.filter(s => s.availability !== 'coming-soon').map(style => (
+          {(drop.catalog || []).filter(c => c.slug === 'vibin-classic-tee').map(c => <CatalogCard key={c.slug} drop={drop} item={c} style={drop.styles.find(s => s.code === c.styleCode)} released={released} />)}
+          {/* Numbered styles sold through a catalog card (tee, snapback) are not listed twice. */}
+          {drop.styles.filter(s => s.availability !== 'coming-soon' && !catalogStyleCodes(drop.id).has(s.code)).map(style => (
             <StyleCard key={style.code} drop={drop} style={style} released={released} />
           ))}
-          {(drop.catalog || []).filter(c => c.slug !== 'vibin-classic-tee').map(c => <CatalogCard key={c.slug} drop={drop} item={c} released={released} />)}
+          {(drop.catalog || []).filter(c => c.slug !== 'vibin-classic-tee').map(c => <CatalogCard key={c.slug} drop={drop} item={c} style={drop.styles.find(s => s.code === c.styleCode)} released={released} />)}
           {drop.styles.filter(s => s.availability === 'coming-soon').map(style => (
             <ComingSoonCard key={style.code} drop={drop} style={style} />
           ))}

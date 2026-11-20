@@ -9,6 +9,7 @@ import { productImage, galleryImages, canOptimizeImage } from '../../lib/product
 import { colorwaysFor, defaultColor } from '../../lib/colors.mjs'
 import { productSubtitle } from '../../lib/shop-filters.mjs'
 import { dropPhase, formatET } from '../../lib/drop-window.mjs'
+import { DROP_01, DROP01_CAP_COPY, DROP01_MARK_COPY, DROP01_NUMBERED_CLAIM_LIVE } from '../../lib/drop-public.mjs'
 import BackInStockSignup from '../../components/BackInStockSignup'
 import { galleryItems, specRows, featureList } from '../../lib/product-extras.mjs'
 
@@ -159,6 +160,7 @@ export default function ProductClient({ product, sizes: runSizes = null, drop = 
           </h1>
 
           {drop && <p className="pdp-drop">{dropLine(drop, dropPhase(drop.opensAt, drop.closesAt, now))}</p>}
+          {drop?.id === DROP_01.id && DROP01_NUMBERED_CLAIM_LIVE && <p className="pdp-drop">{DROP01_CAP_COPY} {DROP01_MARK_COPY}</p>}
 
           <div className="price-row">
             <span className="current">${price.toFixed(2)}</span>
@@ -239,7 +241,8 @@ export default function ProductClient({ product, sizes: runSizes = null, drop = 
             </button>
           </div>
           {added && <Link href="/cart" className="pdp-viewbag">View bag →</Link>}
-          <BackInStockSignup product={product} size={size} color={color} />
+          {/* Numbered drop pieces are never restocked, so no "back in stock" sign-up for them. */}
+          {!drop && <BackInStockSignup product={product} size={size} color={color} />}
 
           <div className="perks-strip">
             <div className="perk">

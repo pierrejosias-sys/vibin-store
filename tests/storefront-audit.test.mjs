@@ -41,7 +41,7 @@ test('search: exact prices, hidden drop styles left out, shop products counted a
   assert.doesNotMatch(src, /toFixed\(0\)/)
   assert.match(src, /availability !== 'hidden'/)
   assert.equal(DROP_01.availability.ns, 'hidden')
-  assert.equal(DROP_01.availability.hd, 'available')
+  assert.equal(DROP_01.availability.hd, 'hidden') // pulled until samples arrive (Josias, Nov 20)
 })
 
 test('/faq redirects to /qa', async () => {
