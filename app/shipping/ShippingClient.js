@@ -46,6 +46,15 @@ export default function ShippingPage() {
           <p>Each product page shows when that item ships. Made-to-order pieces ship within 7 business days of your order. Drop 01 is a pre-order, and its ship-by date is shown on the Drop 01 page and at checkout before you pay. You&apos;ll get a tracking number by email once your order ships.</p>
         </div>
 
+        {/* Made-to-order items: same strings as app/lib/pod.mjs on the POD branch (PR #96). Pending Josias. */}
+        <div id="made-to-order" style={{marginBottom:'40px'}}>
+          <h3 style={{fontFamily:'Anton, sans-serif',fontSize:'24px',textTransform:'uppercase',marginBottom:'16px'}}>Made-to-order items</h3>
+          <p>Made to order. Ships within 7 business days of your order. US delivery usually takes another 3–4 business days after it ships.</p>
+          <p style={{marginTop:'8px'}}>Hats ship in a separate package.</p>
+          <p style={{marginTop:'8px'}}>Made-to-order pieces don&apos;t count toward free shipping on orders over {FREE_SHIPPING_LABEL}. Their shipping is added at checkout.</p>
+          <p style={{marginTop:'8px'}}>Made-to-order pieces are final sale except as stated in the return terms on their product page.</p>
+        </div>
+
         <div style={{padding:'20px',border:'2px solid var(--coral)',borderRadius:'8px'}}>
           <p>Looking for return info? <Link href="/returns" style={{color:'var(--coral)',fontWeight:'bold'}}>View our Returns Policy →</Link></p>
         </div>

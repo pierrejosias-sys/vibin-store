@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { FREE_SHIPPING_LABEL } from '../lib/shipping'
 import SiteHeader from '../components/SiteHeader'
 import SiteFooter from '../components/SiteFooter'
 
@@ -18,6 +19,7 @@ export default function FAQPage() {
     { q: 'How do I contact support?', a: 'Email us at returns@vibinapparel.com. We typically respond within 1 business day.' },
     { q: 'Can I change my order after placing it?', a: 'Contact us within 1 hour of ordering and we\'ll do our best to accommodate changes before shipping.' },
     { q: 'Do you restock sold out items?', a: 'Numbered Drop 01 pieces are never restocked or re-run. For other pieces, you can sign up on the product page to get an email if an item comes back in stock.' },
+    { q: 'How do made-to-order items work?', a: `Made to order. Ships within 7 business days of your order. US delivery usually takes another 3–4 business days after it ships. Hats ship in a separate package. Made-to-order pieces don't count toward free shipping on orders over ${FREE_SHIPPING_LABEL}. Their shipping is added at checkout. Made-to-order pieces are final sale except as stated in the return terms on their product page.` },
     { q: 'How do I use a discount code?', a: 'Enter your code at checkout in the "Discount code" field. Only one code can be used per order.' },
   ]
 
