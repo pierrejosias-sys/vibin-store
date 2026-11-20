@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '../lib/cart-context'
 import { shippingFor, FREE_SHIPPING_THRESHOLD, freeShippingSubtotal, isPodLine } from '../lib/shipping'
-import { cartSeparatePackageNote } from '../lib/pod.mjs'
+import { cartSeparatePackageNote, podReturnTermsHref, POD_CART_TERMS_LINE, POD_CART_TERMS_LINK_TEXT, POD_FREE_SHIPPING_EXCLUSION_COPY } from '../lib/pod.mjs'
 import { canOptimizeImage } from '../lib/product-image'
 import SiteHeader from '../components/SiteHeader'
 import SiteFooter from '../components/SiteFooter'
@@ -146,6 +146,7 @@ export default function CartPage() {
                     <div className="cart-item-name">{item.name}</div>
                     <div className="cart-item-variant">{[item.color, item.size].filter(Boolean).join(' · ')}</div>
                     {isDrop01NumberedLine(item) && <div className="cart-item-variant" style={{ marginTop: 4 }}>{drop01CartNote()}</div>}
+                    {isPodLine(item) && <div className="cart-item-variant cart-pod-terms" style={{ marginTop: 4 }}>{POD_CART_TERMS_LINE} <Link href={podReturnTermsHref(item)}>{POD_CART_TERMS_LINK_TEXT}</Link></div>}
                     <button
                       onClick={() => removeItem(item.id, item.color, item.size)}
                       style={{background:'none',border:'none',color:'#888',fontSize:'0.72rem',padding:'0',marginTop:'6px',cursor:'pointer',textDecoration:'underline',fontFamily:'inherit'}}
@@ -182,6 +183,9 @@ export default function CartPage() {
                   {shipping === 0 ? 'FREE ✓' : `$${shipping.toFixed(2)}`}
                 </span>
               </div>
+              {items.some(isPodLine) && (
+                <div className="cart-note-pod-freeship" style={{fontSize:'0.78rem',color:'#555',margin:'4px 0 8px'}}>{POD_FREE_SHIPPING_EXCLUSION_COPY}</div>
+              )}
               {separatePackageNote && (
                 <div className="cart-note-separate" style={{fontSize:'0.78rem',color:'#555',margin:'4px 0 8px'}}>{separatePackageNote}</div>
               )}

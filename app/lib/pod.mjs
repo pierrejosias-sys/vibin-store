@@ -36,6 +36,32 @@ export const POD_SHIP_TIME_COPY = 'Made to order. Ships within 7 business days o
 /** Caps (ships_separately = true): product page, and the cart when a cap is in it with anything else. */
 export const POD_SEPARATE_PACKAGE_COPY = 'Hats ship in a separate package.'
 
+/**
+ * Made-to-order return terms. VERBATIM from /workspace/legal/pod-return-terms-nov20.md (§A, §B, §D), Nov 20, 12:24 PM ET.
+ * PENDING JOSIAS. Section C (size-exchange variant) is intentionally not used.
+ */
+export const POD_RETURN_TERMS_TITLE = 'Made-to-order return terms'
+export const POD_RETURN_TERMS = [
+  "Every made-to-order piece is printed just for you, so it's final sale: we can't accept returns or exchanges for size, fit, or change of mind. Please check the size guide before you order.",
+  "If your item arrives damaged, misprinted, or defective, or it isn't what you ordered, email returns@vibinapparel.com within 30 days of delivery with your order number and a photo. We'll send a free replacement or give you a full refund, your choice, at no cost to you.",
+  'Want to cancel? Email us right away. We can cancel for a full refund until your item goes into production. Once it\'s in production, these return terms apply.',
+  "These terms don't limit any rights you have under law, including your right to cancel for a full refund if we can't ship by the date we promised.",
+]
+/** Anchor of the terms block on each POD product page (cart/checkout link target, Fla. Stat. 501.142 notice). */
+export const POD_RETURN_TERMS_ANCHOR = 'return-terms'
+/** Cart and checkout line next to each made-to-order item (§B); "Return terms" links to the product page block. */
+export const POD_CART_TERMS_LINE = 'Made-to-order · Final sale except damaged, misprinted, defective, or wrong items.'
+export const POD_CART_TERMS_LINK_TEXT = 'Return terms'
+export function podReturnTermsHref(item) {
+  return `${POD_COLLECTION_PATH}/${encodeURIComponent(String(item?.slug || ''))}#${POD_RETURN_TERMS_ANCHOR}`
+}
+
+/**
+ * Free-shipping exclusion. MUST match the code in lib/shipping.js (made-to-order lines never count toward, and are
+ * never covered by, free shipping at FREE_SHIPPING_THRESHOLD+). PENDING JOSIAS (free-shipping policy decision).
+ */
+export const POD_FREE_SHIPPING_EXCLUSION_COPY = "Made-to-order pieces don't count toward free shipping on orders over $125. Their shipping is added at checkout."
+
 /** Words POD copy must never use (Legal, Nov 20). Checked by tests against the POD templates. */
 export const POD_BANNED_WORDS = ['numbered', 'limited', 'exclusive', 'drop', 'sold out', 'only x left', 'left in stock', 'selling fast', 'restock', 'countdown', 'christmas', 'holiday', 'arrives by']
 

@@ -4,7 +4,10 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useCart } from '../../../lib/cart-context'
 import { productImage } from '../../../lib/product-image'
-import { podPriceFor, POD_COLLECTION_PATH, POD_COLLECTION_TITLE, POD_LINE_COPY, POD_SEPARATE_PACKAGE_COPY } from '../../../lib/pod.mjs'
+import {
+  podPriceFor, POD_COLLECTION_PATH, POD_COLLECTION_TITLE, POD_LINE_COPY, POD_SEPARATE_PACKAGE_COPY,
+  POD_RETURN_TERMS_TITLE, POD_RETURN_TERMS, POD_RETURN_TERMS_ANCHOR, POD_FREE_SHIPPING_EXCLUSION_COPY,
+} from '../../../lib/pod.mjs'
 
 // Made-to-order product page. Copy rules (Legal, Nov 20): no scarcity, urgency or stock wording, no timers.
 // tests/pod-unnumbered.test.mjs scans this file for the banned words.
@@ -57,6 +60,7 @@ export default function PodProductClient({ product, sizes, shipLine, orderable }
           <p className="pdp-pod-line">{POD_LINE_COPY}</p>
           {shipLine ? <p className="pdp-pod-ship">{shipLine}</p> : null}
           {product.ships_separately === true ? <p className="pdp-pod-package">{POD_SEPARATE_PACKAGE_COPY}</p> : null}
+          <p className="pdp-pod-freeship">{POD_FREE_SHIPPING_EXCLUSION_COPY}</p>
           <div className="price-row"><span className="current">${price.toFixed(2)}</span></div>
           {product.description ? <p className="details-desc">{product.description}</p> : null}
 
@@ -84,6 +88,12 @@ export default function PodProductClient({ product, sizes, shipLine, orderable }
             </button>
           </div>
           {added && <Link href="/cart" className="pdp-viewbag">View bag →</Link>}
+
+          {/* Shown before purchase, next to Add to Bag (Legal: FTC Act §5, FDUTPA 501.204, Fla. Stat. 501.142). */}
+          <section id={POD_RETURN_TERMS_ANCHOR} className="pdp-pod-returns" style={{ marginTop: 20 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>{POD_RETURN_TERMS_TITLE}</h2>
+            {POD_RETURN_TERMS.map((p, i) => <p key={i} style={{ fontSize: 14, lineHeight: 1.6, marginBottom: 8 }}>{p}</p>)}
+          </section>
         </div>
       </div>
     </>

@@ -1,17 +1,18 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { readFileSync, existsSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
   POD_FULFILLMENT, POD_SALES_LIVE, POD_AUTO_SUBMIT, POD_COLLECTION_PATH, POD_LINE_COPY, POD_SHIP_TIME_COPY,
   POD_SEPARATE_PACKAGE_COPY, POD_BANNED_WORDS, POD_SHIP_DAYS,
-  podPriceFor, POD_SIZES, isPodProduct, isPublishedPod, isNumberedCapItem, podLinesFromItems, checkPodCheckout, podShipTimeLine, cartSeparatePackageNote,
+  POD_RETURN_TERMS_TITLE, POD_RETURN_TERMS, POD_RETURN_TERMS_ANCHOR, POD_CART_TERMS_LINE, POD_CART_TERMS_LINK_TEXT, podReturnTermsHref,
+  POD_FREE_SHIPPING_EXCLUSION_COPY, podPriceFor, POD_SIZES, isPodProduct, isPublishedPod, isNumberedCapItem, podLinesFromItems, checkPodCheckout, podShipTimeLine, cartSeparatePackageNote,
   podRecipientFromSession, buildPodDraftPayload, podDraftEligibility, podVariantFor,
 } from '../app/lib/pod.mjs'
 import { createPodDraftForOrder, printfulKeyConfigured, PRINTFUL_KEY_ENV } from '../app/lib/printful-pod-draft.mjs'
 import { splitCart } from '../app/lib/printful-core.mjs'
-import { shippingFor, podShippingFor, freeShippingSubtotal, SHIPPING_FLAT_RATE, POD_DEFAULT_RATES, POD_HOLIDAY_SURCHARGE } from '../app/lib/shipping.js'
+import { shippingFor, podShippingFor, freeShippingSubtotal, SHIPPING_FLAT_RATE, FREE_SHIPPING_THRESHOLD, POD_DEFAULT_RATES, POD_HOLIDAY_SURCHARGE } from '../app/lib/shipping.js'
 import { isDrop01NumberedLine, DROP_CATALOG } from '../app/lib/drop-catalog.mjs'
 import { presentOrderForCs } from '../app/lib/order-cs.mjs'
 
@@ -280,4 +281,59 @@ test('POD pricing: tee S–2XL $48; hoodie S–XL $72, 2XL $75; 3XL–5XL not so
   const seed = read('supabase/migrations/20261120200100_pod_core_draft_products_SEED.sql')
   assert.match(seed, /'printful_pod', false, false, '\{"2XL": 75\}'::jsonb, NULL, false, 8\.79, 2\.50, NULL\)/)
   assert.match(seed, /'printful_pod', false, false, NULL, NULL, false, 4\.95, 2\.20, NULL\)/)
+})
+
+// ── PENDING JOSIAS: Legal's made-to-order return terms + free-shipping exclusion copy ────────────────
+test('POD return terms are Legal\'s text verbatim (§A, §B, §D), skipping §C', () => {
+  assert.equal(POD_RETURN_TERMS_TITLE, 'Made-to-order return terms')
+  assert.deepEqual(POD_RETURN_TERMS, [
+    "Every made-to-order piece is printed just for you, so it's final sale: we can't accept returns or exchanges for size, fit, or change of mind. Please check the size guide before you order.",
+    "If your item arrives damaged, misprinted, or defective, or it isn't what you ordered, email returns@vibinapparel.com within 30 days of delivery with your order number and a photo. We'll send a free replacement or give you a full refund, your choice, at no cost to you.",
+    "Want to cancel? Email us right away. We can cancel for a full refund until your item goes into production. Once it's in production, these return terms apply.",
+    "These terms don't limit any rights you have under law, including your right to cancel for a full refund if we can't ship by the date we promised.",
+  ])
+  // every paragraph appears verbatim in Legal's file; section C's text is not used anywhere
+  // (cross-checked against Legal's source file when it's on this machine; CI doesn't have it)
+  const legalPath = '/workspace/legal/pod-return-terms-nov20.md'
+  if (existsSync(legalPath)) {
+    const legal = readFileSync(legalPath, 'utf8')
+    for (const para of POD_RETURN_TERMS) assert.ok(legal.includes(para), para)
+    assert.ok(legal.includes(POD_CART_TERMS_LINE))
+  }
+  const lib = read('app/lib/pod.mjs')
+  assert.doesNotMatch(lib, /remake fee|Wrong size\?/)
+  // product page: block next to Add to Bag, with the anchor the cart/checkout link to
+  const pdp = read('app/shop/made-to-order/[slug]/PodProductClient.js')
+  assert.match(pdp, /<section id=\{POD_RETURN_TERMS_ANCHOR\}/)
+  assert.match(pdp, /POD_RETURN_TERMS\.map/)
+  assert.ok(pdp.indexOf('className="btn-atc"') < pdp.indexOf('POD_RETURN_TERMS.map'))
+  // cart + checkout line with link (Fla. Stat. 501.142 point-of-sale notice)
+  assert.equal(POD_CART_TERMS_LINE, 'Made-to-order · Final sale except damaged, misprinted, defective, or wrong items.')
+  assert.equal(POD_CART_TERMS_LINK_TEXT, 'Return terms')
+  assert.equal(podReturnTermsHref({ slug: 'vibin-core-tee' }), `/shop/made-to-order/vibin-core-tee#${POD_RETURN_TERMS_ANCHOR}`)
+  assert.match(read('app/cart/CartClient.js'), /\{POD_CART_TERMS_LINE\} <Link href=\{podReturnTermsHref\(item\)\}>\{POD_CART_TERMS_LINK_TEXT\}<\/Link>/)
+  assert.match(read('app/checkout/CheckoutClient.js'), /\{POD_CART_TERMS_LINE\} <a href=\{podReturnTermsHref\(item\)\}>\{POD_CART_TERMS_LINK_TEXT\}<\/a>/)
+  // general pages (§D)
+  const returns = read('app/returns/ReturnsClient.js')
+  assert.match(returns, /Made-to-order pieces follow the return terms shown on their product page\./)
+  assert.match(returns, /<div className="nonreturn-item">Made-to-order pieces, except damaged, misprinted, defective, or wrong items \(see the product page\)<\/div>/)
+  assert.match(read('app/legal/terms/page.js'), /Made-to-order pieces are final sale except as stated in the return terms on their product page\./)
+})
+
+test('free-shipping exclusion: stated on POD pages and cart, and in sync with the code', () => {
+  assert.equal(POD_FREE_SHIPPING_EXCLUSION_COPY, "Made-to-order pieces don't count toward free shipping on orders over $125. Their shipping is added at checkout.")
+  assert.match(POD_FREE_SHIPPING_EXCLUSION_COPY, new RegExp(`\\$${FREE_SHIPPING_THRESHOLD}\\b`))
+  assert.match(read('app/shop/made-to-order/[slug]/PodProductClient.js'), /<p className="pdp-pod-freeship">\{POD_FREE_SHIPPING_EXCLUSION_COPY\}<\/p>/)
+  assert.match(read('app/cart/CartClient.js'), /items\.some\(isPodLine\) && \([\s\S]*?\{POD_FREE_SHIPPING_EXCLUSION_COPY\}/)
+  // the code matches the statement: a made-to-order-only cart over the threshold still pays shipping,
+  // and POD lines don't push in-house items over the threshold
+  const after = { now: Date.parse('2027-02-01T12:00:00Z') }
+  const hoodie = { id: 602, qty: 2, price: 72, fulfillment: POD_FULFILLMENT, shipFirst: 8.79, shipAddon: 2.5 }
+  assert.ok(FREE_SHIPPING_THRESHOLD <= 144 && shippingFor(144, [hoodie], after) > 0)
+  assert.equal(freeShippingSubtotal([hoodie, { id: 1, qty: 1, price: 60 }]), 60)
+  assert.equal(shippingFor(204, [hoodie, { id: 1, qty: 1, price: 60 }], after), SHIPPING_FLAT_RATE + 11.29)
+  for (const w of POD_BANNED_WORDS) {
+    assert.ok(!POD_FREE_SHIPPING_EXCLUSION_COPY.toLowerCase().includes(w))
+    for (const para of [...POD_RETURN_TERMS, POD_CART_TERMS_LINE]) assert.ok(!new RegExp(`\\b${w}\\b`, 'i').test(para), `${w} in ${para}`)
+  }
 })
