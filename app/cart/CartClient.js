@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '../lib/cart-context'
 import { shippingFor, FREE_SHIPPING_THRESHOLD } from '../lib/shipping'
+import { cartSeparatePackageNote } from '../lib/pod.mjs'
 import { canOptimizeImage } from '../lib/product-image'
 import SiteHeader from '../components/SiteHeader'
 import SiteFooter from '../components/SiteFooter'
@@ -94,8 +95,9 @@ export default function CartPage() {
   }
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0)
-  const shipping = shippingFor(subtotal)
+  const shipping = shippingFor(subtotal, items)
   const total = subtotal + shipping
+  const separatePackageNote = cartSeparatePackageNote(items)
 
   return (
     <>
@@ -177,6 +179,9 @@ export default function CartPage() {
                   {shipping === 0 ? 'FREE ✓' : `$${shipping.toFixed(2)}`}
                 </span>
               </div>
+              {separatePackageNote && (
+                <div className="cart-note-separate" style={{fontSize:'0.78rem',color:'#555',margin:'4px 0 8px'}}>{separatePackageNote}</div>
+              )}
               <div className="cart-row cart-total">
                 <span>Total</span>
                 <span>${total.toFixed(2)}</span>

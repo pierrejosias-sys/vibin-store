@@ -20,7 +20,7 @@ const nextConfig = {
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://*.supabase.co https://va.vercel-scripts.com https://vercel.live",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://vercel.live",
       "font-src 'self' https://fonts.gstatic.com https://vercel.live https://assets.vercel.com data:",
-      "img-src 'self' data: blob: https://*.supabase.co https://*.supabase.in https://user-gen-media-assets.s3.amazonaws.com https://api.qrserver.com https://images.unsplash.com https://*.stripe.com https://vercel.live https://vercel.com",
+      "img-src 'self' data: blob: https://*.supabase.co https://*.supabase.in https://user-gen-media-assets.s3.amazonaws.com https://api.qrserver.com https://images.unsplash.com https://files.cdn.printful.com https://*.stripe.com https://vercel.live https://vercel.com",
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://*.stripe.com https://vitals.vercel-insights.com https://va.vercel-scripts.com https://vercel.live wss://ws-us3.pusher.com",
       "frame-src https://js.stripe.com https://hooks.stripe.com https://m.stripe.network https://vercel.live",
       "frame-ancestors 'none'",
@@ -55,6 +55,11 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: '**.supabase.in',
+      },
+      {
+        // Printful mockups for made-to-order products (also allowed in CSP img-src)
+        protocol: 'https',
+        hostname: 'files.cdn.printful.com',
       },
     ],
   },

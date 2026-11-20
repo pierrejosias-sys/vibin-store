@@ -1,7 +1,7 @@
 import SiteHeader from '../components/SiteHeader'
 import SiteFooter from '../components/SiteFooter'
 import ShopClient from './ShopClient'
-import { getProducts } from '../lib/catalog'
+import { getProducts, getPodFields } from '../lib/catalog'
 import { normalizeFilter } from '../lib/shop-filters.mjs'
 import { orderForDisplay } from '../lib/home-helpers.mjs'
 import { FREE_SHIPPING_LABEL } from '../lib/shipping'
@@ -21,7 +21,9 @@ export default async function ShopPage({ searchParams }) {
   let products = []
   let loadError = false
   try {
-    products = await getProducts()
+    const [all, pod] = await Promise.all([getProducts(), getPodFields()])
+    // Made-to-order pieces are listed at /shop/made-to-order only.
+    products = all.filter(p => !pod.has(Number(p.id)))
   } catch (err) {
     console.error('shop: could not load products:', err.message)
     loadError = true

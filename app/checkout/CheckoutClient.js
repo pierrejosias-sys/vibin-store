@@ -123,7 +123,7 @@ export default function CheckoutPage() {
   }
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0)
-  const shippingCost = shippingFor(subtotal)
+  const shippingCost = shippingFor(subtotal, items)
   const total = subtotal + shippingCost
   const hasPreorder = items.some(i => i.drop || i.preorder)
   // Drop 01 pieces can't be checked out before the window (the server refuses them too).

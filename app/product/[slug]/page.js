@@ -2,7 +2,8 @@ import { notFound, redirect } from 'next/navigation'
 import SiteHeader from '../../components/SiteHeader'
 import SiteFooter from '../../components/SiteFooter'
 import ProductClient from './ProductClient'
-import { getProduct, getDropWindow } from '../../lib/catalog'
+import { getProduct, getDropWindow, getPodFields } from '../../lib/catalog'
+import { isPodProduct, POD_COLLECTION_PATH } from '../../lib/pod.mjs'
 import { dropCatalogEntry } from '../../lib/drop-catalog.mjs'
 import { serverNow } from '../../lib/drop-window.mjs'
 import { productImage } from '../../lib/product-image'
@@ -42,6 +43,9 @@ export default async function ProductPage({ params }) {
   const product = withExtras(stored)
   // Old links and the sitemap used the numeric id; send them to the slug address.
   if (/^\d+$/.test(slug) && product.slug) redirect(`/product/${product.slug}`)
+  // Made-to-order pieces have their own collection URL and template (no drop or stock copy).
+  const pod = (await getPodFields()).get(Number(product.id))
+  if (pod && isPodProduct(pod) && product.slug) redirect(`${POD_COLLECTION_PATH}/${product.slug}`)
 
   // Drop 01 pieces (Foundation Tee, Snapback) use the size run and pre-order flag that checkout enforces.
   const hit = dropCatalogEntry({ id: product.id, slug: product.slug })
