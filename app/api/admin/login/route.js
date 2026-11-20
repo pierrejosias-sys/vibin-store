@@ -24,11 +24,12 @@ export async function POST(request) {
 
   const body = await request.json().catch(() => ({}))
   const email = typeof body.email === 'string' ? body.email.trim() : ''
-  const password = typeof body.password === 'string' ? body.password : ''
-  if (!email || !password) return json({ error: 'Invalid email or password.' }, 400)
+  const { password: rawPw } = body
+  const pw = typeof rawPw === 'string' ? rawPw : ''
+  if (!email || !pw) return json({ error: 'Invalid email or password.' }, 400)
 
   const supabase = await authServerClient()
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password: pw })
   if (error || !data?.user) return json({ error: 'Invalid email or password.' }, 401)
 
   const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', data.user.id).single()
