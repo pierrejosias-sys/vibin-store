@@ -1,4 +1,8 @@
+import { requireAdmin, forbidden } from '../../lib/admin-auth'
+import { escapeHtml } from '../../lib/html.mjs'
+
 export async function POST(request) {
+  if (!(await requireAdmin())) return forbidden()
   try {
     const body = await request.json()
     const { email, type, data } = body
@@ -37,7 +41,7 @@ export async function POST(request) {
     if (!res.ok) {
       const err = await res.json()
       console.error('Resend error:', err)
-      return Response.json({ error: 'Email send failed', detail: err }, { status: 500 })
+      return Response.json({ error: 'Email send failed' }, { status: 500 })
     }
 
     return Response.json({ success: true })
@@ -69,15 +73,15 @@ function buildEmailHtml(type, data = {}) {
 
   const templates = {
     order_confirmed: () => base(`
-      <p>Hey${data.name ? ` ${data.name}` : ''},</p>
-      <p>Your order <strong>#${data.orderId || ''}</strong> is confirmed. We’re getting it ready.</p>
-      ${data.items ? `<p><strong>Items:</strong><br>${data.items}</p>` : ''}
-      ${data.total ? `<p><strong>Total:</strong> $${data.total}</p>` : ''}
+      <p>Hey${data.name ? ` ${escapeHtml(data.name)}` : ''},</p>
+      <p>Your order <strong>#${escapeHtml(data.orderId || '')}</strong> is confirmed. We’re getting it ready.</p>
+      ${data.items ? `<p><strong>Items:</strong><br>${escapeHtml(data.items)}</p>` : ''}
+      ${data.total ? `<p><strong>Total:</strong> $${escapeHtml(data.total)}</p>` : ''}
       <a href="https://vibinapparel.com/profile" class="btn">View Order →</a>
     `),
     order_shipped: () => base(`
       <p>Your order is on the way! 📦</p>
-      ${data.tracking ? `<p><strong>Tracking:</strong> ${data.tracking}</p>` : ''}
+      ${data.tracking ? `<p><strong>Tracking:</strong> ${escapeHtml(data.tracking)}</p>` : ''}
       <a href="https://vibinapparel.com/profile" class="btn">Track Order →</a>
     `),
     ambassador_approved: () => base(`
@@ -91,16 +95,16 @@ function buildEmailHtml(type, data = {}) {
     `),
     support_received: () => base(`
       <p>We got your message and will get back to you within 24–48 hours.</p>
-      ${data.message ? `<p><strong>Your message:</strong><br>${data.message}</p>` : ''}
+      ${data.message ? `<p><strong>Your message:</strong><br>${escapeHtml(data.message)}</p>` : ''}
     `),
     support_resolved: () => base(`
       <p>Your support request has been resolved.</p>
-      ${data.resolution ? `<p>${data.resolution}</p>` : ''}
+      ${data.resolution ? `<p>${escapeHtml(data.resolution)}</p>` : ''}
       <a href="https://vibinapparel.com/support" class="btn">Contact Us Again →</a>
     `),
   }
 
-  return (templates[type] || (() => base(`<p>${JSON.stringify(data)}</p>`)))()
+  return (templates[type] || (() => base('<p>You have a new message from Vibin Apparel.</p>')))()
 }
 
 // Builds the Resend auth header from the env var (kept out of an inline template

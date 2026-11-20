@@ -87,6 +87,22 @@ export async function handleClaim(supabase, input) {
 }
 
 /**
+ * Redeem is session-bound: the caller must be signed in, and the email they redeem under must be
+ * the signed-in account's email. Returns { status, body } to reject, or null when allowed.
+ */
+export function redeemSessionCheck(user, input) {
+  const sessionEmail = normalizeEmail(user?.email)
+  if (!user || !sessionEmail) {
+    return { status: 401, body: { status: 'login_required', error: 'Sign in to redeem points.' } }
+  }
+  const email = normalizeEmail(input?.account ?? input?.account_or_email ?? input?.email)
+  if (email && email !== sessionEmail) {
+    return { status: 403, body: { status: 'account_mismatch', error: 'Redeem with the email you are signed in with.' } }
+  }
+  return null
+}
+
+/**
  * POST /api/redeem { account, tier_id } -> { status, body }
  *   200 redeemed (single-use reward_code tied to the account; points deducted in the same transaction)
  *   402 insufficient_points (balance, points_needed)   400 bad email / unknown tier

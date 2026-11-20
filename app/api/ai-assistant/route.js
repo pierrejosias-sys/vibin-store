@@ -1,5 +1,6 @@
 // API route for AI Assistant in admin portal
 import { NextResponse } from 'next/server';
+import { requireAdmin, forbidden } from '../../lib/admin-auth';
 
 // System prompt for Vibin Apparel AI Assistant
 const SYSTEM_PROMPT = `You are the Vibin Apparel AI Assistant — an expert on:
@@ -23,6 +24,7 @@ Be concise, confident, and use the "Vibin different" tone — calm, intentional,
 Always provide actionable advice. If unsure, say "Check the docs at /admin"`;
 
 export async function POST(request) {
+  if (!(await requireAdmin())) return forbidden();
   try {
     const { messages } = await request.json();
 
@@ -70,7 +72,6 @@ Need the full plan? Check /admin or open VIBIN_APP_COMPILED.md from the repo.`;
 
 To deploy manually when ready:
 \`\`\`bash
-cd /Users/josiaslucksonpierre/vibin-store
 npx vercel --prod --yes
 \`\`\`
 

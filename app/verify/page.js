@@ -278,6 +278,8 @@ export default function VerifyPage() {
       setPointsNote('You have ' + data.balance + ' points. ' + tier.label + ' needs ' + data.points_needed + '.')
       return
     }
+    if (status === 401) { setPointsNote('Sign in to redeem points.'); return }
+    if (status === 403) { setPointsNote("Redeem with the email you're signed in with."); return }
     setPointsNote(status === 400 ? "That email doesn't look right." : trouble(status))
   }
 
@@ -452,7 +454,7 @@ export default function VerifyPage() {
                 </div>
               )
             })}
-            {pointsNote && <p className="verify-error" role="status">{pointsNote}</p>}
+            {pointsNote && <p className="verify-error" role="status">{pointsNote}{pointsNote === 'Sign in to redeem points.' && <> <a href="/login?next=%2Fverify">Sign in</a></>}</p>}
             {reward && (
               <div className="verify-reward">
                 <div style={{ fontFamily: 'monospace', fontSize: 11, letterSpacing: '.16em', textTransform: 'uppercase', color: '#4c483c' }}>Your reward code</div>

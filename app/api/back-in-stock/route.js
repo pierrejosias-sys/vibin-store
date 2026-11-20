@@ -1,8 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 import { parseSignup, saveSignup } from '../../lib/back-in-stock.mjs'
+import { createRateLimiter, clientIp } from '../../lib/support.mjs'
+
+const ipLimit = createRateLimiter({ max: 5, windowMs: 10 * 60 * 1000 })
 
 // "Notify me when back in stock" sign-up. Stores the request only; no email is sent here.
 export async function POST(request) {
+  if (!ipLimit(clientIp(request))) return Response.json({ error: 'Too many tries. Please wait a few minutes.' }, { status: 429 })
   let body
   try { body = await request.json() } catch { return Response.json({ error: 'Invalid request.' }, { status: 400 }) }
   const parsed = parseSignup(body)

@@ -1,0 +1,4 @@
+Contact: mailto:hello@vibinapparel.com
+Expires: 2027-05-20T00:00:00.000Z
+Canonical: https://vibinapparel.com/.well-known/security.txt
+Preferred-Languages: en

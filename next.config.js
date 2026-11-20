@@ -13,6 +13,35 @@ const nextConfig = {
       { source: '/faq', destination: '/qa', permanent: true },
     ]
   },
+
+  async headers() {
+    const csp = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://*.supabase.co https://va.vercel-scripts.com https://vercel.live",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://vercel.live",
+      "font-src 'self' https://fonts.gstatic.com https://vercel.live https://assets.vercel.com data:",
+      "img-src 'self' data: blob: https://*.supabase.co https://*.supabase.in https://user-gen-media-assets.s3.amazonaws.com https://api.qrserver.com https://images.unsplash.com https://*.stripe.com https://vercel.live https://vercel.com",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://*.stripe.com https://vitals.vercel-insights.com https://va.vercel-scripts.com https://vercel.live wss://ws-us3.pusher.com",
+      "frame-src https://js.stripe.com https://hooks.stripe.com https://m.stripe.network https://vercel.live",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "object-src 'none'",
+      "upgrade-insecure-requests",
+    ].join('; ')
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'Content-Security-Policy', value: csp },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+        ],
+      },
+    ]
+  },
   images: {
     remotePatterns: [
       {

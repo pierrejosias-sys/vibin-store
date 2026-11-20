@@ -1,4 +1,8 @@
+import { createRateLimiter, clientIp } from '../../../lib/support.mjs'
+
+const ipLimit = createRateLimiter({ max: 5, windowMs: 10 * 60 * 1000 })
 export async function POST(request) {
+  if (!ipLimit(clientIp(request))) return Response.json({ error: 'Too many tries. Please wait a few minutes.' }, { status: 429 })
   try {
     const { email } = await request.json()
 

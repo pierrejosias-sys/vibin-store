@@ -31,6 +31,7 @@ export default function SiteFooter() {
             <li><Link href="/contact">Contact</Link></li>
             <li><Link href="/login">Account</Link></li>
             <li><Link href="/ambassador">Ambassador</Link></li>
+            <li><Link href="/careers">Careers</Link></li>
           </ul>
         </div>
         <div className="foot-col">
