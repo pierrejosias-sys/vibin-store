@@ -1,0 +1,39 @@
+{
+  "product": "Vibin Lanyard, Spring",
+  "sku_prefix": "VB-ACC-SPRG",
+  "collection": "Kita's line (her 23 picks, Nov 19, 2026), Drop 01 target Thu Jan 14, 2027, pending vendor proof",
+  "category": "accessories",
+  "status": "coming_soon",
+  "buyable": false,
+  "group": "kita-lanyards",
+  "kita_numbers": [
+    "23"
+  ],
+  "description": "Lanyard in spring classic and earth-tone colors.",
+  "variants": [
+    {
+      "name": "Spring",
+      "sku": "VB-ACC-SPRG-STD"
+    }
+  ],
+  "mockup_views": [
+    "front",
+    "on_phone"
+  ],
+  "material": "TBD",
+  "dimensions": "TBD",
+  "weight": "TBD",
+  "care": "TBD",
+  "vendor": "TBD",
+  "moq": "TBD",
+  "lead_time": "TBD",
+  "ship_date": "TBD",
+  "price": "TBD",
+  "images": [],
+  "photo_slots": [
+    "kita-23.webp"
+  ],
+  "image_note": "Mockups only, labeled as mockups on the site. Kita's files arrive by email as kita-NN.webp (her numbers). A file goes in public/products/<slug>/ and its name in images; until a piece has a photo it stays off /shop. No stock photos.",
+  "compare_price": null,
+  "slug": "vibin-lanyard-spring"
+}

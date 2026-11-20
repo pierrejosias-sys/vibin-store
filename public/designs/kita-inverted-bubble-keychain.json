@@ -1,0 +1,38 @@
+{
+  "product": "Vibin Bubble Keychain, Inverted",
+  "sku_prefix": "VB-KEY-INV",
+  "collection": "Kita's line (her 23 picks, Nov 19, 2026), Drop 01 target Thu Jan 14, 2027, pending vendor proof",
+  "category": "accessories",
+  "status": "coming_soon",
+  "buyable": false,
+  "group": "kita-keychains",
+  "kita_numbers": [
+    "10"
+  ],
+  "description": "VIBIN bubble keychain in chocolate letters with a cream glitter outline.",
+  "variants": [
+    {
+      "name": "Chocolate / Cream",
+      "sku": "VB-KEY-INV-CHO"
+    }
+  ],
+  "mockup_views": [
+    "front"
+  ],
+  "material": "TBD",
+  "dimensions": "TBD",
+  "weight": "TBD",
+  "care": "TBD",
+  "vendor": "TBD",
+  "moq": "TBD",
+  "lead_time": "TBD",
+  "ship_date": "TBD",
+  "price": "TBD",
+  "images": [],
+  "photo_slots": [
+    "kita-10.webp"
+  ],
+  "image_note": "Mockups only, labeled as mockups on the site. Kita's files arrive by email as kita-NN.webp (her numbers). A file goes in public/products/<slug>/ and its name in images; until a piece has a photo it stays off /shop. No stock photos.",
+  "compare_price": null,
+  "slug": "vibin-bubble-keychain-inverted"
+}

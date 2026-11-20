@@ -1,0 +1,39 @@
+{
+  "product": "Vibin Safety Pin Charm, Gold",
+  "sku_prefix": "VB-ACC-PIN",
+  "collection": "Kita's line (her 23 picks, Nov 19, 2026), Drop 01 target Thu Jan 14, 2027, pending vendor proof",
+  "category": "accessories",
+  "status": "coming_soon",
+  "buyable": false,
+  "group": "kita-charms",
+  "kita_numbers": [
+    "15"
+  ],
+  "description": "Gold safety pin charm with a VIBIN tag, a star, a heart and a pearl.",
+  "variants": [
+    {
+      "name": "Gold",
+      "sku": "VB-ACC-PIN-GLD"
+    }
+  ],
+  "mockup_views": [
+    "front",
+    "detail"
+  ],
+  "material": "TBD",
+  "dimensions": "TBD",
+  "weight": "TBD",
+  "care": "TBD",
+  "vendor": "TBD",
+  "moq": "TBD",
+  "lead_time": "TBD",
+  "ship_date": "TBD",
+  "price": "TBD",
+  "images": [],
+  "photo_slots": [
+    "kita-15.webp"
+  ],
+  "image_note": "Mockups only, labeled as mockups on the site. Kita's files arrive by email as kita-NN.webp (her numbers). A file goes in public/products/<slug>/ and its name in images; until a piece has a photo it stays off /shop. No stock photos.",
+  "compare_price": null,
+  "slug": "vibin-pin-charm-gold"
+}

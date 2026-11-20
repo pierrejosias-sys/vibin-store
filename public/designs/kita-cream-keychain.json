@@ -1,11 +1,11 @@
 {
-  "product": "Vibin Keychain, Cream",
+  "product": "Vibin Bubble Keychain, Cream",
   "sku_prefix": "VB-KEY-CRM",
   "collection": "Drop 01 target (Thu Jan 14, 2027), pending vendor proof",
   "category": "accessories",
   "status": "coming_soon",
   "buyable": false,
-  "description": "Cream keychain with VIBIN in all caps. Clean, simple, goes with the tote.",
+  "description": "Cream VIBIN bubble keychain with a brown glitter outline and hardware on the left of the V. Spells exactly VIBIN, V in full view.",
   "branding": [
     {
       "placement": "front",
@@ -31,8 +31,18 @@
   "lead_time": "TBD",
   "ship_date": "TBD",
   "images": [],
-  "image_note": "Placeholders only. Real Vibin photos replace them before launch. No stock photos.",
+  "image_note": "Mockups only, labeled as mockups on the site. Kita's files arrive by email as kita-NN.webp (her numbers). A file goes in public/products/<slug>/ and its name in images; until a piece has a photo it stays off /shop. No stock photos.",
   "price": "TBD",
   "compare_price": null,
-  "slug": "vibin-keychain-cream"
+  "slug": "vibin-keychain-cream",
+  "group": "kita-keychains",
+  "kita_numbers": [
+    "08",
+    "09"
+  ],
+  "photo_slots": [
+    "kita-08.webp",
+    "kita-09.webp"
+  ],
+  "photo_note": "kita-09 shows it on the chocolate tote, left handle, hanging vertical."
 }
