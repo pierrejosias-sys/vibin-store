@@ -27,7 +27,8 @@ test('middleware no longer role-gates /ambassador (apply, login and hub are reac
   const src = readFileSync(new URL('../middleware.js', import.meta.url), 'utf8')
   assert.doesNotMatch(src, /'\/ambassador\/:path\*'/)
   assert.doesNotMatch(src, /protectedRoutes = \[[^\]]*'\/ambassador'/)
-  assert.match(src, /protectedRoutes = \['\/admin', '\/profile'\]/)
+  assert.match(src, /protectedRoutes = \['\/admin', '\/profile', '\/support-agent'\]/)
+  assert.doesNotMatch(src, /'\/ambassador'/, 'ambassador stays public')
   assert.match(src, /if \(!profile\?\.is_admin\)/)
 })
 
