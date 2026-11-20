@@ -16,3 +16,7 @@ export const DROP_01 = {
   hero: { src: '/drop01/flatlay-hero.webp', ready: true, alt: 'Drop 01 flatlay (mockup): a black hoodie, black boxer briefs with a turquoise waistband, black and turquoise shorts and a First Drop card laid out together.' },
   shipsBy: null, // No public ship date until vendor proof is in; copy leaves the line out while this is empty
 }
+
+// Legal, Nov 20 (site-copy-conflicts-nov20.md §3): Drop 01 ship line before a ship-by date is approved and posted.
+// Names no date. DROP_01.shipsBy stays null until Josias approves a date with vendor evidence on file.
+export const DROP01_SHIP_LINE_PREWINDOW = "Drop 01 is a pre-order. Pieces are made after the pre-order window closes. The ship-by date will be posted here before pre-orders open, and you'll see it again at checkout before you pay."

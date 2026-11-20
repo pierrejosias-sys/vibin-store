@@ -21,7 +21,7 @@ export default function ReturnsPage() {
               <div className="policy-icon">↻</div>
               <h3 className="policy-title">30-Day Returns</h3>
               <p className="policy-desc">
-                Not feeling it? Return any unused item within 30 days of delivery for a full refund or exchange.
+                Not feeling it? Return any unused item within 30 days of delivery for a full refund or exchange. Made-to-order pieces follow the return terms shown on their product page.
               </p>
             </div>
 
@@ -66,7 +66,7 @@ export default function ReturnsPage() {
               <div className="step-num">02</div>
               <div className="step-content">
                 <h4>Get RMA Number</h4>
-                <p>We'll reply within 24 hours with a Return Merchandise Authorization (RMA) number and instructions.</p>
+                <p>We'll reply within 1 business day with a Return Merchandise Authorization (RMA) number and instructions.</p>
               </div>
             </div>
 
