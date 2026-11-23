@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 import { getDropState, getDropInventory, serverNow } from '../../lib/drops'
 import { accessPhase, EARLY_ACCESS_COOKIE } from '../../lib/early-access.mjs'
 import { isValidEarlyAccessToken } from '../../lib/waitlist.mjs'
-import { DROP_01 } from '../../lib/drop-public.mjs'
+import { DROP_01, DROP01_CAP_COPY, DROP01_NUMBERED_CLAIM_LIVE } from '../../lib/drop-public.mjs'
 import { windowLabelShort } from '../../lib/drop-copy.mjs'
 
 async function hasEarlyAccess() {
@@ -19,9 +19,10 @@ export const dynamic = 'force-dynamic'
 
 export const metadata = buildMeta({
   title: 'Drop 01: The Foundation — Vibin Apparel',
-  description: `Drop 01: The Foundation. Numbered pre-order ${windowLabelShort(DROP_01)} (ET). The VOL 01 Hoodie: Lane Seven heavyweight, DTF print, no cords.`,
+  description: `Drop 01: The Foundation. Foundation Tee and Snapback pre-order ${windowLabelShort(DROP_01)} (ET).${DROP01_NUMBERED_CLAIM_LIVE ? ` ${DROP01_CAP_COPY}` : ''}`,
   path: '/drop/01',
-  image: '/og-drop01.jpg'
+  // Existing Foundation Tee product shot (no hoodie). /og-drop01.jpg never existed in /public (404 live).
+  image: '/drop01/tee-shgdd-front.webp'
 })
 
 export default async function Drop01Page() {

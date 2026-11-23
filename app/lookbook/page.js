@@ -28,16 +28,6 @@ const LOOKS = [
     cta: 'Shop the hoodie',
     pos: '50% 35%',
   },
-  {
-    src: '/brand/hero-model.jpg',
-    alt: 'Model in a black Vibin hoodie with a small chest mark, standing against a curved concrete wall',
-    title: 'VOL 01 Hoodie',
-    detail: 'Relaxed fit · Double-layer hood · Black',
-    href: '/drop/01',
-    cta: 'See Drop 01',
-    pos: '47% 30%',
-    wide: true,
-  },
 ]
 
 export default function LookbookPage() {

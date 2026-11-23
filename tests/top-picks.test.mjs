@@ -50,7 +50,7 @@ test('Tech Short back is the clean back only, and the flatlay hero is in place',
     assert.match(g.label, /mockup/i)
     if (g.ready) assert.ok(existsSync(new URL(`../public/products/tech-short/${g.file}`, import.meta.url)), g.file)
   }
-  assert.equal(DROP_01.hero.ready, true)
+  assert.equal(DROP_01.hero.ready, false) // hero off Nov 20: the flatlay shows the held hoodie
   assert.ok(existsSync(new URL(`../public${DROP_01.hero.src}`, import.meta.url)))
   assert.match(DROP_01.hero.alt, /mockup/i)
 })

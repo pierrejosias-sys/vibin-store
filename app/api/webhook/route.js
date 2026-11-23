@@ -1,6 +1,6 @@
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
-import { pieceIdsFromMetadata, releasePieces } from '../../lib/pieces'
+import { pieceIdsFromMetadata, releasePieces, refundPieces } from '../../lib/pieces'
 import { markEarlyAccessTokenUsed, releaseEarlyAccessLock } from '../../lib/waitlist.mjs'
 import { fulfillWithPrintful } from '../../lib/printful'
 import { handleChargeRefunded } from '../../lib/order-refunds.mjs'
@@ -142,13 +142,34 @@ export async function POST(request) {
       return Response.json({ received: true })
     }
 
+    // charge.refunded: ONE block, two idempotent steps (merged Nov 20: PR #92 + Drop 01 Yes 1).
+    //  1. Record the refund in order_refunds (idempotent on Stripe event id) and, by default, open an
+    //     /admin/support ticket. The email alert is drafted but off (REFUND_EMAIL_ALERT = false).
+    //  2. Numbered pieces on a FULL refund are retired (or, only if confirmed not marked, reassigned).
+    //     Never resold as new. refund_pieces only touches 'sold' pieces still tied to this session, so a
+    //     Stripe retry is safe; it runs even when step 1 says 'duplicate', so a failed step 2 is retried.
+    //     Partial refunds change no numbers automatically. Needs the separate Drop 01 DB step (refund_pieces).
+    // Needs charge.refunded enabled on the Stripe webhook endpoint (test mode).
     if (event.type === 'charge.refunded') {
-      // Records the refund for /admin/orders and (by default) opens a support-queue ticket.
-      // The email alert is drafted but off (REFUND_EMAIL_ALERT = false) until approved.
-      // Needs charge.refunded enabled on the Stripe webhook endpoint (test mode).
+      const charge = event.data.object
       const result = await handleChargeRefunded(supabase, event)
       console.log(`charge.refunded event ${event.id}:`, result.skipped || result.orderId)
-      return Response.json({ received: true, ...('skipped' in result ? { skipped: result.skipped } : { orderId: result.orderId }) })
+      const body = { received: true, ...('skipped' in result ? { skipped: result.skipped } : { orderId: result.orderId }) }
+
+      const pi = typeof charge?.payment_intent === 'string' ? charge.payment_intent : charge?.payment_intent?.id
+      if (!pi) return Response.json(body)
+      const { data: sessions } = await stripe.checkout.sessions.list({ payment_intent: pi, limit: 1 })
+      const session = sessions?.[0]
+      const pieceIds = session ? pieceIdsFromMetadata(session.metadata) : []
+      if (!pieceIds.length) return Response.json(body)
+      if (!charge.refunded) {
+        // Partial refund: we can't tell which number it covers, so nothing changes automatically.
+        console.error(`⚠️ Partial refund on session ${session.id} (${pieceIds.length} numbered piece(s)): retire or keep numbers by hand`)
+        return Response.json(body)
+      }
+      const { retired, reassigned } = await refundPieces(supabase, pieceIds, session.id)
+      console.log(`Refund ${charge.id}: session ${session.id} — retired ${retired}, reassigned ${reassigned} (not marked) numbered piece(s)`)
+      return Response.json({ ...body, retired, reassigned })
     }
 
     return Response.json({ received: true })

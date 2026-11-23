@@ -387,19 +387,23 @@ header { position: sticky; top: 0; z-index: 100; background: var(--ink); color: 
 .tier-req { font-size: 12px; color: var(--muted); margin-top: 8px; }
 
 /* HOME PAGE HERO */
-.hero { position: relative; height: calc(100vh - 100px); min-height: 620px; background: var(--ink); overflow: hidden; display: flex; }
-.hero-img { position: absolute; inset: 0; background-image: linear-gradient(180deg, rgba(0,0,0,.4) 0%, rgba(0,0,0,.2) 50%, rgba(0,0,0,.7) 100%), url('/brand/hero-model.jpg'); background-size: cover; background-position: center 25%; filter: contrast(1.05) saturate(.95); animation: heroIn 1.4s ease both; }
+/* Bright aqua Drop 01 frame (hero-home-desktop.jpg). The old dark gradient, contrast/saturate
+   filter, and cream "Vibin Different." title were built for /brand/hero-model.jpg (kept in public
+   for the login split). They are dropped or restyled here so they don't cover the frame or DROP 01. */
+.hero { position: relative; height: calc(100vh - 100px); min-height: 620px; background: #5FF0E6; overflow: hidden; display: flex; }
+.hero-img { position: absolute; inset: 0; background-image: url('/brand/hero-home-desktop.jpg'); background-size: cover; background-position: center 25%; animation: heroIn 1.4s ease both; }
 @keyframes heroIn { from { transform: scale(1.08); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-.hero-grain { position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E"); opacity: .12; mix-blend-mode: overlay; pointer-events: none; }
-.hero-content { position: relative; z-index: 10; width: 100%; padding: 60px 60px 50px; display: flex; flex-direction: column; justify-content: space-between; color: var(--cream); }
+.hero-grain { display: none; }
+.hero-content { position: relative; z-index: 10; width: 100%; padding: 60px 60px 50px; display: flex; flex-direction: column; justify-content: space-between; color: var(--ink); }
 .hero-top { display: flex; justify-content: space-between; align-items: flex-start; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .15em; text-transform: uppercase; }
-.hero-meta { color: rgba(246,241,231,.7); }
-.hero-meta strong { color: var(--cream); }
-.hero-title { font-family: 'Anton', sans-serif; font-size: clamp(80px, 14vw, 220px); line-height: .85; letter-spacing: -.01em; text-transform: uppercase; margin: 0; }
+.hero-meta { color: rgba(11,11,11,.7); }
+.hero-meta strong { color: var(--ink); }
+/* Keep the h1 in the DOM for a11y/SEO, but don't paint the cream overlay over DROP 01 or the cap. */
+.hero-title { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .hero-title .vt-1 { display: block; }
 .hero-title .vt-2 { display: block; font-style: italic; color: var(--coral); text-shadow: 0 0 40px rgba(255,74,61,.4); }
 .hero-bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 40px; }
-.hero-tag { font-family: 'Manrope', sans-serif; font-size: 14px; font-weight: 400; max-width: 380px; color: rgba(246,241,231,.85); line-height: 1.6; }
+.hero-tag { font-family: 'Manrope', sans-serif; font-size: 14px; font-weight: 400; max-width: 380px; color: rgba(11,11,11,.85); line-height: 1.6; }
 .hero-cta { display: flex; gap: 12px; }
 .btn { font-family: 'Manrope', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; padding: 16px 32px; border: 1.5px solid currentColor; cursor: pointer; transition: all .25s; background: transparent; color: var(--cream); text-decoration: none; display: inline-flex; align-items: center; gap: 10px; }
 .btn:hover { background: var(--cream); color: var(--ink); }
@@ -407,6 +411,10 @@ header { position: sticky; top: 0; z-index: 100; background: var(--ink); color: 
 .btn.primary:hover { background: var(--cream); color: var(--ink); border-color: var(--cream); }
 .btn .arrow { transition: transform .25s; }
 .btn:hover .arrow { transform: translateX(4px); }
+.hero .btn { color: var(--ink); border-color: var(--ink); }
+.hero .btn:hover { background: var(--ink); color: var(--cream); }
+.hero .btn.primary { background: var(--ink); border-color: var(--ink); color: var(--cream); }
+.hero .btn.primary:hover { background: transparent; color: var(--ink); border-color: var(--ink); }
 @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 .hero-top, .hero-title, .hero-bottom { animation: fadeIn 1s ease both; }
 .hero-top { animation-delay: .3s; }

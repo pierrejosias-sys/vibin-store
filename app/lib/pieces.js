@@ -40,7 +40,8 @@ export async function resolveDropItems(supabase, items, { earlyAccessGranted = f
     const row = styles?.find(s => s.drop_id === item.drop && s.style_code === item.style)
     const cfg = DROPS[item.drop].styles.find(s => s.code === item.style)
     const price = row?.price != null ? Number(row.price) : cfg?.price
-    if (!row || price == null) return { error: 'Unknown style.' }
+    // No drop_styles row yet (numbered pieces not seeded): never sell it uncapped.
+    if (!row || price == null) return { error: 'This item is not available for purchase yet.', status: 409 }
     item.qty = qty
     item.price = price // never trust the client price for drop items
     item.name = `${row.name} — ${drop.name}`
@@ -77,6 +78,20 @@ export async function releasePieces(supabase, ids, sessionId = null) {
   const { data, error } = await supabase.rpc('release_pieces', { p_piece_ids: ids, p_session_id: sessionId })
   if (error) console.error('release_pieces failed:', error.message)
   return data || 0
+}
+
+/**
+ * Full refund of a paid order (Legal rule, Nov 20): a number confirmed NOT yet marked (pieces.marked = false)
+ * goes back to 'available' for the next paid order; any other sold number is 'retired' and never sold again.
+ * Needs refund_pieces() from 20261120190000_drop01_tee_snapback_numbered_SEPARATE_DB_STEP.sql. Throws on
+ * error so Stripe retries the webhook.
+ */
+export async function refundPieces(supabase, ids, sessionId) {
+  if (!ids?.length) return { retired: 0, reassigned: 0 }
+  const { data, error } = await supabase.rpc('refund_pieces', { p_piece_ids: ids, p_session_id: sessionId })
+  if (error) throw new Error(`refund_pieces: ${error.message}`)
+  const row = Array.isArray(data) ? data[0] : data
+  return { retired: row?.retired || 0, reassigned: row?.reassigned || 0 }
 }
 
 // Stripe metadata values are capped at 500 chars, so piece ids are chunked
