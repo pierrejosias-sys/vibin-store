@@ -1,159 +1,91 @@
-/** Server-only waitlist helpers (service-role Supabase client required). */
-import { newEarlyAccessToken, isWellFormedToken, earlyAccessLink } from './early-access.mjs'
-import { syncSignupToBrevo, sendLinkEmail } from './brevo.mjs'
+import { normalizeEmail, resolveEarlyAccessLink, hashLinkId, hashEmail } from './early-access.mjs'
+import { upsertBrevoContact, addBrevoEvent, contactPayload } from './brevo.mjs'
+import { createRateLimiter } from './support.mjs'
 
-const likeExact = s => s.replace(/[\\%_]/g, m => '\\' + m)
-const uniq = a => [...new Set(a.filter(Boolean))]
-
-/** Inserts or merges (dedupe by email) a sign-up. Returns the row. */
-export async function upsertSignup(supabase, { email, firstName, source, style, consent, utm_source, utm_campaign, utm_medium }) {
-  // Composite tag saved next to the form source in sources[] (first touch stays in utm_*;
-  // every campaign journey step stays visible here). Built only from validated UTM values.
-  const campaignTag = (utm_source && utm_campaign)
-    ? `${source}-${utm_source}-${utm_campaign}`.slice(0, 40).replace(/-+$/, '')
-    : null
-  const withCampaign = (sources) => uniq([...(sources || []), source, campaignTag])
-  const { data: existing, error: readErr } = await supabase.from('waitlist_signups')
-    .select('*').ilike('email', likeExact(email)).maybeSingle()
-  if (readErr) throw new Error(readErr.message)
-  const now = new Date().toISOString()
-  if (existing) {
-    const patch = {
-      sources: withCampaign(existing.sources),
-      styles: uniq([...(existing.styles || []), style]),
-      first_name: existing.first_name || firstName || null,
-      updated_at: now,
-      // First-touch wins: only fill utm_* columns that are still null.
-      ...(utm_source && !existing.utm_source ? { utm_source } : {}),
-      ...(utm_campaign && !existing.utm_campaign ? { utm_campaign } : {}),
-      ...(utm_medium && !existing.utm_medium ? { utm_medium } : {}),
-      ...(consent && !existing.consent_email ? { consent_email: true, consent_at: now } : {}),
+/** One sign-up write path: the waitlist route and any future join forms use this. */
+export async function upsertSignup(supabase, { email, firstName, source, style, consent, utm_source, utm_campaign, utm_medium, ambassadorCode = null }) {
+  const row = { email, first_name: firstName, source, style, consent, utm_source, utm_campaign, utm_medium, ambassador_code: ambassadorCode, brevo_synced_at: null, link_resent_at: null, resend_count: 0 }
+  const { data, error } = await supabase.from('waitlist_signups').upsert(row, { onConflict: 'email', ignoreDuplicates: true }).select('*, id').maybeSingle()
+  if (error || !data) throw new Error(`waitlist upsert failed: ${error?.message || 'no row returned'}`)
+  // A re-sign-up is never an error: one row per email, first-touch sources/styles win.
+  if (!data.created_at) throw new Error('waitlist upsert failed: no row returned')
+  if (data.created_at !== data.updated_at) {
+    const changes = {}
+    if (data.first_name !== firstName) changes.first_name = firstName
+    if (data.style !== style) changes.style = style
+    if (data.consent !== consent) changes.consent = consent
+    if (data.utm_source !== utm_source) changes.utm_source = utm_source
+    if (data.utm_campaign !== utm_campaign) changes.utm_campaign = utm_campaign
+    if (data.utm_medium !== utm_medium) changes.utm_medium = utm_medium
+    // Ambassador code: first-touch wins — an earlier code is never overwritten.
+    if (!data.ambassador_code && ambassadorCode) changes.ambassador_code = ambassadorCode
+    if (Object.keys(changes).length) {
+      const { error: updErr } = await supabase.from('waitlist_signups').update(changes).eq('id', data.id)
+      if (updErr) throw new Error(`waitlist merge failed: ${updErr.message}`)
+      Object.assign(data, changes)
     }
-    const { data, error } = await supabase.from('waitlist_signups').update(patch).eq('id', existing.id).select('*').single()
-    if (error) throw new Error(error.message)
-    return { row: data, created: false }
+    // No new early-access link, no new Brevo sync, no event for re-sign-ups.
+    return { row: data, created: false, ambassadorCodeAttached: Boolean(changes.ambassador_code) }
   }
-  for (let attempt = 0; attempt < 3; attempt++) {
-    const { data, error } = await supabase.from('waitlist_signups').insert({
-      email, first_name: firstName || null, sources: withCampaign([]), styles: uniq([style]),
-      utm_source: utm_source || null, utm_campaign: utm_campaign || null, utm_medium: utm_medium || null,
-      consent_email: !!consent, consent_at: consent ? now : null, early_access_token: newEarlyAccessToken(),
-    }).select('*').single()
-    if (!error) return { row: data, created: true }
-    if (error.code !== '23505') throw new Error(error.message)
-    // 23505: email inserted concurrently (merge on retry) or token collision (new token)
-    const again = await supabase.from('waitlist_signups').select('*').ilike('email', likeExact(email)).maybeSingle()
-    if (again.data) return upsertSignup(supabase, { email, firstName, source, style, consent, utm_source, utm_campaign, utm_medium })
-  }
-  throw new Error('could not create sign-up')
-}
-
-/** Syncs one row to Brevo; sets synced_at only on success. Quiet no-op if not configured. */
-export async function syncRow(supabase, row, opts) {
-  if (!row.consent_email) return { skipped: true }
-  const res = await syncSignupToBrevo({
-    email: row.email,
-    earlyAccessLink: earlyAccessLink(row.early_access_token),
-    source: (row.sources || []).join(','),
-  }, opts)
-  if (res.ok) {
-    await supabase.from('waitlist_signups').update({ synced_to: 'brevo', synced_at: new Date().toISOString(), sync_error: null }).eq('id', row.id)
-  } else if (!res.skipped) {
-    await supabase.from('waitlist_signups').update({ sync_error: res.error }).eq('id', row.id)
-  }
-  return res
-}
-
-/** 'valid' | 'used' | 'invalid'. A token is good for ONE completed early-access checkout. */
-export async function earlyAccessTokenStatus(supabase, token) {
-  if (!isWellFormedToken(token)) return 'invalid'
-  const { data, error } = await supabase.from('waitlist_signups').select('id, token_used_at').eq('early_access_token', token).maybeSingle()
-  if (error || !data) return 'invalid'
-  return data.token_used_at ? 'used' : 'valid'
-}
-
-export async function isValidEarlyAccessToken(supabase, token) {
-  return (await earlyAccessTokenStatus(supabase, token)) === 'valid'
-}
-
-/** Lock TTL: Stripe sessions for early access expire after STRIPE_SESSION_MINUTES (30), plus slack. */
-export const EARLY_LOCK_TTL_MS = 35 * 60 * 1000
-
-/**
- * Atomically locks an unused private link to one checkout attempt. Succeeds only if the link
- * exists, is unused, and is unlocked or its lock is older than the TTL. Returns true/false.
- */
-export async function lockEarlyAccessToken(supabase, token, now = Date.now()) {
-  if (!isWellFormedToken(token)) return false
-  const stale = new Date(now - EARLY_LOCK_TTL_MS).toISOString()
-  const { data, error } = await supabase.from('waitlist_signups')
-    .update({ locked_at: new Date(now).toISOString(), locked_session_id: null })
-    .eq('early_access_token', token).is('token_used_at', null)
-    .or(`locked_at.is.null,locked_at.lt.${stale}`)
-    .select('id')
-  if (error) { console.error('lockEarlyAccessToken:', error.message); return false }
-  return data.length === 1
-}
-
-export async function attachEarlyAccessLock(supabase, token, sessionId) {
-  const { error } = await supabase.from('waitlist_signups').update({ locked_session_id: sessionId })
-    .eq('early_access_token', token).is('token_used_at', null).is('locked_session_id', null)
-  if (error) console.error('attachEarlyAccessLock:', error.message)
-}
-
-/** Releases the lock held by sessionId (or the pre-session lock when sessionId is null). */
-export async function releaseEarlyAccessLock(supabase, token, sessionId) {
-  if (!isWellFormedToken(token)) return false
-  let q = supabase.from('waitlist_signups').update({ locked_at: null, locked_session_id: null })
-    .eq('early_access_token', token).is('token_used_at', null)
-  q = sessionId ? q.eq('locked_session_id', sessionId) : q.is('locked_session_id', null)
-  const { data, error } = await q.select('id')
-  if (error) { console.error('releaseEarlyAccessLock:', error.message); return false }
-  return data.length > 0
-}
-
-/** Called from the Stripe webhook on checkout.session.completed. Idempotent; first session wins. */
-export async function markEarlyAccessTokenUsed(supabase, token, sessionId) {
-  if (!isWellFormedToken(token)) return false
-  const { data, error } = await supabase.from('waitlist_signups')
-    .update({ token_used_at: new Date().toISOString(), token_used_session_id: sessionId, locked_at: null, locked_session_id: null })
-    .eq('early_access_token', token).is('token_used_at', null).select('id')
-  if (error) { console.error('markEarlyAccessTokenUsed:', error.message); return false }
-  return data.length > 0
-}
-
-export const LINK_EMAIL_INTERVAL_MS = 24 * 60 * 60 * 1000
-
-/**
- * What the browser gets back. SECURITY: the private link is returned ONLY when this request
- * created the row. For an existing email we never return it (anyone can type any email).
- */
-export function signupResponse({ created, row }, base) {
-  return created
-    ? { ok: true, created: true, earlyAccessLink: earlyAccessLink(row.early_access_token, base) }
-    : { ok: true, created: false }
-}
-
-export function linkEmailDue(row, now = Date.now()) {
-  return !row.last_link_email_at || now - new Date(row.last_link_email_at).getTime() >= LINK_EMAIL_INTERVAL_MS
+  // Created: attach the link immediately so it is never blank in Supabase (sync failure after
+  // this point must not lose the link). Deterministic: one link per email, no regeneration.
+  const earlyAccessLink = resolveEarlyAccessLink(email)
+  const { error: linkErr } = await supabase.from('waitlist_signups').update({ early_access_link: earlyAccessLink }).eq('id', data.id)
+  if (linkErr) throw new Error(`early-access link write failed: ${linkErr.message}`)
+  data.early_access_link = earlyAccessLink
+  return { row: data, created: true, ambassadorCodeAttached: Boolean(ambassadorCode) }
 }
 
 /**
- * Re-signup with an existing email: email that address its link (max 1 per 24h, one recipient).
- * The 24h slot is claimed atomically before sending so concurrent requests can't double-send.
+ * Sync one row to Brevo after insert. Never throws: a failed sync marks the row
+ * stale (brevo_synced_at = NULL) for the retry cron; the link stays safe in Supabase.
+ * No-op when Brevo env is absent (see brevo.mjs).
  */
-export async function maybeSendLinkEmail(supabase, row, { now = Date.now(), env = process.env, fetchImpl = fetch } = {}) {
-  if (!env.BREVO_API_KEY) return { skipped: 'not configured' }
-  if (!linkEmailDue(row, now)) return { skipped: 'rate-limited' }
-  const cutoff = new Date(now - LINK_EMAIL_INTERVAL_MS).toISOString()
-  const { data, error } = await supabase.from('waitlist_signups')
-    .update({ last_link_email_at: new Date(now).toISOString() })
-    .eq('id', row.id).or(`last_link_email_at.is.null,last_link_email_at.lt.${cutoff}`).select('id')
-  if (error || !data?.length) return { skipped: 'rate-limited' }
-  const res = await sendLinkEmail({ email: row.email, link: earlyAccessLink(row.early_access_token) }, { env, fetchImpl })
-  if (!res.ok) {
-    // Give the slot back so a later retry can send.
-    await supabase.from('waitlist_signups').update({ last_link_email_at: row.last_link_email_at || null }).eq('id', row.id)
+export async function syncRow(supabase, row) {
+  let sent = false
+  try {
+    const payload = contactPayload(row, { ambassadorCode: row.ambassador_code })
+    sent = await upsertBrevoContact(payload)
+    if (sent) await addBrevoEvent(row.email, 'waitlist_signup', { source: row.source, style: row.style, utm_source: row.utm_source, utm_campaign: row.utm_campaign, utm_medium: row.utm_medium })
+  } catch (err) { console.error('waitlist brevo sync failed:', err.message) }
+  try {
+    await supabase.from('waitlist_signups').update({ brevo_synced_at: sent ? new Date().toISOString() : null }).eq('id', row.id)
+  } catch (err) { console.error('waitlist brevo stamp failed:', err.message) }
+}
+
+/**
+ * Shape the waitlist response.
+ * New email: early-access link + QR returned so the page can confirm instantly.
+ * Existing email: no link (it is emailed instead). Never include a link if missing.
+ */
+export function signupResponse({ row, created }) {
+  if (!created) return { ok: true, already: true }
+  return {
+    ok: true,
+    earlyAccessLink: row.early_access_link || null,
+    linkId: row.early_access_link ? hashLinkId(row.early_access_link) : null,
+    emailHash: hashEmail(row.email),
+    already: false,
   }
-  return res
+}
+
+/**
+ * Existing email: re-send the early-access link to the email address itself.
+ * Silent if the link is missing or Brevo is unavailable. Max one email per 24h
+ * per email address. Never reveal the link in the API response.
+ */
+const emailLimit = createRateLimiter({ max: 3, windowMs: 24 * 60 * 60 * 1000 })
+
+export async function maybeSendLinkEmail(supabase, row) {
+  if (!row.early_access_link) return
+  if (row.link_resent_at) {
+    const last = Date.parse(row.link_resent_at)
+    if (!Number.isNaN(last) && Date.now() - last < 24 * 60 * 60 * 1000) return
+  }
+  if (!emailLimit(hashEmail(row.email))) return
+  try {
+    const sent = await upsertBrevoContact(contactPayload(row, { ambassadorCode: row.ambassador_code }), { transactional: true })
+    if (!sent) return
+    await supabase.from('waitlist_signups').update({ link_resent_at: new Date().toISOString(), resend_count: (row.resend_count || 0) + 1 }).eq('id', row.id)
+  } catch (err) { console.error('link re-send failed:', err.message) }
 }
