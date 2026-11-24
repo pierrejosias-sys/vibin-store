@@ -41,12 +41,12 @@ const csvCell = v => {
   return /[",\n\r]/.test(s) || /^[=+\-@]/.test(s) ? `"${s.replace(/^([=+\-@])/, "'$1").replace(/"/g, '""')}"` : s
 }
 
-/** CSV for Marketing: email, first_name, sources, styles, consent, early_access_link, created_at, synced_at */
+/** CSV for Marketing: email, first_name, sources, styles, consent, early_access_link, created_at, synced_at, ambassador_code */
 export function signupsToCsv(rows, base) {
-  const head = ['email', 'first_name', 'sources', 'utm_source', 'utm_campaign', 'utm_medium', 'styles', 'consent_email', 'early_access_link', 'created_at', 'synced_at']
+  const head = ['email', 'first_name', 'sources', 'utm_source', 'utm_campaign', 'utm_medium', 'styles', 'consent_email', 'early_access_link', 'created_at', 'synced_at', 'ambassador_code']
   const lines = rows.map(r => [
     r.email, r.first_name, (r.sources || []).join('|'), r.utm_source, r.utm_campaign, r.utm_medium, (r.styles || []).join('|'), r.consent_email,
-    earlyAccessLink(r.early_access_token, base), r.created_at, r.synced_at,
+    earlyAccessLink(r.early_access_token, base), r.created_at, r.synced_at, r.ambassador_code,
   ].map(csvCell).join(','))
   return [head.join(','), ...lines].join('\n') + '\n'
 }
