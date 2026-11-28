@@ -13,9 +13,10 @@ import { DROP_01, DROP01_CAP_COPY, DROP01_MARK_COPY, DROP01_NUMBERED_CLAIM_LIVE 
 async function joinWaitlist(payload) {
   try {
     const res = await fetch('/api/waitlist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-    if (!res.ok) return { status: 'error' }
-    return { status: 'done', result: await res.json() }
-  } catch { return { status: 'error' } }
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) return { status: 'error', error: data.error || null }
+    return { status: 'done', result: data }
+  } catch { return { status: 'error', error: null } }
 }
 import { useCart } from '../lib/cart-context'
 import WaitlistThanks from '../components/WaitlistThanks'
@@ -58,26 +59,48 @@ function useCountdown(releaseAt, serverNow) {
 
 function Waitlist({ dropId }) {
   const [email, setEmail] = useState('')
+  const [inviteCode, setInviteCode] = useState('')
+  const [inviteState, setInviteState] = useState(null) // { valid: true, slot } | { valid: false } | null
   const [status, setStatus] = useState('idle')
   const [result, setResult] = useState(null)
+  const [errorMsg, setErrorMsg] = useState(null)
   // Capture the first-touch campaign on landing, so it survives in-visit navigation.
   useEffect(() => { getCampaign() }, [])
+
+  // Ambassador invite link: ?invite=NOVA pre-fills the code and checks it live.
+  useEffect(() => {
+    try {
+      const fromUrl = new URLSearchParams(window.location.search).get('invite')
+      if (!fromUrl) return
+      const code = fromUrl.trim().toUpperCase()
+      if (!/^[A-Z]{4,24}$/.test(code)) { setInviteState({ valid: false }); return }
+      setInviteCode(code)
+      fetch('/api/waitlist/validate-invite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }) })
+        .then(r => r.json())
+        .then(d => setInviteState(d.valid ? { valid: true, slot: d.slot } : { valid: false }))
+        .catch(() => {})
+    } catch {}
+  }, [])
 
   async function submit(e) {
     e.preventDefault()
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setStatus('invalid'); return }
     setStatus('loading')
-    const r = await joinWaitlist({ email, source: `${dropId}-waitlist`, ...getCampaign() })
-    setResult(r.result); setStatus(r.status)
+    setErrorMsg(null)
+    const r = await joinWaitlist({ email, source: `${dropId}-waitlist`, ...(inviteCode.trim() ? { inviteCode: inviteCode.trim() } : {}), ...getCampaign() })
+    setResult(r.result); setErrorMsg(r.error || null); setStatus(r.status)
   }
 
   if (status === 'done') return <div style={{ marginTop: 24 }}><WaitlistThanks result={result} /></div>
   return (
     <form onSubmit={submit} style={{ marginTop: 32, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
       <input style={S.input} type="email" placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} aria-label="Email" required />
+      <input style={{ ...S.input, textTransform: 'uppercase' }} type="text" placeholder="Ambassador invite code (optional)" value={inviteCode} onChange={e => { setInviteCode(e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 24)); setInviteState(null) }} aria-label="Ambassador invite code (optional)" />
       <button style={S.btn} disabled={status === 'loading'}>{status === 'loading' ? 'Joining…' : 'Join the waitlist'}</button>
+      {inviteState?.valid && <p style={{ width: '100%', color: '#6f6' }}>✓ Invite code {inviteCode} accepted.</p>}
+      {inviteState && !inviteState.valid && <p style={{ width: '100%', color: '#f66' }}>That invite code isn’t valid — you can still join without one.</p>}
       {status === 'invalid' && <p style={{ width: '100%', color: '#f66' }}>Enter a valid email.</p>}
-      {status === 'error' && <p style={{ width: '100%', color: '#f66' }}>Something went wrong. Try again.</p>}
+      {status === 'error' && <p style={{ width: '100%', color: '#f66' }}>{errorMsg || 'Something went wrong. Try again.'}</p>}
     </form>
   )
 }

@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { normalizeEmail } from '../../lib/early-access.mjs'
 import { upsertSignup, syncRow, signupResponse, maybeSendLinkEmail } from '../../lib/waitlist.mjs'
+import { validateInviteCode, recordInviteCodeUse, inviteCodeError } from '../../lib/invite-codes.mjs'
 import { createRateLimiter, clientIp } from '../../lib/support.mjs'
 
 const ipLimit = createRateLimiter({ max: 5, windowMs: 10 * 60 * 1000 })
@@ -31,13 +32,24 @@ export async function POST(request) {
   const utm_medium = cleanUtm(body?.utm_medium)
   // The forms state that joining = agreeing to marketing email; explicit false opts out.
   const consent = body?.consent !== false
+  // Optional ambassador invite code (typed, or pre-filled from ?invite=CODE).
+  // Joining without a code still works exactly as before.
+  const inviteCode = typeof body?.inviteCode === 'string' ? body.inviteCode : null
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL, key = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!url || !key) return Response.json({ error: 'Sign-up is temporarily unavailable.' }, { status: 503 })
   const supabase = createClient(url, key, { auth: { persistSession: false } })
 
   try {
-    const result = await upsertSignup(supabase, { email, firstName, source, style, consent, utm_source, utm_campaign, utm_medium })
+    // A code must validate against the store BEFORE the sign-up is accepted.
+    let ambassadorCode = null
+    if (inviteCode) {
+      const check = await validateInviteCode(supabase, inviteCode)
+      if (!check.ok) return Response.json({ error: inviteCodeError(check.reason) }, { status: 400 })
+      ambassadorCode = check.code
+    }
+    const result = await upsertSignup(supabase, { email, firstName, source, style, consent, utm_source, utm_campaign, utm_medium, ambassadorCode })
+    if (result.ambassadorCodeAttached) await recordInviteCodeUse(supabase, ambassadorCode)
     await syncRow(supabase, result.row) // never throws; no-op without Brevo env
     // Existing email: never reveal the link here; email it to that address instead (max 1/24h).
     if (!result.created) await maybeSendLinkEmail(supabase, result.row)

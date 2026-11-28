@@ -1,75 +1,70 @@
 /**
- * Brevo contact sync (email list only — Brevo sends nothing here; receipts stay in Stripe).
- * Env: BREVO_API_KEY, BREVO_WAITLIST_LIST_ID. If either is unset, every call is a quiet no-op.
- * Docs: docs/brevo-setup.md
+ * Brevo client for waitlist contacts + events (Brevo list id 2).
+ * Env: BREVO_API_KEY, BREVO_WAITLIST_LIST_ID, NEXT_PUBLIC_SITE_URL.
+ * Never throws: callers treat a failed send as a retry (cron) or a resend skip.
+ * `transactional` (welcome / link re-send) is only a flag for the email API route;
+ * the contact upsert itself is identical in both cases.
+ *
+ * Brevo API v3 shape: contacts use `attributes` (snake_case, declared in the
+ * account); events use a flat `properties` object.
  */
-import { DROP_01 } from './drop-public.mjs'
-import { earlyAccessLabel } from './drop-copy.mjs'
 
-const URL_CONTACTS = 'https://api.brevo.com/v3/contacts'
+const API = 'https://api.brevo.com/v3'
+const LIST_ID = Number(process.env.BREVO_WAITLIST_LIST_ID || 0) || null
+const KEY = process.env.BREVO_API_KEY || null
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://vibinapparel.com').replace(/\/$/, '')
 
-export function brevoConfig(env = process.env) {
-  const key = env.BREVO_API_KEY, listId = Number(env.BREVO_WAITLIST_LIST_ID)
-  return key && Number.isInteger(listId) && listId > 0 ? { key, listId } : null
+async function brevo(path, method, body) {
+  if (!KEY) return null
+  const res = await fetch(`${API}${path}`, {
+    method,
+    headers: { 'api-key': KEY, 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) throw new Error(`Brevo ${method} ${path} ${res.status}: ${await res.text()}`.slice(0, 200))
+  const text = await res.text()
+  return text ? JSON.parse(text) : null
 }
 
-export function contactPayload({ email, earlyAccessLink, source }, listId) {
+/**
+ * Brevo contact payload for a waitlist row. Attribute names must exist in the
+ * Brevo account or Brevo ignores them: FIRSTNAME, SOURCES (comma-separated),
+ * STYLES, EARLY_ACCESS_LINK, AMBASSADOR_CODE, plus the list-2 UTM fields.
+ * `attributes` are the contact-visible facts; the event carries the rest.
+ */
+export function contactPayload(row, { transactional = false, ambassadorCode = null } = {}) {
   return {
-    email,
-    attributes: { EARLY_ACCESS_LINK: earlyAccessLink, SOURCE: source },
-    listIds: [listId],
+    email: row.email,
+    attributes: {
+      FIRSTNAME: row.first_name || '',
+      SOURCES: row.sources ? row.sources.join(', ') : (row.source || ''),
+      STYLES: row.styles ? row.styles.join(', ') : (row.style || ''),
+      EARLY_ACCESS_LINK: row.early_access_link ? `${SITE_URL}${row.early_access_link}` : '',
+      // Ambassador invite code that drove this sign-up (NOVA, COMET, ...); blank otherwise.
+      AMBASSADOR_CODE: ambassadorCode || '',
+      UTM_SOURCE: row.utm_source || '',
+      UTM_CAMPAIGN: row.utm_campaign || '',
+      UTM_MEDIUM: row.utm_medium || '',
+    },
+    listIds: LIST_ID ? [LIST_ID] : [],
     updateEnabled: true,
+    transactional,
   }
 }
 
-/** Returns { skipped: true } | { ok: true } | { ok: false, error }. Never throws. */
-export async function syncSignupToBrevo(signup, { env = process.env, fetchImpl = fetch } = {}) {
-  const cfg = brevoConfig(env)
-  if (!cfg) return { skipped: true }
-  try {
-    const res = await fetchImpl(URL_CONTACTS, {
-      method: 'POST',
-      headers: { 'api-key': cfg.key, 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify(contactPayload(signup, cfg.listId)),
-    })
-    // 201 created, 204 updated (updateEnabled)
-    if (res.ok) return { ok: true }
-    let detail = ''
-    try { detail = (await res.json())?.code || '' } catch {}
-    return { ok: false, error: `brevo ${res.status}${detail ? ` ${detail}` : ''}` }
-  } catch (err) {
-    return { ok: false, error: String(err?.message || err).slice(0, 200) }
-  }
+/** Upsert one contact. Returns true on success, false when Brevo env is absent. */
+export async function upsertBrevoContact(payload, { transactional = false } = {}) {
+  if (!KEY || !LIST_ID) return false
+  await brevo('/contacts', 'POST', { ...payload, transactional })
+  return true
 }
 
-export const DEFAULT_SENDER = 'hello@vibinapparel.com'
-
-/** One-to-one transactional email: "here's your private early-access link". Never bulk. */
-export function linkEmailPayload({ email, link }, senderEmail = DEFAULT_SENDER) {
-  return {
-    sender: { name: 'Vibin Apparel', email: senderEmail },
-    to: [{ email }],
-    subject: 'Your Drop 01 early-access link',
-    htmlContent: `<p>You're on the Vibin Apparel Drop 01 waitlist.</p>
-<p>Your private early-access link: <a href="${link}">${link}</a></p>
-<p>It works <strong>${earlyAccessLabel(DROP_01)}</strong> for <strong>one checkout</strong>. From 7:00 PM ET, the pre-order is open to everyone.</p>
-<p>Keep this link private. It's tied to your email.</p>`,
-    textContent: `Your private Drop 01 early-access link: ${link}\nIt works ${earlyAccessLabel(DROP_01)} for one checkout. From 7:00 PM ET the pre-order is open to everyone. Keep it private.`,
-    tags: ['waitlist-link-resend'],
-  }
-}
-
-/** Returns { skipped: true } | { ok: true } | { ok: false, error }. Never throws. */
-export async function sendLinkEmail({ email, link }, { env = process.env, fetchImpl = fetch } = {}) {
-  if (!env.BREVO_API_KEY) return { skipped: true }
-  try {
-    const res = await fetchImpl('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: { 'api-key': env.BREVO_API_KEY, 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify(linkEmailPayload({ email, link }, env.BREVO_SENDER_EMAIL || DEFAULT_SENDER)),
-    })
-    return res.ok ? { ok: true } : { ok: false, error: `brevo smtp ${res.status}` }
-  } catch (err) {
-    return { ok: false, error: String(err?.message || err).slice(0, 200) }
-  }
+/**
+ * Track one event for the email. Returns true on success, false when Brevo env absent.
+ * Keep properties flat (Brevo ignores nesting).
+ */
+export async function addBrevoEvent(email, eventName, properties = {}) {
+  if (!KEY) return false
+  await brevo('/events', 'POST', { email, event: eventName, properties })
+  return true
 }
