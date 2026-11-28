@@ -3,7 +3,7 @@
  * Early window: [earlyAccessAt, releaseAt) — only valid waitlist tokens may pre-order.
  * From releaseAt (public open) until close, everyone may.
  */
-import { randomBytes } from 'node:crypto'
+import { randomBytes, createHash } from 'node:crypto'
 import { dropPhase } from './drop-window.mjs'
 
 import { EARLY_ACCESS_COOKIE, isWellFormedToken } from './early-access-cookie.mjs'
@@ -29,6 +29,28 @@ export function canPreorder(phase, hasValidToken) {
 
 export function earlyAccessLink(token, base = 'https://vibinapparel.com') {
   return `${base.replace(/\/$/, '')}/drop/01?access=${encodeURIComponent(token)}`
+}
+
+/** Path-only private link (/drop/01?access=…). Callers persist the token too. */
+export function resolveEarlyAccessLink(_email) {
+  const token = newEarlyAccessToken()
+  return `/drop/01?access=${encodeURIComponent(token)}`
+}
+
+export function tokenFromEarlyAccessLink(link) {
+  try {
+    return new URL(link, 'https://vibinapparel.com').searchParams.get('access') || null
+  } catch {
+    return null
+  }
+}
+
+export function hashEmail(email) {
+  return createHash('sha256').update(normalizeEmail(email) || '').digest('hex')
+}
+
+export function hashLinkId(link) {
+  return createHash('sha256').update(String(link || '')).digest('hex').slice(0, 16)
 }
 
 export function normalizeEmail(e) {

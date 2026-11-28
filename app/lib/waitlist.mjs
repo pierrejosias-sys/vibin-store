@@ -1,4 +1,4 @@
-import { normalizeEmail, resolveEarlyAccessLink, hashLinkId, hashEmail } from './early-access.mjs'
+import { normalizeEmail, resolveEarlyAccessLink, tokenFromEarlyAccessLink, hashLinkId, hashEmail, isWellFormedToken } from './early-access.mjs'
 import { upsertBrevoContact, addBrevoEvent, contactPayload } from './brevo.mjs'
 import { createRateLimiter } from './support.mjs'
 
@@ -27,12 +27,14 @@ export async function upsertSignup(supabase, { email, firstName, source, style, 
     // No new early-access link, no new Brevo sync, no event for re-sign-ups.
     return { row: data, created: false, ambassadorCodeAttached: Boolean(changes.ambassador_code) }
   }
-  // Created: attach the link immediately so it is never blank in Supabase (sync failure after
-  // this point must not lose the link). Deterministic: one link per email, no regeneration.
+  // Created: attach the link and token immediately so they are never blank in Supabase
+  // (a sync failure after this point must not lose them). Written once; never regenerated.
   const earlyAccessLink = resolveEarlyAccessLink(email)
-  const { error: linkErr } = await supabase.from('waitlist_signups').update({ early_access_link: earlyAccessLink }).eq('id', data.id)
+  const earlyAccessToken = tokenFromEarlyAccessLink(earlyAccessLink)
+  const { error: linkErr } = await supabase.from('waitlist_signups').update({ early_access_link: earlyAccessLink, early_access_token: earlyAccessToken }).eq('id', data.id)
   if (linkErr) throw new Error(`early-access link write failed: ${linkErr.message}`)
   data.early_access_link = earlyAccessLink
+  data.early_access_token = earlyAccessToken
   return { row: data, created: true, ambassadorCodeAttached: Boolean(ambassadorCode) }
 }
 
@@ -88,4 +90,68 @@ export async function maybeSendLinkEmail(supabase, row) {
     if (!sent) return
     await supabase.from('waitlist_signups').update({ link_resent_at: new Date().toISOString(), resend_count: (row.resend_count || 0) + 1 }).eq('id', row.id)
   } catch (err) { console.error('link re-send failed:', err.message) }
+}
+
+/** 'valid' | 'used' | 'invalid'. A token is good for ONE completed early-access checkout. */
+export async function earlyAccessTokenStatus(supabase, token) {
+  if (!isWellFormedToken(token)) return 'invalid'
+  const { data, error } = await supabase.from('waitlist_signups').select('id, token_used_at').eq('early_access_token', token).maybeSingle()
+  if (error || !data) return 'invalid'
+  return data.token_used_at ? 'used' : 'valid'
+}
+
+export async function isValidEarlyAccessToken(supabase, token) {
+  return (await earlyAccessTokenStatus(supabase, token)) === 'valid'
+}
+
+/** Lock TTL: Stripe sessions for early access expire after STRIPE_SESSION_MINUTES (30), plus slack. */
+export const EARLY_LOCK_TTL_MS = 35 * 60 * 1000
+
+/**
+ * Atomically locks an unused private link to one checkout attempt. Succeeds only if the link
+ * exists, is unused, and is unlocked or its lock is older than the TTL. Returns true/false.
+ */
+export async function lockEarlyAccessToken(supabase, token, now = Date.now()) {
+  if (!isWellFormedToken(token)) return false
+  const stale = new Date(now - EARLY_LOCK_TTL_MS).toISOString()
+  const { data, error } = await supabase.from('waitlist_signups')
+    .update({ locked_at: new Date(now).toISOString(), locked_session_id: null })
+    .eq('early_access_token', token).is('token_used_at', null)
+    .or(`locked_at.is.null,locked_at.lt.${stale}`)
+    .select('id')
+  if (error) { console.error('lockEarlyAccessToken:', error.message); return false }
+  return data.length === 1
+}
+
+export async function attachEarlyAccessLock(supabase, token, sessionId) {
+  const { error } = await supabase.from('waitlist_signups').update({ locked_session_id: sessionId })
+    .eq('early_access_token', token).is('token_used_at', null).is('locked_session_id', null)
+  if (error) console.error('attachEarlyAccessLock:', error.message)
+}
+
+/** Releases the lock held by sessionId (or the pre-session lock when sessionId is null). */
+export async function releaseEarlyAccessLock(supabase, token, sessionId) {
+  if (!isWellFormedToken(token)) return false
+  let q = supabase.from('waitlist_signups').update({ locked_at: null, locked_session_id: null })
+    .eq('early_access_token', token).is('token_used_at', null)
+  q = sessionId ? q.eq('locked_session_id', sessionId) : q.is('locked_session_id', null)
+  const { data, error } = await q.select('id')
+  if (error) { console.error('releaseEarlyAccessLock:', error.message); return false }
+  return data.length > 0
+}
+
+/** Called from the Stripe webhook on checkout.session.completed. Idempotent; first session wins. */
+export async function markEarlyAccessTokenUsed(supabase, token, sessionId) {
+  if (!isWellFormedToken(token)) return false
+  const { data, error } = await supabase.from('waitlist_signups')
+    .update({ token_used_at: new Date().toISOString(), token_used_session_id: sessionId, locked_at: null, locked_session_id: null })
+    .eq('early_access_token', token).is('token_used_at', null).select('id')
+  if (error) { console.error('markEarlyAccessTokenUsed:', error.message); return false }
+  return data.length > 0
+}
+
+export const LINK_EMAIL_INTERVAL_MS = 24 * 60 * 60 * 1000
+
+export function linkEmailDue(row, now = Date.now()) {
+  return !row.last_link_email_at || now - new Date(row.last_link_email_at).getTime() >= LINK_EMAIL_INTERVAL_MS
 }
